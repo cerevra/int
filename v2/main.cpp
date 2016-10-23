@@ -69,10 +69,9 @@ void testCtors() {
     assert(a6.m_arr[6] == 0xffffffffffffffff, "");
     assert(a6.m_arr[7] == 0xfffffffffffffff3, "");
     uint512_t b6 = int128_t(-13);
-    for (int idx = 0; idx < 6; ++idx) {
-        assert(b6.m_arr[idx] == 0, std::to_string(idx));
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(b6.m_arr[idx] == 0xffffffffffffffff, std::to_string(idx));
     }
-    assert(a6.m_arr[6] == 0xffffffffffffffff, "");
     assert(b6.m_arr[7] == 0xfffffffffffffff3, "");
 
     int512_t a7 = int128_t(-13);
@@ -331,6 +330,79 @@ void testShifts() {
     assert(b81.m_arr[7] == 0xfffffffffffffff9, "");
 }
 
+void testAssign() {
+    uint512_t a1 = 0;
+    int512_t b1 = 0;
+
+    a1 = 4;
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(a1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(a1.m_arr[7] == 4, "");
+    b1 = 4;
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(b1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(b1.m_arr[7] == 4, "");
+
+    a1 = -4;
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(a1.m_arr[idx] == 0xffffffffffffffff, std::to_string(idx));
+    }
+    assert(a1.m_arr[7] == 0xfffffffffffffffc, "");
+    b1 = -4;
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(b1.m_arr[idx] == 0xffffffffffffffff, std::to_string(idx));
+    }
+    assert(b1.m_arr[7] == 0xfffffffffffffffc, "");
+
+    a1 = uint128_t(4);
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(a1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(a1.m_arr[7] == 4, "");
+    b1 = int128_t(4);
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(b1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(b1.m_arr[7] == 4, "");
+
+    a1 = uint128_t(-4);
+    for (int idx = 0; idx < 6; ++idx) {
+        assert(a1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(a1.m_arr[6] == 0xffffffffffffffff, "");
+    assert(a1.m_arr[7] == 0xfffffffffffffffc, "");
+    b1 = int128_t(-4);
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(b1.m_arr[idx] == 0xffffffffffffffff, std::to_string(idx));
+    }
+    assert(b1.m_arr[7] == 0xfffffffffffffffc, "");
+
+    a1 = int128_t(4);
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(a1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(a1.m_arr[7] == 4, "");
+    b1 = uint128_t(4);
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(b1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(b1.m_arr[7] == 4, "");
+
+    a1 = int128_t(-4);
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(a1.m_arr[idx] == 0xffffffffffffffff, std::to_string(idx));
+    }
+    assert(a1.m_arr[7] == 0xfffffffffffffffc, "");
+    b1 = uint128_t(-4);
+    for (int idx = 0; idx < 6; ++idx) {
+        assert(b1.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(b1.m_arr[6] == 0xffffffffffffffff, "");
+    assert(b1.m_arr[7] == 0xfffffffffffffffc, "");
+}
+
 void tests() {
     static_assert(std::is_pod<int512_t>::value, "");
     static_assert(std::is_pod<uint512_t>::value, "");
@@ -339,6 +411,7 @@ void tests() {
 
     testCtors();
     testShifts();
+    testAssign();
 }
 
 int main() {
@@ -372,13 +445,13 @@ int main() {
 
 //    std::cout << 111123123123123123123_uint128 << std::endl;
 
-//    std::cout << std::hex << std::setw(16) << std::setfill('0');
-//    std::cout << -int64_t(13) << std::endl;
+    std::cout << std::hex << std::setw(16) << std::setfill('0');
+    std::cout << uint64_t(uint32_t(-13)) << std::endl;
 //    std::cout << std::hex << std::setw(16) << std::setfill('0');
 //    std::cout << (-int64_t(0xc0c0) >> 1) << std::endl;
 
 //    std::cout << std::hex << std::setw(16) << std::setfill('0');
-//    std::cout << int64_t(-1) << std::endl;
+//    std::cout << int64_t(-4) << std::endl;
 //    std::cout << std::hex << std::setw(16) << std::setfill('0');
 //    std::cout << (int64_t(-1) << 1) << std::endl;
 //    std::cout << std::hex << std::setw(16) << std::setfill('0');

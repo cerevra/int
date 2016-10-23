@@ -42,28 +42,52 @@ public:
         return sizeof(base_type)*8;
     }
 
-    wide_int() = default;
+private:
     template<typename T>
-    wide_int(T other) noexcept {
-        int i;
-        for (i = 0; i < arr_size() - 1; ++i) {
+    constexpr void wide_int_from_T(T other) noexcept {
+        int i = 0;
+        for ( ; i < arr_size() - 1; ++i) {
             m_arr[i] = other < 0 ? std::numeric_limits<uint64_t>::max() : 0;
         }
         m_arr[i] = static_cast<uint64_t>(other);
     }
     template<int bits2, bool sgn2>
-    wide_int(wide_int<bits2,sgn2> other) noexcept {
+    constexpr void wide_int_from_wide_int(const wide_int<bits2,sgn2>& other) noexcept {
         int bytes_to_copy = std::min(arr_size(), other.arr_size());
         for (int i = 0; i < bytes_to_copy; ++i) {
             m_arr[arr_size() - 1 - i] = other.m_arr[other.arr_size() - 1 - i];
         }
         bool is_negative = sgn2 && static_cast<int64_t>(other.m_arr[0]) < 0;
         for (int i = 0; i < arr_size() - bytes_to_copy; ++i) {
-            m_arr[i] = sgn && is_negative ? std::numeric_limits<base_type>::max() : 0;
+            m_arr[i] = is_negative ? std::numeric_limits<base_type>::max() : 0;
         }
     }
 
-    wide_int(const wide_int<bits,sgn>&) = default;
+public:
+    wide_int() = default;
+
+    template<typename T>
+    constexpr wide_int(T other) noexcept {
+        wide_int_from_T(other);
+    }
+    template<int bits2, bool sgn2>
+    constexpr wide_int(const wide_int<bits2,sgn2>& other) noexcept {
+        wide_int_from_wide_int(other);
+    }
+
+    constexpr wide_int(const wide_int<bits,sgn>&) = default;
+
+    template<int bits2, bool sgn2>
+    constexpr wide_int<bits,sgn>& operator=(const wide_int<bits2,sgn2>& other) noexcept {
+        wide_int_from_wide_int(other);
+        return *this;
+    }
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator=(T other) noexcept {
+        wide_int_from_T(other);
+        return *this;
+    }
 
     constexpr static wide_int<bits,false> shift_left(const wide_int<bits,false>& other, int n) noexcept {
         if (n >= bits) return 0;
