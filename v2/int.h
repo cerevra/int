@@ -43,6 +43,11 @@ public:
     }
 
 private:
+    template<int b, bool s>
+    constexpr static bool is_negative(const wide_int<b,s>& n) noexcept {
+        return s && static_cast<int64_t>(n.m_arr[0]) < 0;
+    }
+
     template<typename T>
     constexpr void wide_int_from_T(T other) noexcept {
         int i = 0;
@@ -57,9 +62,8 @@ private:
         for (int i = 0; i < bytes_to_copy; ++i) {
             m_arr[arr_size() - 1 - i] = other.m_arr[other.arr_size() - 1 - i];
         }
-        bool is_negative = sgn2 && static_cast<int64_t>(other.m_arr[0]) < 0;
         for (int i = 0; i < arr_size() - bytes_to_copy; ++i) {
-            m_arr[i] = is_negative ? std::numeric_limits<base_type>::max() : 0;
+            m_arr[i] = is_negative(other) ? std::numeric_limits<base_type>::max() : 0;
         }
     }
 
@@ -146,8 +150,8 @@ public:
     }
 
 private:
-    constexpr static void shift_right_64(uint64_t& num, int n, bool is_negative) noexcept {
-        if (is_negative) {
+    constexpr static void shift_right_64(uint64_t& num, int n, bool is_neg) noexcept {
+        if (is_neg) {
             num = int64_t(num) >> n;
         } else {
             num >>= n;
@@ -159,8 +163,8 @@ public:
         if (n >= bits) return 0;
         if (n <= 0) return other;
 
-        bool is_negative = static_cast<int64_t>(other.m_arr[0]) < 0;
-        if (!is_negative) {
+        bool is_neg = is_negative(other);
+        if (!is_neg) {
             return shift_right(wide_int<bits,false>(other), n);
         }
 
@@ -171,8 +175,8 @@ public:
             while(num.m_arr[idx] == std::numeric_limits<base_type>::max()) {
                 ++idx;
             }
-            bool preamb = is_negative;
-            base_type prev = is_negative ? std::numeric_limits<base_type>::max() : 0;
+            bool preamb = is_neg;
+            base_type prev = is_neg ? std::numeric_limits<base_type>::max() : 0;
             for (; idx < arr_size(); ++idx) {
                 base_type curr = num.m_arr[idx];
                 shift_right_64(num.m_arr[idx], cur_shift, preamb);
@@ -190,11 +194,70 @@ public:
                 num.m_arr[i] = num.m_arr[i - n/base_bits()];
             }
             for (; i >= 0; --i) {
-                num.m_arr[i] = is_negative ? std::numeric_limits<uint64_t>::max() : 0;
+                num.m_arr[i] = is_neg ? std::numeric_limits<uint64_t>::max() : 0;
             }
         }
         return num;
     }
+
+    template<typename T>
+    constexpr static wide_int<bits,sgn> operator_plus_T(const wide_int<bits,sgn>& num, T other) noexcept {
+        if (other < 0) {
+            return _operator_minus_T(num, -other);
+        } else {
+            return _operator_plus_T(num, other);
+        }
+    }
+
+    template<typename T>
+    constexpr static wide_int<bits,sgn> operator_minus_T(const wide_int<bits,sgn>& num, T other) noexcept {
+        if (other < 0) {
+            return _operator_plus_T(num, -other);
+        } else {
+            return _operator_minus_T(num, other);
+        }
+    }
+
+private:
+    template<typename T>
+    constexpr static wide_int<bits,sgn> _operator_minus_T(const wide_int<bits,sgn>& num, T other) noexcept {
+        wide_int<bits,sgn> res = num;
+
+        bool is_underflow = res.m_arr[arr_size() - 1] < base_type(other);
+        res.m_arr[arr_size() - 1] -= other;
+        if (is_underflow) {
+            --res.m_arr[arr_size() - 2];
+            for (int i = arr_size() - 3; i >= 0; --i) {
+                if (res.m_arr[i + 1] == std::numeric_limits<base_type>::max()) {
+                    --res.m_arr[i];
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return res;
+    }
+
+    template<typename T>
+    constexpr static wide_int<bits,sgn> _operator_plus_T(const wide_int<bits,sgn>& num, T other) noexcept {
+        wide_int<bits,sgn> res = num;
+
+        res.m_arr[arr_size() - 1] += other;
+        if (res.m_arr[arr_size() - 1] < base_type(other)) {
+            ++res.m_arr[arr_size() - 2];
+            for (int i = arr_size() - 3; i >= 0; --i) {
+                if (res.m_arr[i + 1] == 0) {
+                    ++res.m_arr[i];
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return res;
+    }
+public:
 
 //private:
     uint64_t m_arr[arr_size()];
