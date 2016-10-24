@@ -1,5 +1,10 @@
 #pragma once
 
+///////////////////////////////////////////////////////////////
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See at http://www.boost.org/LICENSE_1_0.txt)
+///////////////////////////////////////////////////////////////
+
 #include <stdexcept>
 #include <stdint.h>
 #include <type_traits>
