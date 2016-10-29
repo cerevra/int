@@ -264,6 +264,105 @@ private:
     }
 public:
 
+    constexpr static wide_int<bits,sgn> operator_unary_tilda(const wide_int<bits,sgn>& num) noexcept {
+        wide_int<bits,sgn> res;
+        for (int i = 0; i < arr_size(); ++i) {
+            res.m_arr[i] = ~num.m_arr[i];
+        }
+        return res;
+    }
+
+    constexpr static wide_int<bits,sgn> operator_unary_minus(const wide_int<bits,sgn>& num) noexcept {
+        return operator_plus_T(operator_unary_tilda(num), 1);
+    }
+
+    template<int bits2, bool sgn2>
+    using __keep_size = typename std::enable_if<bits2 <= bits, wide_int<bits,sgn>>::type;
+    template<int bits2, bool sgn2>
+    using __need_increase_size = typename std::enable_if<bits < bits2, wide_int<bits2,sgn>>::type;
+
+    template<int bits2, bool sgn2, class = __keep_size<bits2, sgn2>>
+    constexpr static wide_int<bits,sgn> operator_plus_wide_int(const wide_int<bits,sgn>& num,
+                                                               const wide_int<bits2,sgn2>& other) noexcept {
+        if (is_negative(other)) {
+            return _operator_minus_wide_int(num, operator_unary_minus(wide_int<bits,sgn>(other)));
+        } else {
+            return _operator_plus_wide_int(num, wide_int<bits,sgn>(other));
+        }
+    }
+
+//    template <class T>
+//    using __arithm_not_int_class = typename std::enable_if< std::is_arithmetic<T>::value && !__is_integer_class<T>::value, T&>::type;
+
+    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
+    constexpr static wide_int<bits2, sgn> operator_plus_wide_int(const wide_int<bits,sgn>& num,
+                                                                 const wide_int<bits2,sgn2>& other) noexcept {
+        return wide_int<bits2,sgn>::operator_plus_wide_int(wide_int<bits2,sgn>(num), other);
+    }
+
+    template<int bits2, bool sgn2, class = __keep_size<bits2, sgn2>>
+    constexpr static wide_int<bits,sgn> operator_minus_wide_int(const wide_int<bits,sgn>& num,
+                                                                const wide_int<bits2,sgn2>& other) noexcept {
+        if (is_negative(other)) {
+            return _operator_plus_wide_int(num, operator_unary_minus(wide_int<bits,sgn>(other)));
+        } else {
+            return _operator_minus_wide_int(num, wide_int<bits,sgn>(other));
+        }
+    }
+
+    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
+    constexpr static wide_int<bits2, sgn> operator_minus_wide_int(const wide_int<bits,sgn>& num,
+                                                                 const wide_int<bits2,sgn2>& other) noexcept {
+        return wide_int<bits2,sgn>::operator_minus_wide_int(wide_int<bits2,sgn>(num), other);
+    }
+private:
+    constexpr static wide_int<bits,sgn> _operator_minus_wide_int(const wide_int<bits,sgn>& num,
+                                                                 const wide_int<bits,sgn>& other) noexcept {
+        wide_int<bits,sgn> res = num;
+
+        bool is_underflow = false;
+        for (int idx = arr_size() - 1; idx >= 0; --idx) {
+            base_type& res_i = res.m_arr[idx];
+            const base_type other_i = other.m_arr[idx];
+
+            if (is_underflow) {
+                --res_i;
+                is_underflow = res_i == std::numeric_limits<base_type>::max();
+            }
+
+            if (res_i < other_i) {
+                is_underflow = true;
+            }
+            res_i -= other_i;
+        }
+
+        return res;
+    }
+
+    constexpr static wide_int<bits,sgn> _operator_plus_wide_int(const wide_int<bits,sgn>& num,
+                                                                const wide_int<bits,sgn>& other) noexcept {
+        wide_int<bits,sgn> res = num;
+
+        bool is_overflow = false;
+        for (int idx = arr_size() - 1; idx >= 0; --idx) {
+            base_type& res_i = res.m_arr[idx];
+            const base_type other_i = other.m_arr[idx];
+
+            if (is_overflow) {
+                ++res_i;
+                is_overflow = res_i == 0;
+            }
+
+            res_i += other_i;
+            if (res_i < other_i) {
+                is_overflow = true;
+            }
+        }
+
+        return res;
+    }
+public:
+
 //private:
     uint64_t m_arr[arr_size()];
 };
