@@ -1105,6 +1105,9 @@ void testNativeOperators() {
         assert(a20.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a20.m_arr[7] == 4, "");
+
+    assert(!uint256_t(0), "");
+    assert(uint256_t(1), "");
 }
 
 void testNativeOperatorsAssign() {
