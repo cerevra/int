@@ -1,0 +1,201 @@
+Wide int: 64 standard bits are not enough
+
+
+Introduction:
+
+Current standard provides signed and unsigned int8_t, int16_t, int32_t, int64_t. It is usually enough for every day tasks, but sometimes appears a need in big numbers : for cryptography, IPv6, very big counters etc. Non-standard type __int128 which is provided by gcc and clang illuminates this need. But there is no cross-platform solution without any framework or library working with big numbers: openssl for example. And all (known for me) libraries have complicated interface for subj.
+You can say: "128 bits will be enough" and the next session of C++ standard committee will start with a new draft about int256_t and the next time it will be about int512_t.
+It would be great to solve this problem for any purpose in the library. It is very difficult to do in the language.
+So, community needs a solution, which will include:
+ - any size of int;
+ - simple interface;
+ - good support in the standard library (std::to_string(), for example);
+ - the same behaviour as fundamental integral types.
+
+
+Problem:
+
+Acording to current standard it is impossible to make the same behavior in all aspects.
+Fundamental types are PODs.
+Fundamental types are good for constexpr.
+A default constexpr constructor for class T requires all members to be initialized, but it stops T to be POD. It is a conflict.
+The next problem of constexpr: it is impossible to use assigning to members in constexpr expressions.
+We choosed POD for the constructors and we'll provide constexpr as much as possible.
+
+
+Solution:
+
+As a solution we propose a template with args <int bits, bool is_signed> and with the same behaviour as fundamental integral types.
+Limitations are: arg bits - is power of 2, bits >= 128.
+
+Type:
+template<int bits, bool is_signed>
+class wide_int;
+
+
+Possible implementation:
+
+https://github.com/cerevra/int.git/v2
+
+
+Interface:
+
+template<int bits, bool sgn>
+class wide_int {
+public:
+	// ctors
+    wide_int() = default;
+
+    template<typename T>
+    constexpr wide_int(T other) noexcept;
+
+    template<int bits2, bool sgn2>
+    constexpr wide_int(const wide_int<bits2,sgn2>& other) noexcept;
+
+    constexpr wide_int(const wide_int<bits,sgn>&) = default;
+
+    // Operators
+    template<int bits2, bool sgn2>
+    constexpr wide_int<bits,sgn>& operator=(const wide_int<bits2,sgn2>& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator=(T other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator*=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator/=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator%=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator+=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator-=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator&=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator|=(const T& other) noexcept;
+
+    template<typename T>
+    constexpr wide_int<bits,sgn>& operator^=(const T& other) noexcept;
+};
+
+//// Free functions
+template<int bits, bool sgn>
+std::string to_string(const wide_int<bits,sgn>& n);
+
+template<int bits, bool sgn>
+std::ostream& operator<<(std::ostream& out, const wide_int<bits,sgn>& n);
+
+template <class T> struct __is_wide_int: std::false_type{};
+template <int bits, bool sgn> struct __is_wide_int<wide_int<bits, sgn> >: std::true_type{};
+template <class T>
+using __arithm_not_wide_int = typename std::enable_if< std::is_arithmetic<T>::value && !__is_wide_int<T>::value, T&>::type;
+
+
+// Unary operators
+template<int bits, bool sgn>
+constexpr wide_int<bits,sgn> operator~(const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn>
+constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num) noexcept;
+
+// Binary operators
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator*(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator*(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator/(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator/(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator%(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator%(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator+(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator-(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr bool operator<(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr bool operator<(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr bool operator>(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr bool operator>(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr bool operator<=(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr bool operator<=(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr bool operator>=(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr bool operator>=(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr bool operator==(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr bool operator==(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator&(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator&(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator|(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator|(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr wide_int<bits,sgn> operator^(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<bits,sgn> operator^(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn>
+constexpr wide_int<bits,sgn> operator<<(const wide_int<bits,sgn>& num, int n) noexcept;
+
+template<int bits, bool sgn>
+constexpr wide_int<bits,sgn> operator>>(const wide_int<bits,sgn>& num, int n) noexcept;
+
+
+// Type traits
+template<int bits>
+struct is_signed<wide_int<bits,true>> : std::true_type {};
+
+template<int bits>
+struct is_signed<wide_int<bits,false>> : std::false_type {};
+
