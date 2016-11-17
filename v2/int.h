@@ -91,7 +91,9 @@ private:
     }
     template<int bits2, bool sgn2>
     constexpr void wide_int_from_wide_int(const wide_int<bits2,sgn2>& other) noexcept {
-        int bytes_to_copy = std::min(arr_size(), other.arr_size());
+//        int bytes_to_copy = std::min(arr_size(), other.arr_size());
+        int bytes_to_copy = arr_size() < other.arr_size() ? arr_size()
+                                                          : other.arr_size();
         for (int i = 0; i < bytes_to_copy; ++i) {
             m_arr[arr_size() - 1 - i] = other.m_arr[other.arr_size() - 1 - i];
         }
@@ -104,15 +106,19 @@ public:
     wide_int() = default;
 
     template<typename T>
-    constexpr wide_int(T other) noexcept {
+    constexpr wide_int(T other) noexcept
+        : m_arr {}
+    {
         wide_int_from_T(other);
     }
     template<int bits2, bool sgn2>
-    constexpr wide_int(const wide_int<bits2,sgn2>& other) noexcept {
+    constexpr wide_int(const wide_int<bits2,sgn2>& other) noexcept
+        : m_arr {}
+    {
         wide_int_from_wide_int(other);
     }
 
-    constexpr wide_int(const wide_int<bits,sgn>&) = default;
+    constexpr wide_int(const wide_int<bits,sgn>&) noexcept = default;
 
     template<int bits2, bool sgn2>
     constexpr wide_int<bits,sgn>& operator=(const wide_int<bits2,sgn2>& other) noexcept {
@@ -288,7 +294,7 @@ private:
 public:
 
     constexpr static wide_int<bits,sgn> operator_unary_tilda(const wide_int<bits,sgn>& num) noexcept {
-        wide_int<bits,sgn> res;
+        wide_int<bits,sgn> res {};
         for (int i = 0; i < arr_size(); ++i) {
             res.m_arr[i] = ~num.m_arr[i];
         }
@@ -415,7 +421,7 @@ public:
     template<typename T, class = __keep_size<T>>
     constexpr static bool operator_more(const wide_int<bits,sgn>& num,
                                         const T& other) noexcept {
-        static_assert(sgn == std::is_signed<T>::value, "operator_more: undefined behavior");
+        static_assert(sgn == std::is_signed<T>::value, "operator_more: comparison of integers of different signs");
 
         wide_int<bits,sgn> t = other;
 
@@ -441,7 +447,7 @@ public:
     template<typename T, class = __keep_size<T>>
     constexpr static bool operator_less(const wide_int<bits,sgn>& num,
                                         const T& other) noexcept {
-        static_assert(sgn == std::is_signed<T>::value, "operator_less: undefined behavior");
+        static_assert(sgn == std::is_signed<T>::value, "operator_less: comparison of integers of different signs");
 
         wide_int<bits,sgn> t = other;
 
@@ -567,7 +573,7 @@ public:
     constexpr static wide_int<bits,sgn> operator_slash(const wide_int<bits,sgn>& num,
                                                        const T& other) noexcept {
 
-        wide_int<bits,sgn> quotient, remainder;
+        wide_int<bits,sgn> quotient{}, remainder{};
         divide(num, wide_int<bits,sgn>(other), quotient, remainder);
         return quotient;
     }
@@ -582,7 +588,7 @@ public:
     constexpr static wide_int<bits,sgn> operator_percent(const wide_int<bits,sgn>& num,
                                                          const T& other) noexcept {
 
-        wide_int<bits,sgn> quotient, remainder;
+        wide_int<bits,sgn> quotient{}, remainder{};
         divide(num, wide_int<bits,sgn>(other), quotient, remainder);
         return remainder;
     }
@@ -631,13 +637,35 @@ public:
             ++c;
         }
 
-        while (*c) {
-            if (*c < '0' || *c > '9') {
-                throw std::runtime_error("invalid char from");
-            }
-            res = operator_star(res, 10U);
-            res = operator_plus_T(res, *c - '0');
+        if (*c == '0' && *(c+1) == 'x') { // hex
             ++c;
+            ++c;
+            while (*c) {
+                if (*c >= '0' && *c <= '9') {
+                    res = operator_star(res, 16U);
+                    res = operator_plus_T(res, *c - '0');
+                    ++c;
+                } else if (*c >= 'a' && *c <= 'f') {
+                    res = operator_star(res, 16U);
+                    res = operator_plus_T(res, *c - 'a' + 10U);
+                    ++c;
+                } else if (*c >= 'A' && *c <= 'F') { // tolower must be used, but it is not constexpr
+                    res = operator_star(res, 16U);
+                    res = operator_plus_T(res, *c - 'A' + 10U);
+                    ++c;
+                } else {
+                    throw std::runtime_error("invalid char from");
+                }
+            }
+        } else { // dec
+            while (*c) {
+                if (*c < '0' || *c > '9') {
+                    throw std::runtime_error("invalid char from");
+                }
+                res = operator_star(res, 10U);
+                res = operator_plus_T(res, *c - '0');
+                ++c;
+            }
         }
 
         if (is_neg) {

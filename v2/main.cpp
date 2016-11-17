@@ -1138,6 +1138,42 @@ void testNativeOperatorsAssign() {
     assert(a1 == 0xffffffffffffff00, "");
 }
 
+void testConstexpr() {
+    constexpr uint256_t a0 {};
+    static_assert(a0 == 0, "");
+    static_assert(a0 >= 0U, "");
+    static_assert(a0 <  1U, "");
+    static_assert(a0 <= 1U, "");
+
+    constexpr uint512_t a1 = 7;
+    static_assert(a1 >  0U, "");
+    static_assert(a1 == 7, "");
+    static_assert(a1 + 12 == 19, "");
+    static_assert(12 + a1 == 19, "");
+
+    constexpr int128_t a2 = a1;
+    static_assert(a2 == 7, "");
+    static_assert(a2 - 3 == 4, "");
+    static_assert(11 - a2 == 4, "");
+
+    static_assert(a1/2 == 3, "");
+    static_assert(a2*2 == 14, "");
+    static_assert(a1%2 == 1, "");
+
+    static_assert(~a2 == -8, "");
+    static_assert(-a2 == -7, "");
+
+    static_assert(a1 | 0xff == 7, "");
+    static_assert(a1 & 0xff == 0xff, "");
+    static_assert((a2 ^ 0xff) == 0xf8, "");
+
+    static_assert(0xff_int128 == 255, "");
+    static_assert(255_int128 == 255, "");
+
+    static_assert(a1 >> 1 == 3, "");
+    static_assert(a1 << 1 == 14, "");
+}
+
 void tests() {
     static_assert(std::is_pod<int512_t>::value, "");
     static_assert(std::is_pod<uint512_t>::value, "");
@@ -1164,6 +1200,7 @@ void tests() {
     testFromString();
     testNativeOperators();
     testNativeOperatorsAssign();
+    testConstexpr();
 
     std::cout << "OK" << std::endl;
 }
