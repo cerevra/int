@@ -1172,6 +1172,12 @@ void testConstexpr() {
 
     static_assert(a1 >> 1 == 3, "");
     static_assert(a1 << 1 == 14, "");
+
+    constexpr uint256_t b = std::numeric_limits<uint256_t>::min();
+    static_assert(b == 0, "");
+
+    constexpr int128_t c = std::numeric_limits<int128_t>::min();
+    static_assert(c == 0x80000000000000000000000000000000_uint128, "");
 }
 
 void tests() {

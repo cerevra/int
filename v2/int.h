@@ -22,6 +22,7 @@
  * without express or implied warranty.
  */
 
+#include <cmath>
 #include <stdexcept>
 #include <stdint.h>
 #include <type_traits>
@@ -55,11 +56,13 @@ template<int bits, bool sgn>
 class wide_int;
 
 namespace std {
+// type traits
 template<int bits>
 struct is_signed<wide_int<bits,true>> : std::true_type {};
 
 template<int bits>
 struct is_signed<wide_int<bits,false>> : std::false_type {};
+
 }
 
 template<int bits, bool sgn>
@@ -953,3 +956,83 @@ constexpr int512_t operator "" _int512(const char* n) noexcept { return int512_t
 constexpr uint128_t operator "" _uint128(const char* n) noexcept { return uint128_t::from_str(n); }
 constexpr uint256_t operator "" _uint256(const char* n) noexcept { return uint256_t::from_str(n); }
 constexpr uint512_t operator "" _uint512(const char* n) noexcept { return uint512_t::from_str(n); }
+
+namespace std {
+
+// numeric limits
+template<int bits, bool sgn>
+struct numeric_limits<wide_int<bits,sgn>> {
+    static constexpr bool is_specialized = true;
+    static constexpr bool is_signed = sgn;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = true;
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = true;
+    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr bool has_denorm_loss = false;
+    static constexpr std::float_round_style round_style = std::round_toward_zero;
+    static constexpr bool is_iec559 = false;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = true;
+    static constexpr int digits = bits - (sgn ? 1 : 0);
+    static constexpr int digits10 = digits * 38.2308 /*std::log10(2)*/;
+    static constexpr int max_digits10 = 0;
+    static constexpr int radix = 2;
+    static constexpr int min_exponent = 0;
+    static constexpr int min_exponent10 = 0;
+    static constexpr int max_exponent = 0;
+    static constexpr int max_exponent10 = 0;
+    static constexpr bool traps = true;
+    static constexpr bool tinyness_before = false;
+
+    static constexpr wide_int<bits,sgn> min() noexcept {
+        if (sgn) {
+            wide_int<bits,true> res {};
+            res.m_arr[0] = std::numeric_limits<int64_t>::min();
+            return res;
+        } else {
+            return 0;
+        }
+    }
+
+    static constexpr wide_int<bits,sgn> lowest() noexcept {
+        return min();
+    }
+
+    static constexpr wide_int<bits,sgn> max() noexcept {
+        wide_int<bits,sgn> res {};
+        res.m_arr[0] = sgn ? std::numeric_limits<int64_t>::max()
+                           : std::numeric_limits<uint64_t>::max();
+        for (int i = 1; i < res.arr_size(); ++i) {
+            res.m_arr[i] = std::numeric_limits<uint64_t>::max();
+        }
+        return res;
+    }
+
+    static constexpr wide_int<bits,sgn> epsilon() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<bits,sgn> round_error() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<bits,sgn> infinity() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<bits,sgn> quiet_NaN() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<bits,sgn> signaling_NaN() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<bits,sgn> denorm_min() noexcept {
+        return 0;
+    }
+};
+
+} // namespace std
