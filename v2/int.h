@@ -57,12 +57,27 @@ class wide_int;
 
 namespace std {
 // type traits
+//template<int bits,bool sgn>
+//struct is_integral<wide_int<bits,sgn>> : std::true_type {};
+
+//template<int bits,bool sgn>
+//struct is_arithmetic<wide_int<bits,sgn>> : std::true_type {};
+
+template<int bits,bool sgn>
+struct is_scalar<wide_int<bits,sgn>> : std::true_type {};
+
+template<int bits,bool sgn>
+struct is_compound<wide_int<bits,sgn>> : std::true_type {};
+
+template<int bits>
+struct is_unsigned<wide_int<bits,true>> : std::false_type {};
+template<int bits>
+struct is_unsigned<wide_int<bits,false>> : std::true_type {};
+
 template<int bits>
 struct is_signed<wide_int<bits,true>> : std::true_type {};
-
 template<int bits>
 struct is_signed<wide_int<bits,false>> : std::false_type {};
-
 }
 
 template<int bits, bool sgn>
