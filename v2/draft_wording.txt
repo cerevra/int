@@ -38,7 +38,7 @@ Possible implementation:
 https://github.com/cerevra/int.git/v2
 
 
-Interface:
+Header <wide_int> synopsis:
 
 template<int bits, bool sgn>
 class wide_int {
@@ -56,34 +56,34 @@ public:
 
     // Operators
     template<int bits2, bool sgn2>
-    constexpr wide_int<bits,sgn>& operator=(const wide_int<bits2,sgn2>& other) noexcept;
+    constexpr see-below operator=(const wide_int<bits2,sgn2>& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator=(T other) noexcept;
+    constexpr see-below operator=(T other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator*=(const T& other) noexcept;
+    constexpr see-below operator*=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator/=(const T& other) noexcept;
+    constexpr see-below operator/=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator%=(const T& other) noexcept;
+    constexpr see-below operator%=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator+=(const T& other) noexcept;
+    constexpr see-below operator+=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator-=(const T& other) noexcept;
+    constexpr see-below operator-=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator&=(const T& other) noexcept;
+    constexpr see-below operator&=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator|=(const T& other) noexcept;
+    constexpr see-below operator|=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator^=(const T& other) noexcept;
+    constexpr see-below operator^=(const T& other) noexcept;
 };
 
 //// Free functions
@@ -93,109 +93,95 @@ std::string to_string(const wide_int<bits,sgn>& n);
 template<int bits, bool sgn>
 std::ostream& operator<<(std::ostream& out, const wide_int<bits,sgn>& n);
 
-template <class T> struct __is_wide_int: std::false_type{};
-template <int bits, bool sgn> struct __is_wide_int<wide_int<bits, sgn> >: std::true_type{};
-template <class T>
-using __arithm_not_wide_int = typename std::enable_if< std::is_arithmetic<T>::value && !__is_wide_int<T>::value, T&>::type;
-
-
 // Unary operators
 template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator~(const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator~(const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator-(const wide_int<bits,sgn>& num) noexcept;
 
 // Binary operators
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator*(const wide_int<bits,sgn>& num, const T& other) noexcept;
-
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator*(const T& other, const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator*(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator/(const wide_int<bits,sgn>& num, const T& other) noexcept;
-
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator/(const T& other, const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator*(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator%(const wide_int<bits,sgn>& num, const T& other) noexcept;
-
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator%(const T& other, const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator/(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>& num, const T& other) noexcept;
-
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator+(const T& other, const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator/(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num, const T& other) noexcept;
+constexpr see-below operator%(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator-(const T& other, const wide_int<bits,sgn>& num) noexcept;
+template<int bits, bool sgn, typename T>
+constexpr see-below operator%(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr see-below operator+(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr see-below operator+(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr see-below operator-(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr see-below operator-(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
 constexpr bool operator<(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int bits, bool sgn, typename T>
 constexpr bool operator<(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
 constexpr bool operator>(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int bits, bool sgn, typename T>
 constexpr bool operator>(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
 constexpr bool operator<=(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int bits, bool sgn, typename T>
 constexpr bool operator<=(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
 constexpr bool operator>=(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int bits, bool sgn, typename T>
 constexpr bool operator>=(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
 constexpr bool operator==(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int bits, bool sgn, typename T>
 constexpr bool operator==(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator&(const wide_int<bits,sgn>& num, const T& other) noexcept;
-
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator&(const T& other, const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator&(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator|(const wide_int<bits,sgn>& num, const T& other) noexcept;
-
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator|(const T& other, const wide_int<bits,sgn>& num) noexcept;
+constexpr see-below operator&(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator^(const wide_int<bits,sgn>& num, const T& other) noexcept;
+constexpr see-below operator|(const wide_int<bits,sgn>& num, const T& other) noexcept;
 
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator^(const T& other, const wide_int<bits,sgn>& num) noexcept;
+template<int bits, bool sgn, typename T>
+constexpr see-below operator|(const T& other, const wide_int<bits,sgn>& num) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr see-below operator^(const wide_int<bits,sgn>& num, const T& other) noexcept;
+
+template<int bits, bool sgn, typename T>
+constexpr see-below operator^(const T& other, const wide_int<bits,sgn>& num) noexcept;
 
 template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator<<(const wide_int<bits,sgn>& num, int n) noexcept;
+constexpr see-below operator<<(const wide_int<bits,sgn>& num, int n) noexcept;
 
 template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator>>(const wide_int<bits,sgn>& num, int n) noexcept;
-
-
-// Type traits
-template<int bits>
-struct is_signed<wide_int<bits,true>> : std::true_type {};
-
-template<int bits>
-struct is_signed<wide_int<bits,false>> : std::false_type {};
+constexpr see-below operator>>(const wide_int<bits,sgn>& num, int n) noexcept;
 
