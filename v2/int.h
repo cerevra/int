@@ -626,6 +626,10 @@ public:
         return static_cast<T>(m_arr[arr_size() - 1]);
     }
 
+    constexpr explicit operator bool () const noexcept {
+        return !operator_eq(*this, 0);
+    }
+
     // ^
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<bits,sgn> operator_circumflex(const wide_int<bits,sgn>& num,
