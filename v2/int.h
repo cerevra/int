@@ -136,8 +136,6 @@ public:
         wide_int_from_wide_int(other);
     }
 
-    constexpr wide_int(const wide_int<bits,sgn>&) noexcept = default;
-
     template<int bits2, bool sgn2>
     constexpr wide_int<bits,sgn>& operator=(const wide_int<bits2,sgn2>& other) noexcept {
         wide_int_from_wide_int(other);
@@ -806,8 +804,8 @@ constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num) noexcept {
 
 // Binary operators
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator*(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator*(const wide_int<bits,sgn>& num,
+                         const T& other) noexcept {
     return wide_int<bits,sgn>::operator_star(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -817,8 +815,7 @@ constexpr wide_int<bits,sgn> operator*(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator/(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator/(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_slash(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -828,8 +825,7 @@ constexpr wide_int<bits,sgn> operator/(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator%(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator%(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_percent(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -839,8 +835,7 @@ constexpr wide_int<bits,sgn> operator%(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator+(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_plus(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -850,8 +845,7 @@ constexpr wide_int<bits,sgn> operator+(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator-(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_minus(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -920,8 +914,7 @@ constexpr bool operator==(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator&(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator&(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_amp(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -931,8 +924,7 @@ constexpr wide_int<bits,sgn> operator&(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator|(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator|(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_pipe(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
@@ -942,8 +934,7 @@ constexpr wide_int<bits,sgn> operator|(const T& other,
 }
 
 template<int bits, bool sgn, typename T>
-constexpr wide_int<bits,sgn> operator^(const wide_int<bits,sgn>& num,
-                                       const T& other) noexcept {
+constexpr auto operator^(const wide_int<bits,sgn>& num, const T& other) noexcept {
     return wide_int<bits,sgn>::operator_circumflex(num, other);
 }
 template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
