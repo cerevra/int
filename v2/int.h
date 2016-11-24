@@ -439,7 +439,8 @@ public:
     template<typename T, class = __keep_size<T>>
     constexpr static bool operator_more(const wide_int<bits,sgn>& num,
                                         const T& other) noexcept {
-        static_assert(sgn == std::is_signed<T>::value, "operator_more: comparison of integers of different signs");
+//        static_assert(sgn == std::is_signed<T>::value,
+//                      "warning: operator_more: comparison of integers of different signs");
 
         wide_int<bits,sgn> t = other;
 
@@ -465,7 +466,8 @@ public:
     template<typename T, class = __keep_size<T>>
     constexpr static bool operator_less(const wide_int<bits,sgn>& num,
                                         const T& other) noexcept {
-        static_assert(sgn == std::is_signed<T>::value, "operator_less: comparison of integers of different signs");
+//        static_assert(sgn == std::is_signed<T>::value,
+//                      "warning: operator_less: comparison of integers of different signs");
 
         wide_int<bits,sgn> t = other;
 
