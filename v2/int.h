@@ -801,6 +801,11 @@ constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num) noexcept {
     return wide_int<bits,sgn>::operator_unary_minus(num);
 }
 
+template<int bits, bool sgn>
+constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>& num) noexcept {
+    return num;
+}
+
 
 // Binary operators
 template<int bits, bool sgn, typename T>

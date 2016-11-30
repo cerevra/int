@@ -4,6 +4,7 @@ template<int bits, bool sgn> class wide_int;
 
 template<int bits, bool sgn> constexpr wide_int<bits,sgn> operator~(const wide_int<bits,sgn>&) noexcept;
 template<int bits, bool sgn> constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>&) noexcept;
+template<int bits, bool sgn> constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>&) noexcept;
 
 template<int bits, bool sgn, int bits2, bool sgn2>
 constexpr wide_int<bits,sgn> operator*(const wide_int<bits,sgn>&, const wide_int<bits2,sgn2>&) noexcept;
@@ -349,6 +350,7 @@ constexpr bool operator==(const T&, const wide_int<bits,sgn>&) noexcept;
 3.3. wide_int unary operators
 template<int bits, bool sgn> constexpr wide_int<bits,sgn> operator~(const wide_int<bits,sgn>&) noexcept;
 template<int bits, bool sgn> constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>&) noexcept;
+template<int bits, bool sgn> constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>&) noexcept;
 
 3.4. wide_int definitions
 using int128_t = wide_int<128,true>;

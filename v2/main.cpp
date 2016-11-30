@@ -1108,6 +1108,13 @@ void testNativeOperators() {
 
     assert(!uint256_t(0), "");
     assert(uint256_t(1), "");
+
+    auto a21 = +uint512_t(0x1);
+    assert(typeid(uint512_t) == typeid(a21), "");
+    for (int idx = 0; idx < 7; ++idx) {
+        assert(a21.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(a21.m_arr[7] == 1, "");
 }
 
 void testNativeOperatorsAssign() {
