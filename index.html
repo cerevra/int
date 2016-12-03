@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+        <title>A Proposal to add wide_int Class</title>
+        <meta content="http://schemas.microsoft.com/intellisense/ie5" name="vs_targetSchema">
+        <meta http-equiv="Content-Language" content="en-us">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <style type="text/css">
+            .addition { color: green; }
+            .right { float:right; }
+            pre { line-height: 1.2; font-size: 10pt; margin-top: 25px;}
+            .desc { margin-left: 35px; margin-top: 10px; padding:0; white-space: normal; }
+            body {max-width: 1024px; margin-left: 25px;}
+            .cppkeyword { color: blue; }
+            .cppcomment { color: green; }
+            .cppcomment > .cppkeyword{ color: green; }
+            .cpptext { color: #2E8B57; }
+        </style>
+    </head>
+    <body bgcolor="#ffffff">
+        <address>Document number: </address>
+        <address>Project: Programming Language C++</address>
+        <address>Audience: Library Evolution Working Group</address>
+        <address>&nbsp;</address>
+        <address>Igor Klevanets &lt;<a href="mailto:cerevra@yandex.ru">cerevra@yandex.ru</a>&gt;, &lt;<a href="mailto:cerevra@yandex-team.ru">cerevra@yandex-team.ru</a>&gt;</address>
+        <address>Antony Polukhin &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;</address>
+        <address>&nbsp;</address>
+        <address>Date: 2016-12-03</address>
+        <h1>A Proposal to add wide_int Template Class</h1>
+
+        <h2>I. Introduction and Motivation</h2>
+        <p>Current standard provides signed and unsigned int8_t, int16_t, int32_t, int64_t. It is usually enough for every day tasks, but sometimes appears a need in big numbers: for cryptography, IPv6, very big counters etc. Non-standard type __int128 which is provided by gcc and clang illuminates this need. But there is no cross-platform solution without any framework or library working with big numbers: openssl for example. And all (known for me) libraries have complicated interface for subj.</p>
+        <p>You can say: "128 bits will be enough" and the next session of C++ standard committee will start with a new draft about int256_t and the next time it will be about int512_t.</p>
+        <p>It would be great to solve this problem for any purpose in the library. It is very difficult to do in the language. So, community needs a solution, which will include:
+            <ul>
+                <li>Any size of int.</li>
+                <li>Simple interface.</li>
+                <li>Good support in the standard library (std::to_string(), for example).</li>
+                <li>The same behaviour as fundamental integral types.</li>
+            </ul>
+        </p>
+        <p>A proof of concept implementation available at: <a href="https://github.com/cerevra/int.git/v2">wide_int</a>.
+        </p>
+
+        <h2>II. Design Decisions</h2>
+        <h3>A. Template class</h3>
+            <p>Solution should be template class with args <code>&lt;int bits, bool is_signed&gt;</code> and with the same behaviour as fundamental integral types.</p>
+        <h3>B. Limitations</h3>
+            <p>Template argument <code>bits</code> is power of 2 and <code>bits >= 128.</code></p>
+        <h3>C. Type triats</h3>
+            <p>It must be POD. It must use standard layout</p>
+        <h3>D. Usage is same as for built-in types</h3>
+            <pre>[Example:
+    int256_t a = 13;
+    a += 0xFFFFFFFFFFFFFFFF;
+    a *= 2;
+    a -= 12_int128;
+    if (a < 0) {
+        exit(-1);
+    }
+]</pre>
+
+        <h2>III. Proposed wording</h2>
+
+<h3>1. Header &lt;wide_int&gt; <span class="right">[wide_int]</span></h3>
+<pre>namespace std {
+template&lt;int bits, bool sgn&gt; class wide_int;
+
+template&lt;int bits, bool sgn&gt; constexpr wide_int&lt;bits,sgn&gt; operator~(const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn&gt; constexpr wide_int&lt;bits,sgn&gt; operator-(const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn&gt; constexpr wide_int&lt;bits,sgn&gt; operator+(const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator*(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator*(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator*(const T&amp;amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator/(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator/(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator/(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator%(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator%(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator%(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator+(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator+(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator+(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator-(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator-(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator-(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator&amp;(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator&amp;(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator&amp;(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator|(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator|(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator|(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator^(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator^(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator^(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&lt;(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&gt;(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&lt;=(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;=(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;=(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&gt;=(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;=(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;=(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator==(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator==(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator==(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator&lt;&lt;(const wide_int&lt;bits,sgn&gt;&amp;, int) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator&gt;&gt;(const wide_int&lt;bits,sgn&gt;&amp;, int) noexcept;
+
+
+using int128_t = wide_int&lt;128,true&gt;;
+using uint128_t = wide_int&lt;128,false&gt;;
+
+using int256_t = wide_int&lt;256,true&gt;;
+using uint256_t = wide_int&lt;256,false&gt;;
+
+using int512_t = wide_int&lt;512,true&gt;;
+using uint512_t = wide_int&lt;512,false&gt;;
+
+constexpr int128_t operator &quot;&quot; _int128(const char*) noexcept;
+constexpr int256_t operator &quot;&quot; _int256(const char*) noexcept;
+constexpr int512_t operator &quot;&quot; _int512(const char*) noexcept;
+constexpr uint128_t operator &quot;&quot; _uint128(const char*) noexcept;
+constexpr uint256_t operator &quot;&quot; _uint256(const char*) noexcept;
+constexpr uint512_t operator &quot;&quot; _uint512(const char*) noexcept;
+
+
+template&lt;int bits, bool sgn&gt; std::string to_string(const wide_int&lt;bits,sgn&gt;&amp;);
+template&lt;int bits, bool sgn&gt; std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const wide_int&lt;bits,sgn&gt;&amp;);
+
+template&lt;int bits, bool sgn&gt; struct numeric_limits&lt;wide_int&lt;bits,sgn&gt;&gt;;
+
+template&lt;int bits,bool sgn&gt; struct is_scalar&lt;wide_int&lt;bits,sgn&gt;&gt;;
+template&lt;int bits,bool sgn&gt; struct is_compound&lt;wide_int&lt;bits,sgn&gt;&gt;;
+template&lt;int bits,bool sgn&gt; struct is_unsigned&lt;wide_int&lt;bits,sgn&gt;&gt;;
+template&lt;int bits,bool sgn&gt; struct is_signed&lt;wide_int&lt;bits,sgn&gt;&gt;;
+}
+</pre>
+
+<h3>1.1. Template class &lt;wide_int&gt; overview<span class="right">[wide_int.wide_int]</span></h3>
+<pre>namespace std {
+template&lt;int bits, bool sgn&gt;
+class wide_int {
+public:
+    // construct
+    wide_int() = default;
+    template&lt;typename T&gt; constexpr wide_int(T) noexcept;
+    template&lt;int bits2, bool sgn2&gt; constexpr wide_int(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    // assignment
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator=(T) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    // compound assignment
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator*=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator*=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator/=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator/=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator%=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator%=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator+=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator+=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator-=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator-=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator&amp;=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator&amp;=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator|=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator|=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    template&lt;typename T&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator^=(const T&amp;) noexcept;
+    template&lt;int bits2, bool sgn2&gt;
+    constexpr wide_int&lt;bits,sgn&gt;&amp; operator^=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+    // casts
+    template &lt;class T&gt; constexpr operator T () const noexcept;
+    constexpr explicit operator bool () const noexcept;
+};
+}</pre>
+
+<h4>1.1.1. &lt;wide_int&gt; constructors <span class="right">[wide_int.wide_int.wide_int]</span></h4>
+<pre>wide_int() = default; // (1)
+template&lt;typename T&gt; constexpr wide_int(T) noexcept; // (2)
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept; // (3)
+</pre>
+<p>(1) Constructs an object with undefined value</p>
+<p>(2) Constructs an object from T, where T is built-in arithmetic types</p>
+<p>(3) Constructs an object from other wide_int. Can be used as copy-constructor</p>
+
+<h4>1.1.2. &lt;wide_int&gt; asignments <span class="right">[wide_int.wide_int.operators]</span></h4>
+<pre>template&lt;typename T&gt;
+constexpr wide_int&lt;bits,sgn&gt;&amp; operator=(T other) noexcept;
+template&lt;int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt;&amp; operator=(const wide_int&lt;bits2,sgn2&gt;&amp; other) noexcept;
+</pre>
+<p>Copy asignment. Assignes value of other to *this. Postcondition: <code>other == *this</code></p>
+
+<pre>
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator*=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator/=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator%=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator+=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator-=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator&amp;=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator|=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits2, bool sgn2&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator^=(const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator*=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator/=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator%=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator+=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator-=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator&amp;=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator|=(const T&amp;) noexcept;
+template&lt;typename T&gt; constexpr wide_int&lt;bits,sgn&gt;&amp; operator^=(const T&amp;) noexcept;
+</pre>
+<p>Behavior of these operators is similar to operators for built-in arithmetic types</p>
+
+<h4>1.1.3. &lt;wide_int&gt; casts <span class="right">[wide_int.wide_int.casts]</span></h4>
+<pre>template &lt;class T&gt; constexpr operator T () const noexcept;
+constexpr explicit operator bool () const noexcept;
+</pre>
+<p>These cast are acceptable only for built-in types</p>
+
+<h3>1.2. Free functions <span class="right">[wide_int.free]</span></h3>
+<h4>1.2.1. Unary operators <span class="right">[wide_int.free.unary]</span></h4>
+<pre>template&lt;int bits, bool sgn&gt; constexpr wide_int&lt;bits,sgn&gt; operator~(const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn&gt; constexpr wide_int&lt;bits,sgn&gt; operator-(const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn&gt; constexpr wide_int&lt;bits,sgn&gt; operator+(const wide_int&lt;bits,sgn&gt;&amp;) noexcept;</pre>
+
+<h4>1.2.2. Binary arithmetic operators <span class="right">[wide_int.free.binary_arithmetic]</span></h4>
+<pre>template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator*(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator*(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator*(const T&amp;amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator/(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator/(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator/(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator%(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator%(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator%(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator+(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator+(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator+(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator-(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator-(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator-(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+</pre>
+
+<h4>1.2.3. Binary logic operators <span class="right">[wide_int.free.binary_logic]</span></h4>
+<pre>template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&lt;(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&gt;(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&lt;=(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;=(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&lt;=(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator&gt;=(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;=(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator&gt;=(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr bool operator==(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator==(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr bool operator==(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+</pre>
+
+<h4>1.2.4. Etc binary operators <span class="right">[wide_int.free.etc]</span></h4>
+<pre>template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator&amp;(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator&amp;(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator&amp;(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator|(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator|(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator|(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, int bits2, bool sgn2&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator^(const wide_int&lt;bits,sgn&gt;&amp;, const wide_int&lt;bits2,sgn2&gt;&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator^(const wide_int&lt;bits,sgn&gt;&amp;, const T&amp;) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr unspecified operator^(const T&amp;, const wide_int&lt;bits,sgn&gt;&amp;) noexcept;
+
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator&lt;&lt;(const wide_int&lt;bits,sgn&gt;&amp;, int) noexcept;
+template&lt;int bits, bool sgn, typename T&gt;
+constexpr wide_int&lt;bits,sgn&gt; operator&gt;&gt;(const wide_int&lt;bits,sgn&gt;&amp;, int) noexcept;
+</pre>
+        <script type="text/javascript">
+            function colorize_texts(texts) {
+                for (var i = 0; i < texts.length; ++i) {
+                    var text = texts[i].innerHTML;
+                    text = text.replace(/namespace|enum|void|constexpr|noexcept|bool|template|class|struct|auto|const|typename|explicit|public|private|operator|#include|char|typedef|static_assert|static_cast|static/g,"<span class='cppkeyword'>$&</span>");
+                    text = text.replace(/\/\/[\s\S]+?\n/g,"<span class='cppcomment'>$&</span>");
+                    text = text.replace(/\"[\s\S]+?\"/g,"<span class='cpptext'>$&</span>");
+                    texts[i].innerHTML = text;
+                }
+            }
+
+            colorize_texts(document.getElementsByTagName("pre"));
+            colorize_texts(document.getElementsByTagName("code"));
+        </script>
+</body></html>
