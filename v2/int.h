@@ -86,6 +86,7 @@ public:
     static_assert(Bits >= 128, "");
     static_assert(is_power_of_two(Bits), "");
     using base_type = uint64_t;
+    using signed_base_type = int64_t;
     constexpr static int arr_size() noexcept {
         return Bits / 64;
     }
@@ -95,7 +96,7 @@ public:
 
     template<size_t B, bool S>
     constexpr static bool is_negative(const wide_int<B,S>& n) noexcept {
-        return S && static_cast<int64_t>(n.m_arr[0]) < 0;
+        return S && static_cast<signed_base_type>(n.m_arr[0]) < 0;
     }
 
 private:
@@ -103,9 +104,9 @@ private:
     constexpr void wide_int_from_T(T other) noexcept {
         int i = 0;
         for ( ; i < arr_size() - 1; ++i) {
-            m_arr[i] = other < 0 ? std::numeric_limits<uint64_t>::max() : 0;
+            m_arr[i] = other < 0 ? std::numeric_limits<base_type>::max() : 0;
         }
-        m_arr[i] = static_cast<uint64_t>(other);
+        m_arr[i] = static_cast<base_type>(other);
     }
     template<size_t Bits2, bool Sgn2>
     constexpr void wide_int_from_wide_int(const wide_int<Bits2,Sgn2>& other) noexcept {
@@ -209,9 +210,9 @@ public:
     }
 
 private:
-    constexpr static void shift_right_64(uint64_t& num, int n, bool is_neg) noexcept {
+    constexpr static void shift_right_64(base_type& num, int n, bool is_neg) noexcept {
         if (is_neg) {
-            num = int64_t(num) >> n;
+            num = signed_base_type(num) >> n;
         } else {
             num >>= n;
         }
@@ -253,7 +254,7 @@ public:
                 num.m_arr[i] = num.m_arr[i - n/base_bits()];
             }
             for (; i >= 0; --i) {
-                num.m_arr[i] = is_neg ? std::numeric_limits<uint64_t>::max() : 0;
+                num.m_arr[i] = is_neg ? std::numeric_limits<base_type>::max() : 0;
             }
         }
         return num;
@@ -746,7 +747,7 @@ public:
     }
 
 //private:
-    uint64_t m_arr[arr_size()];
+    base_type m_arr[arr_size()];
 };
 
 namespace std {
@@ -1006,7 +1007,7 @@ struct numeric_limits<wide_int<Bits,Sgn>> {
     static constexpr wide_int<Bits,Sgn> min() noexcept {
         if (Sgn) {
             wide_int<Bits,true> res {};
-            res.m_arr[0] = std::numeric_limits<int64_t>::min();
+            res.m_arr[0] = std::numeric_limits<typename wide_int<Bits,Sgn>::signed_base_type>::min();
             return res;
         } else {
             return 0;
@@ -1019,10 +1020,10 @@ struct numeric_limits<wide_int<Bits,Sgn>> {
 
     static constexpr wide_int<Bits,Sgn> max() noexcept {
         wide_int<Bits,Sgn> res {};
-        res.m_arr[0] = Sgn ? std::numeric_limits<int64_t>::max()
-                           : std::numeric_limits<uint64_t>::max();
+        res.m_arr[0] = Sgn ? std::numeric_limits<typename wide_int<Bits,Sgn>::signed_base_type>::max()
+                           : std::numeric_limits<typename wide_int<Bits,Sgn>::base_type>::max();
         for (int i = 1; i < res.arr_size(); ++i) {
-            res.m_arr[i] = std::numeric_limits<uint64_t>::max();
+            res.m_arr[i] = std::numeric_limits<typename wide_int<Bits,Sgn>::base_type>::max();
         }
         return res;
     }
