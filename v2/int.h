@@ -52,42 +52,42 @@ constexpr inline bool is_power_of_two(uint16_t bits) {
            bits == 0x8000;
 }
 
-template<int bits, bool sgn>
+template<int Bits, bool Sgn>
 class wide_int;
 
 namespace std {
 // type traits
-//template<int bits,bool sgn>
-//struct is_integral<wide_int<bits,sgn>> : std::true_type {};
+//template<int Bits,bool Sgn>
+//struct is_integral<wide_int<Bits,Sgn>> : std::true_type {};
 
-//template<int bits,bool sgn>
-//struct is_arithmetic<wide_int<bits,sgn>> : std::true_type {};
+//template<int Bits,bool Sgn>
+//struct is_arithmetic<wide_int<Bits,Sgn>> : std::true_type {};
 
-template<int bits,bool sgn>
-struct is_scalar<wide_int<bits,sgn>> : std::true_type {};
+template<int Bits,bool Sgn>
+struct is_scalar<wide_int<Bits,Sgn>> : std::true_type {};
 
-template<int bits,bool sgn>
-struct is_compound<wide_int<bits,sgn>> : std::true_type {};
+template<int Bits,bool Sgn>
+struct is_compound<wide_int<Bits,Sgn>> : std::true_type {};
 
-template<int bits>
-struct is_unsigned<wide_int<bits,true>> : std::false_type {};
-template<int bits>
-struct is_unsigned<wide_int<bits,false>> : std::true_type {};
+template<int Bits>
+struct is_unsigned<wide_int<Bits,true>> : std::false_type {};
+template<int Bits>
+struct is_unsigned<wide_int<Bits,false>> : std::true_type {};
 
-template<int bits>
-struct is_signed<wide_int<bits,true>> : std::true_type {};
-template<int bits>
-struct is_signed<wide_int<bits,false>> : std::false_type {};
+template<int Bits>
+struct is_signed<wide_int<Bits,true>> : std::true_type {};
+template<int Bits>
+struct is_signed<wide_int<Bits,false>> : std::false_type {};
 }
 
-template<int bits, bool sgn>
+template<int Bits, bool Sgn>
 class wide_int {
 public:
-    static_assert(bits >= 128, "");
-    static_assert(is_power_of_two(bits), "");
+    static_assert(Bits >= 128, "");
+    static_assert(is_power_of_two(Bits), "");
     using base_type = uint64_t;
     constexpr static int arr_size() noexcept {
-        return bits / 64;
+        return Bits / 64;
     }
     constexpr static int base_bits() noexcept {
         return sizeof(base_type)*8;
@@ -107,8 +107,8 @@ private:
         }
         m_arr[i] = static_cast<uint64_t>(other);
     }
-    template<int bits2, bool sgn2>
-    constexpr void wide_int_from_wide_int(const wide_int<bits2,sgn2>& other) noexcept {
+    template<int Bits2, bool Sgn2>
+    constexpr void wide_int_from_wide_int(const wide_int<Bits2,Sgn2>& other) noexcept {
 //        int bytes_to_copy = std::min(arr_size(), other.arr_size());
         int bytes_to_copy = arr_size() < other.arr_size() ? arr_size()
                                                           : other.arr_size();
@@ -129,30 +129,30 @@ public:
     {
         wide_int_from_T(other);
     }
-    template<int bits2, bool sgn2>
-    constexpr wide_int(const wide_int<bits2,sgn2>& other) noexcept
+    template<int Bits2, bool Sgn2>
+    constexpr wide_int(const wide_int<Bits2,Sgn2>& other) noexcept
         : m_arr {}
     {
         wide_int_from_wide_int(other);
     }
 
-    template<int bits2, bool sgn2>
-    constexpr wide_int<bits,sgn>& operator=(const wide_int<bits2,sgn2>& other) noexcept {
+    template<int Bits2, bool Sgn2>
+    constexpr wide_int<Bits,Sgn>& operator=(const wide_int<Bits2,Sgn2>& other) noexcept {
         wide_int_from_wide_int(other);
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator=(T other) noexcept {
+    constexpr wide_int<Bits,Sgn>& operator=(T other) noexcept {
         wide_int_from_T(other);
         return *this;
     }
 
-    constexpr static wide_int<bits,false> shift_left(const wide_int<bits,false>& other, int n) noexcept {
-        if (n >= bits) return 0;
+    constexpr static wide_int<Bits,false> shift_left(const wide_int<Bits,false>& other, int n) noexcept {
+        if (n >= Bits) return 0;
         if (n <= 0) return other;
 
-        wide_int<bits,sgn> num = other;
+        wide_int<Bits,Sgn> num = other;
         int cur_shift = n % base_bits();
         if (cur_shift) {
             num.m_arr[0] <<= cur_shift;
@@ -174,19 +174,19 @@ public:
         return num;
     }
 
-    constexpr static wide_int<bits,true> shift_left(const wide_int<bits,true>& other, int n) {
+    constexpr static wide_int<Bits,true> shift_left(const wide_int<Bits,true>& other, int n) {
 //        static_assert(is_negative(other), "shift left for negative numbers is underfined!");
         if (is_negative(other)) {
             throw std::runtime_error("shift left for negative numbers is underfined!");
         }
-        return wide_int<bits,true>(shift_left(wide_int<bits,false>(other), n));
+        return wide_int<Bits,true>(shift_left(wide_int<Bits,false>(other), n));
     }
 
-    constexpr static wide_int<bits,false> shift_right(const wide_int<bits,false>& other, int n) noexcept {
-        if (n >= bits) return 0;
+    constexpr static wide_int<Bits,false> shift_right(const wide_int<Bits,false>& other, int n) noexcept {
+        if (n >= Bits) return 0;
         if (n <= 0) return other;
 
-        wide_int<bits,sgn> num = other;
+        wide_int<Bits,Sgn> num = other;
         int cur_shift = n % base_bits();
         if (cur_shift) {
             num.m_arr[arr_size() - 1] >>= cur_shift;
@@ -218,16 +218,16 @@ private:
     }
 public:
 
-    constexpr static wide_int<bits,true> shift_right(const wide_int<bits,true>& other, int n) noexcept {
-        if (n >= bits) return 0;
+    constexpr static wide_int<Bits,true> shift_right(const wide_int<Bits,true>& other, int n) noexcept {
+        if (n >= Bits) return 0;
         if (n <= 0) return other;
 
         bool is_neg = is_negative(other);
         if (!is_neg) {
-            return shift_right(wide_int<bits,false>(other), n);
+            return shift_right(wide_int<Bits,false>(other), n);
         }
 
-        wide_int<bits,sgn> num = other;
+        wide_int<Bits,Sgn> num = other;
         int cur_shift = n % base_bits();
         if (cur_shift) {
             int idx = 0;
@@ -260,7 +260,7 @@ public:
     }
 
     template<typename T>
-    constexpr static wide_int<bits,sgn> operator_plus_T(const wide_int<bits,sgn>& num, T other) noexcept {
+    constexpr static wide_int<Bits,Sgn> operator_plus_T(const wide_int<Bits,Sgn>& num, T other) noexcept {
         if (other < 0) {
             return _operator_minus_T(num, -other);
         } else {
@@ -270,8 +270,8 @@ public:
 
 private:
     template<typename T>
-    constexpr static wide_int<bits,sgn> _operator_minus_T(const wide_int<bits,sgn>& num, T other) noexcept {
-        wide_int<bits,sgn> res = num;
+    constexpr static wide_int<Bits,Sgn> _operator_minus_T(const wide_int<Bits,Sgn>& num, T other) noexcept {
+        wide_int<Bits,Sgn> res = num;
 
         bool is_underflow = res.m_arr[arr_size() - 1] < base_type(other);
         res.m_arr[arr_size() - 1] -= other;
@@ -290,8 +290,8 @@ private:
     }
 
     template<typename T>
-    constexpr static wide_int<bits,sgn> _operator_plus_T(const wide_int<bits,sgn>& num, T other) noexcept {
-        wide_int<bits,sgn> res = num;
+    constexpr static wide_int<Bits,Sgn> _operator_plus_T(const wide_int<Bits,Sgn>& num, T other) noexcept {
+        wide_int<Bits,Sgn> res = num;
 
         res.m_arr[arr_size() - 1] += other;
         if (res.m_arr[arr_size() - 1] < base_type(other)) {
@@ -309,27 +309,27 @@ private:
     }
 public:
 
-    constexpr static wide_int<bits,sgn> operator_unary_tilda(const wide_int<bits,sgn>& num) noexcept {
-        wide_int<bits,sgn> res {};
+    constexpr static wide_int<Bits,Sgn> operator_unary_tilda(const wide_int<Bits,Sgn>& num) noexcept {
+        wide_int<Bits,Sgn> res {};
         for (int i = 0; i < arr_size(); ++i) {
             res.m_arr[i] = ~num.m_arr[i];
         }
         return res;
     }
 
-    constexpr static wide_int<bits,sgn> operator_unary_minus(const wide_int<bits,sgn>& num) noexcept {
+    constexpr static wide_int<Bits,Sgn> operator_unary_minus(const wide_int<Bits,Sgn>& num) noexcept {
         return operator_plus_T(operator_unary_tilda(num), 1);
     }
 
     template<typename T>
-    using __keep_size = typename std::enable_if<sizeof(T) <= bits, wide_int<bits,sgn>>::type;
-    template<int bits2, bool sgn2>
-    using __need_increase_size = typename std::enable_if<bits < bits2, wide_int<bits2,sgn>>::type;
+    using __keep_size = typename std::enable_if<sizeof(T) <= Bits, wide_int<Bits,Sgn>>::type;
+    template<int Bits2, bool Sgn2>
+    using __need_increase_size = typename std::enable_if<Bits < Bits2, wide_int<Bits2,Sgn>>::type;
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_plus(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_plus(const wide_int<Bits,Sgn>& num,
                                                       const T& other) noexcept {
-        wide_int<bits,sgn> t = other;
+        wide_int<Bits,Sgn> t = other;
         if (is_negative(t)) {
             return _operator_minus_wide_int(num, operator_unary_minus(t));
         } else {
@@ -337,16 +337,16 @@ public:
         }
     }
 
-    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
-    constexpr static wide_int<bits2, sgn> operator_plus(const wide_int<bits,sgn>& num,
-                                                        const wide_int<bits2,sgn2>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_plus(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, bool Sgn2, class = __need_increase_size<Bits2, Sgn2>>
+    constexpr static wide_int<Bits2, Sgn> operator_plus(const wide_int<Bits,Sgn>& num,
+                                                        const wide_int<Bits2,Sgn2>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_plus(wide_int<Bits2,Sgn>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_minus(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_minus(const wide_int<Bits,Sgn>& num,
                                                        const T& other) noexcept {
-        wide_int<bits,sgn> t = other;
+        wide_int<Bits,Sgn> t = other;
         if (is_negative(t)) {
             return _operator_plus_wide_int(num, operator_unary_minus(t));
         } else {
@@ -354,15 +354,15 @@ public:
         }
     }
 
-    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
-    constexpr static wide_int<bits2, sgn> operator_minus(const wide_int<bits,sgn>& num,
-                                                         const wide_int<bits2,sgn2>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_minus(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, bool Sgn2, class = __need_increase_size<Bits2, Sgn2>>
+    constexpr static wide_int<Bits2, Sgn> operator_minus(const wide_int<Bits,Sgn>& num,
+                                                         const wide_int<Bits2,Sgn2>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_minus(wide_int<Bits2,Sgn>(num), other);
     }
 private:
-    constexpr static wide_int<bits,sgn> _operator_minus_wide_int(const wide_int<bits,sgn>& num,
-                                                                 const wide_int<bits,sgn>& other) noexcept {
-        wide_int<bits,sgn> res = num;
+    constexpr static wide_int<Bits,Sgn> _operator_minus_wide_int(const wide_int<Bits,Sgn>& num,
+                                                                 const wide_int<Bits,Sgn>& other) noexcept {
+        wide_int<Bits,Sgn> res = num;
 
         bool is_underflow = false;
         for (int idx = arr_size() - 1; idx >= 0; --idx) {
@@ -383,9 +383,9 @@ private:
         return res;
     }
 
-    constexpr static wide_int<bits,sgn> _operator_plus_wide_int(const wide_int<bits,sgn>& num,
-                                                                const wide_int<bits,sgn>& other) noexcept {
-        wide_int<bits,sgn> res = num;
+    constexpr static wide_int<Bits,Sgn> _operator_plus_wide_int(const wide_int<Bits,Sgn>& num,
+                                                                const wide_int<Bits,Sgn>& other) noexcept {
+        wide_int<Bits,Sgn> res = num;
 
         bool is_overflow = false;
         for (int idx = arr_size() - 1; idx >= 0; --idx) {
@@ -409,15 +409,15 @@ public:
 
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_star(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_star(const wide_int<Bits,Sgn>& num,
                                                       const T& other) noexcept {
 
-        wide_int<bits,sgn> a(num);
-        wide_int<bits,sgn> t = other;
+        wide_int<Bits,Sgn> a(num);
+        wide_int<Bits,Sgn> t = other;
 
-        wide_int<bits,sgn> res = 0;
+        wide_int<Bits,Sgn> res = 0;
 
-        for (int i = 0; i < bits; ++i) {
+        for (int i = 0; i < Bits; ++i) {
             if((t.m_arr[arr_size() - 1] & 1) != 0) {
                 res = operator_plus(res, (shift_left(a, i)));
             }
@@ -428,19 +428,19 @@ public:
         return res;
     }
 
-    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
-    constexpr static wide_int<bits2, sgn2> operator_star(const wide_int<bits,sgn>& num,
-                                                         const wide_int<bits2,sgn2>& other) noexcept {
-        return wide_int<bits2,sgn2>::operator_star(wide_int<bits2,sgn2>(num), other);
+    template<int Bits2, bool Sgn2, class = __need_increase_size<Bits2, Sgn2>>
+    constexpr static wide_int<Bits2, Sgn2> operator_star(const wide_int<Bits,Sgn>& num,
+                                                         const wide_int<Bits2,Sgn2>& other) noexcept {
+        return wide_int<Bits2,Sgn2>::operator_star(wide_int<Bits2,Sgn2>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static bool operator_more(const wide_int<bits,sgn>& num,
+    constexpr static bool operator_more(const wide_int<Bits,Sgn>& num,
                                         const T& other) noexcept {
-//        static_assert(sgn == std::is_signed<T>::value,
+//        static_assert(Sgn == std::is_signed<T>::value,
 //                      "warning: operator_more: comparison of integers of different signs");
 
-        wide_int<bits,sgn> t = other;
+        wide_int<Bits,Sgn> t = other;
 
         if (std::is_signed<T>::value && (is_negative(num) != is_negative(t))) {
             return is_negative(t);
@@ -455,19 +455,19 @@ public:
         return false;
     }
 
-    template<int bits2, class = __need_increase_size<bits2, sgn>>
-    constexpr static bool operator_more(const wide_int<bits,sgn>& num,
-                                        const wide_int<bits2,sgn>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_more(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, class = __need_increase_size<Bits2, Sgn>>
+    constexpr static bool operator_more(const wide_int<Bits,Sgn>& num,
+                                        const wide_int<Bits2,Sgn>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_more(wide_int<Bits2,Sgn>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static bool operator_less(const wide_int<bits,sgn>& num,
+    constexpr static bool operator_less(const wide_int<Bits,Sgn>& num,
                                         const T& other) noexcept {
-//        static_assert(sgn == std::is_signed<T>::value,
+//        static_assert(Sgn == std::is_signed<T>::value,
 //                      "warning: operator_less: comparison of integers of different signs");
 
-        wide_int<bits,sgn> t = other;
+        wide_int<Bits,Sgn> t = other;
 
         if (std::is_signed<T>::value && (is_negative(num) != is_negative(t))) {
             return is_negative(t);
@@ -482,16 +482,16 @@ public:
         return false;
     }
 
-    template<int bits2, class = __need_increase_size<bits2, sgn>>
-    constexpr static bool operator_less(const wide_int<bits,sgn>& num,
-                                        const wide_int<bits2,sgn>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_less(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, class = __need_increase_size<Bits2, Sgn>>
+    constexpr static bool operator_less(const wide_int<Bits,Sgn>& num,
+                                        const wide_int<Bits2,Sgn>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_less(wide_int<Bits2,Sgn>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static bool operator_eq(const wide_int<bits,sgn>& num,
+    constexpr static bool operator_eq(const wide_int<Bits,Sgn>& num,
                                       const T& other) noexcept {
-        wide_int<bits,sgn> t = other;
+        wide_int<Bits,Sgn> t = other;
 
         for (int i = 0; i < arr_size(); ++i) {
             if (num.m_arr[i] != t.m_arr[i]) {
@@ -502,17 +502,17 @@ public:
         return true;
     }
 
-    template<int bits2, class = __need_increase_size<bits2, sgn>>
-    constexpr static bool operator_eq(const wide_int<bits,sgn>& num,
-                                        const wide_int<bits2,sgn>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_eq(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, class = __need_increase_size<Bits2, Sgn>>
+    constexpr static bool operator_eq(const wide_int<Bits,Sgn>& num,
+                                        const wide_int<Bits2,Sgn>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_eq(wide_int<Bits2,Sgn>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_pipe(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_pipe(const wide_int<Bits,Sgn>& num,
                                                       const T& other) noexcept {
-        wide_int<bits,sgn> t = other;
-        wide_int<bits,sgn> res = num;
+        wide_int<Bits,Sgn> t = other;
+        wide_int<Bits,Sgn> res = num;
 
         for (int i = 0; i < arr_size(); ++i) {
             res.m_arr[i] |= t.m_arr[i];
@@ -521,17 +521,17 @@ public:
         return res;
     }
 
-    template<int bits2, class = __need_increase_size<bits2, sgn>>
-    constexpr static wide_int<bits2,sgn> operator_pipe(const wide_int<bits,sgn>& num,
-                                                       const wide_int<bits2,sgn>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_pipe(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, class = __need_increase_size<Bits2, Sgn>>
+    constexpr static wide_int<Bits2,Sgn> operator_pipe(const wide_int<Bits,Sgn>& num,
+                                                       const wide_int<Bits2,Sgn>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_pipe(wide_int<Bits2,Sgn>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_amp(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_amp(const wide_int<Bits,Sgn>& num,
                                                      const T& other) noexcept {
-        wide_int<bits,sgn> t = other;
-        wide_int<bits,sgn> res = num;
+        wide_int<Bits,Sgn> t = other;
+        wide_int<Bits,Sgn> res = num;
 
         for (int i = 0; i < arr_size(); ++i) {
             res.m_arr[i] &= t.m_arr[i];
@@ -540,10 +540,10 @@ public:
         return res;
     }
 
-    template<int bits2, class = __need_increase_size<bits2, sgn>>
-    constexpr static wide_int<bits2,sgn> operator_amp(const wide_int<bits,sgn>& num,
-                                                      const wide_int<bits2,sgn>& other) noexcept {
-        return wide_int<bits2,sgn>::operator_amp(wide_int<bits2,sgn>(num), other);
+    template<int Bits2, class = __need_increase_size<Bits2, Sgn>>
+    constexpr static wide_int<Bits2,Sgn> operator_amp(const wide_int<Bits,Sgn>& num,
+                                                      const wide_int<Bits2,Sgn>& other) noexcept {
+        return wide_int<Bits2,Sgn>::operator_amp(wide_int<Bits2,Sgn>(num), other);
     }
 
 private:
@@ -567,7 +567,7 @@ private:
         T x      = 1;
         T answer = 0;
 
-        while(!operator_more(d, n) && operator_eq( operator_amp( shift_right(d, bits - 1), 1), 0)) {
+        while(!operator_more(d, n) && operator_eq( operator_amp( shift_right(d, Bits - 1), 1), 0)) {
             x = shift_left(x, 1);
             d = shift_left(d, 1);
         }
@@ -588,33 +588,33 @@ private:
 public:
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_slash(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_slash(const wide_int<Bits,Sgn>& num,
                                                        const T& other) noexcept {
 
-        wide_int<bits,sgn> quotient{}, remainder{};
-        divide(num, wide_int<bits,sgn>(other), quotient, remainder);
+        wide_int<Bits,Sgn> quotient{}, remainder{};
+        divide(num, wide_int<Bits,Sgn>(other), quotient, remainder);
         return quotient;
     }
 
-    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
-    constexpr static wide_int<bits2, sgn2> operator_slash(const wide_int<bits,sgn>& num,
-                                                          const wide_int<bits2,sgn2>& other) noexcept {
-        return wide_int<bits2,sgn2>::operator_slash(wide_int<bits2,sgn2>(num), other);
+    template<int Bits2, bool Sgn2, class = __need_increase_size<Bits2, Sgn2>>
+    constexpr static wide_int<Bits2, Sgn2> operator_slash(const wide_int<Bits,Sgn>& num,
+                                                          const wide_int<Bits2,Sgn2>& other) noexcept {
+        return wide_int<Bits2,Sgn2>::operator_slash(wide_int<Bits2,Sgn2>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_percent(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_percent(const wide_int<Bits,Sgn>& num,
                                                          const T& other) noexcept {
 
-        wide_int<bits,sgn> quotient{}, remainder{};
-        divide(num, wide_int<bits,sgn>(other), quotient, remainder);
+        wide_int<Bits,Sgn> quotient{}, remainder{};
+        divide(num, wide_int<Bits,Sgn>(other), quotient, remainder);
         return remainder;
     }
 
-    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
-    constexpr static wide_int<bits2, sgn2> operator_percent(const wide_int<bits,sgn>& num,
-                                                            const wide_int<bits2,sgn2>& other) noexcept {
-        return wide_int<bits2,sgn2>::operator_percent(wide_int<bits2,sgn2>(num), other);
+    template<int Bits2, bool Sgn2, class = __need_increase_size<Bits2, Sgn2>>
+    constexpr static wide_int<Bits2, Sgn2> operator_percent(const wide_int<Bits,Sgn>& num,
+                                                            const wide_int<Bits2,Sgn2>& other) noexcept {
+        return wide_int<Bits2,Sgn2>::operator_percent(wide_int<Bits2,Sgn2>(num), other);
     }
 
 
@@ -632,11 +632,11 @@ public:
 
     // ^
     template<typename T, class = __keep_size<T>>
-    constexpr static wide_int<bits,sgn> operator_circumflex(const wide_int<bits,sgn>& num,
+    constexpr static wide_int<Bits,Sgn> operator_circumflex(const wide_int<Bits,Sgn>& num,
                                                             const T& other) noexcept {
 
-        wide_int<bits,sgn> t(other);
-        wide_int<bits,sgn> res = num;
+        wide_int<Bits,Sgn> t(other);
+        wide_int<Bits,Sgn> res = num;
 
         for (int i = 0; i < arr_size(); ++i) {
             res.m_arr[i] ^= t.m_arr[i];
@@ -645,16 +645,16 @@ public:
         return res;
     }
 
-    template<int bits2, bool sgn2, class = __need_increase_size<bits2, sgn2>>
-    constexpr static wide_int<bits2, sgn2> operator_circumflex(const wide_int<bits,sgn>& num,
-                                                               const wide_int<bits2,sgn2>& other) noexcept {
-        return wide_int<bits2,sgn2>::operator_circumflex(wide_int<bits2,sgn2>(num), other);
+    template<int Bits2, bool Sgn2, class = __need_increase_size<Bits2, Sgn2>>
+    constexpr static wide_int<Bits2, Sgn2> operator_circumflex(const wide_int<Bits,Sgn>& num,
+                                                               const wide_int<Bits2,Sgn2>& other) noexcept {
+        return wide_int<Bits2,Sgn2>::operator_circumflex(wide_int<Bits2,Sgn2>(num), other);
     }
 
-    constexpr static wide_int<bits, sgn> from_str(const char* c) noexcept {
-        wide_int<bits,sgn> res = 0;
+    constexpr static wide_int<Bits, Sgn> from_str(const char* c) noexcept {
+        wide_int<Bits,Sgn> res = 0;
 
-        bool is_neg = sgn && *c == '-';
+        bool is_neg = Sgn && *c == '-';
         if (is_neg) {
             ++c;
         }
@@ -698,50 +698,50 @@ public:
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator*=(const T& other) noexcept {
-        *this = operator_star(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator*=(const T& other) noexcept {
+        *this = operator_star(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator/=(const T& other) noexcept {
-        *this = operator_slash(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator/=(const T& other) noexcept {
+        *this = operator_slash(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator%=(const T& other) noexcept {
-        *this = operator_percent(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator%=(const T& other) noexcept {
+        *this = operator_percent(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator+=(const T& other) noexcept {
-        *this = operator_plus(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator+=(const T& other) noexcept {
+        *this = operator_plus(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator-=(const T& other) noexcept {
-        *this = operator_minus(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator-=(const T& other) noexcept {
+        *this = operator_minus(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator&=(const T& other) noexcept {
-        *this = operator_amp(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator&=(const T& other) noexcept {
+        *this = operator_amp(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator|=(const T& other) noexcept {
-        *this = operator_pipe(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator|=(const T& other) noexcept {
+        *this = operator_pipe(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
     template<typename T>
-    constexpr wide_int<bits,sgn>& operator^=(const T& other) noexcept {
-        *this = operator_circumflex(*this, wide_int<bits,sgn>(other));
+    constexpr wide_int<Bits,Sgn>& operator^=(const T& other) noexcept {
+        *this = operator_circumflex(*this, wide_int<Bits,Sgn>(other));
         return *this;
     }
 
@@ -750,24 +750,24 @@ public:
 };
 
 namespace std {
-template<int bits, bool sgn>
-std::string to_string(const wide_int<bits,sgn>& n) {
+template<int Bits, bool Sgn>
+std::string to_string(const wide_int<Bits,Sgn>& n) {
     std::string res;
-    if (wide_int<bits, sgn>::operator_eq(n, 0U)) {
+    if (wide_int<Bits, Sgn>::operator_eq(n, 0U)) {
         return "0";
     }
 
-    wide_int<bits, false> t;
-    bool is_neg = wide_int<bits, sgn>::is_negative(n);
+    wide_int<Bits, false> t;
+    bool is_neg = wide_int<Bits, Sgn>::is_negative(n);
     if (is_neg) {
-        t = wide_int<bits, sgn>::operator_unary_minus(n);
+        t = wide_int<Bits, Sgn>::operator_unary_minus(n);
     } else {
         t = n;
     }
 
-    while (!wide_int<bits, false>::operator_eq(t, 0U)) {
-        res.insert(res.begin(), '0' + char(wide_int<bits, false>::operator_percent(t, 10U)));
-        t = wide_int<bits, false>::operator_slash(t, 10U);
+    while (!wide_int<Bits, false>::operator_eq(t, 0U)) {
+        res.insert(res.begin(), '0' + char(wide_int<Bits, false>::operator_percent(t, 10U)));
+        t = wide_int<Bits, false>::operator_slash(t, 10U);
     }
 
     if (is_neg) {
@@ -777,184 +777,184 @@ std::string to_string(const wide_int<bits,sgn>& n) {
     return res;
 }
 
-template<int bits, bool sgn>
-std::ostream& operator<<(std::ostream& out, const wide_int<bits,sgn>& n) {
+template<int Bits, bool Sgn>
+std::ostream& operator<<(std::ostream& out, const wide_int<Bits,Sgn>& n) {
     out << to_string(n);
     return out;
 }
 } // namespace std
 
 template <class T> struct __is_wide_int: std::false_type{};
-template <int bits, bool sgn> struct __is_wide_int<wide_int<bits, sgn> >: std::true_type{};
+template <int Bits, bool Sgn> struct __is_wide_int<wide_int<Bits, Sgn> >: std::true_type{};
 template <class T>
 using __arithm_not_wide_int = typename std::enable_if< std::is_arithmetic<T>::value && !__is_wide_int<T>::value, T&>::type;
 
 
 // Unary operators
-template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator~(const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_unary_tilda(num);
+template<int Bits, bool Sgn>
+constexpr wide_int<Bits,Sgn> operator~(const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_unary_tilda(num);
 }
 
-template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator-(const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_unary_minus(num);
+template<int Bits, bool Sgn>
+constexpr wide_int<Bits,Sgn> operator-(const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_unary_minus(num);
 }
 
-template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator+(const wide_int<bits,sgn>& num) noexcept {
+template<int Bits, bool Sgn>
+constexpr wide_int<Bits,Sgn> operator+(const wide_int<Bits,Sgn>& num) noexcept {
     return num;
 }
 
 
 // Binary operators
-template<int bits, bool sgn, typename T>
-constexpr auto operator*(const wide_int<bits,sgn>& num,
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator*(const wide_int<Bits,Sgn>& num,
                          const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_star(num, other);
+    return wide_int<Bits,Sgn>::operator_star(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator*(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_star(num, other);
-}
-
-template<int bits, bool sgn, typename T>
-constexpr auto operator/(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_slash(num, other);
-}
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator/(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_slash(wide_int<bits,sgn>(other), num);
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator*(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_star(num, other);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr auto operator%(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_percent(num, other);
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator/(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_slash(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator%(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_percent(wide_int<bits,sgn>(other), num);
-}
-
-template<int bits, bool sgn, typename T>
-constexpr auto operator+(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_plus(num, other);
-}
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator+(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_plus(wide_int<bits,sgn>(other), num);
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator/(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_slash(wide_int<Bits,Sgn>(other), num);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr auto operator-(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_minus(num, other);
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator%(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_percent(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator-(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_minus(wide_int<bits,sgn>(other), num);
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator%(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_percent(wide_int<Bits,Sgn>(other), num);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr bool operator<(const wide_int<bits,sgn>& num,
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator+(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_plus(num, other);
+}
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator+(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_plus(wide_int<Bits,Sgn>(other), num);
+}
+
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator-(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_minus(num, other);
+}
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator-(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_minus(wide_int<Bits,Sgn>(other), num);
+}
+
+template<int Bits, bool Sgn, typename T>
+constexpr bool operator<(const wide_int<Bits,Sgn>& num,
                          const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_less(num, other);
+    return wide_int<Bits,Sgn>::operator_less(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
 constexpr bool operator<(const T& other,
-                         const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_less(wide_int<bits,sgn>(other), num);
+                         const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_less(wide_int<Bits,Sgn>(other), num);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr bool operator>(const wide_int<bits,sgn>& num,
+template<int Bits, bool Sgn, typename T>
+constexpr bool operator>(const wide_int<Bits,Sgn>& num,
                          const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_more(num, other);
+    return wide_int<Bits,Sgn>::operator_more(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
 constexpr bool operator>(const T& other,
-                         const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_more(wide_int<bits,sgn>(other), num);
+                         const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_more(wide_int<Bits,Sgn>(other), num);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr bool operator<=(const wide_int<bits,sgn>& num,
+template<int Bits, bool Sgn, typename T>
+constexpr bool operator<=(const wide_int<Bits,Sgn>& num,
                           const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_less(num, other) ||
-           wide_int<bits,sgn>::operator_eq(num, other);
+    return wide_int<Bits,Sgn>::operator_less(num, other) ||
+           wide_int<Bits,Sgn>::operator_eq(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
 constexpr bool operator<=(const T& other,
-                          const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_less(wide_int<bits,sgn>(other), num) ||
-           wide_int<bits,sgn>::operator_eq(num, other);
+                          const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_less(wide_int<Bits,Sgn>(other), num) ||
+           wide_int<Bits,Sgn>::operator_eq(num, other);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr bool operator>=(const wide_int<bits,sgn>& num,
+template<int Bits, bool Sgn, typename T>
+constexpr bool operator>=(const wide_int<Bits,Sgn>& num,
                           const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_more(num, other) ||
-           wide_int<bits,sgn>::operator_eq(num, other);
+    return wide_int<Bits,Sgn>::operator_more(num, other) ||
+           wide_int<Bits,Sgn>::operator_eq(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
 constexpr bool operator>=(const T& other,
-                          const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_more(wide_int<bits,sgn>(other), num) ||
-           wide_int<bits,sgn>::operator_eq(num, other);
+                          const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_more(wide_int<Bits,Sgn>(other), num) ||
+           wide_int<Bits,Sgn>::operator_eq(num, other);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr bool operator==(const wide_int<bits,sgn>& num,
+template<int Bits, bool Sgn, typename T>
+constexpr bool operator==(const wide_int<Bits,Sgn>& num,
                           const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_eq(num, other);
+    return wide_int<Bits,Sgn>::operator_eq(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
 constexpr bool operator==(const T& other,
-                          const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_eq(num, other);
+                          const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_eq(num, other);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr auto operator&(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_amp(num, other);
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator&(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_amp(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator&(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_amp(wide_int<bits,sgn>(other), num);
-}
-
-template<int bits, bool sgn, typename T>
-constexpr auto operator|(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_pipe(num, other);
-}
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator|(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_pipe(wide_int<bits,sgn>(other), num);
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator&(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_amp(wide_int<Bits,Sgn>(other), num);
 }
 
-template<int bits, bool sgn, typename T>
-constexpr auto operator^(const wide_int<bits,sgn>& num, const T& other) noexcept {
-    return wide_int<bits,sgn>::operator_circumflex(num, other);
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator|(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_pipe(num, other);
 }
-template<int bits, bool sgn, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<bits,sgn> operator^(const T& other,
-                                       const wide_int<bits,sgn>& num) noexcept {
-    return wide_int<bits,sgn>::operator_circumflex(wide_int<bits,sgn>(other), num);
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator|(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_pipe(wide_int<Bits,Sgn>(other), num);
 }
 
-template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator<<(const wide_int<bits,sgn>& num, int n) noexcept {
-    return wide_int<bits,sgn>::shift_left(num, n);
+template<int Bits, bool Sgn, typename T>
+constexpr auto operator^(const wide_int<Bits,Sgn>& num, const T& other) noexcept {
+    return wide_int<Bits,Sgn>::operator_circumflex(num, other);
 }
-template<int bits, bool sgn>
-constexpr wide_int<bits,sgn> operator>>(const wide_int<bits,sgn>& num, int n) noexcept {
-    return wide_int<bits,sgn>::shift_right(num, n);
+template<int Bits, bool Sgn, typename T, class = __arithm_not_wide_int<T>>
+constexpr wide_int<Bits,Sgn> operator^(const T& other,
+                                       const wide_int<Bits,Sgn>& num) noexcept {
+    return wide_int<Bits,Sgn>::operator_circumflex(wide_int<Bits,Sgn>(other), num);
+}
+
+template<int Bits, bool Sgn>
+constexpr wide_int<Bits,Sgn> operator<<(const wide_int<Bits,Sgn>& num, int n) noexcept {
+    return wide_int<Bits,Sgn>::shift_left(num, n);
+}
+template<int Bits, bool Sgn>
+constexpr wide_int<Bits,Sgn> operator>>(const wide_int<Bits,Sgn>& num, int n) noexcept {
+    return wide_int<Bits,Sgn>::shift_right(num, n);
 }
 
 
@@ -977,10 +977,10 @@ constexpr uint512_t operator "" _uint512(const char* n) noexcept { return uint51
 namespace std {
 
 // numeric limits
-template<int bits, bool sgn>
-struct numeric_limits<wide_int<bits,sgn>> {
+template<int Bits, bool Sgn>
+struct numeric_limits<wide_int<Bits,Sgn>> {
     static constexpr bool is_specialized = true;
-    static constexpr bool is_signed = sgn;
+    static constexpr bool is_signed = Sgn;
     static constexpr bool is_integer = true;
     static constexpr bool is_exact = true;
     static constexpr bool has_infinity = false;
@@ -992,7 +992,7 @@ struct numeric_limits<wide_int<bits,sgn>> {
     static constexpr bool is_iec559 = false;
     static constexpr bool is_bounded = true;
     static constexpr bool is_modulo = true;
-    static constexpr int digits = bits - (sgn ? 1 : 0);
+    static constexpr int digits = Bits - (Sgn ? 1 : 0);
     static constexpr int digits10 = digits * 38.2308 /*std::log10(2)*/;
     static constexpr int max_digits10 = 0;
     static constexpr int radix = 2;
@@ -1003,9 +1003,9 @@ struct numeric_limits<wide_int<bits,sgn>> {
     static constexpr bool traps = true;
     static constexpr bool tinyness_before = false;
 
-    static constexpr wide_int<bits,sgn> min() noexcept {
-        if (sgn) {
-            wide_int<bits,true> res {};
+    static constexpr wide_int<Bits,Sgn> min() noexcept {
+        if (Sgn) {
+            wide_int<Bits,true> res {};
             res.m_arr[0] = std::numeric_limits<int64_t>::min();
             return res;
         } else {
@@ -1013,13 +1013,13 @@ struct numeric_limits<wide_int<bits,sgn>> {
         }
     }
 
-    static constexpr wide_int<bits,sgn> lowest() noexcept {
+    static constexpr wide_int<Bits,Sgn> lowest() noexcept {
         return min();
     }
 
-    static constexpr wide_int<bits,sgn> max() noexcept {
-        wide_int<bits,sgn> res {};
-        res.m_arr[0] = sgn ? std::numeric_limits<int64_t>::max()
+    static constexpr wide_int<Bits,Sgn> max() noexcept {
+        wide_int<Bits,Sgn> res {};
+        res.m_arr[0] = Sgn ? std::numeric_limits<int64_t>::max()
                            : std::numeric_limits<uint64_t>::max();
         for (int i = 1; i < res.arr_size(); ++i) {
             res.m_arr[i] = std::numeric_limits<uint64_t>::max();
@@ -1027,27 +1027,27 @@ struct numeric_limits<wide_int<bits,sgn>> {
         return res;
     }
 
-    static constexpr wide_int<bits,sgn> epsilon() noexcept {
+    static constexpr wide_int<Bits,Sgn> epsilon() noexcept {
         return 0;
     }
 
-    static constexpr wide_int<bits,sgn> round_error() noexcept {
+    static constexpr wide_int<Bits,Sgn> round_error() noexcept {
         return 0;
     }
 
-    static constexpr wide_int<bits,sgn> infinity() noexcept {
+    static constexpr wide_int<Bits,Sgn> infinity() noexcept {
         return 0;
     }
 
-    static constexpr wide_int<bits,sgn> quiet_NaN() noexcept {
+    static constexpr wide_int<Bits,Sgn> quiet_NaN() noexcept {
         return 0;
     }
 
-    static constexpr wide_int<bits,sgn> signaling_NaN() noexcept {
+    static constexpr wide_int<Bits,Sgn> signaling_NaN() noexcept {
         return 0;
     }
 
-    static constexpr wide_int<bits,sgn> denorm_min() noexcept {
+    static constexpr wide_int<Bits,Sgn> denorm_min() noexcept {
         return 0;
     }
 };
