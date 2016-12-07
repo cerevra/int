@@ -34,22 +34,8 @@
 
 #include <iostream>
 
-constexpr inline bool is_power_of_two(size_t bits) {
-    return bits == 0x0002 ||
-           bits == 0x0004 ||
-           bits == 0x0008 ||
-           bits == 0x0010 ||
-           bits == 0x0020 ||
-           bits == 0x0040 ||
-           bits == 0x0080 ||
-           bits == 0x0100 ||
-           bits == 0x0200 ||
-           bits == 0x0400 ||
-           bits == 0x0800 ||
-           bits == 0x1000 ||
-           bits == 0x2000 ||
-           bits == 0x4000 ||
-           bits == 0x8000;
+constexpr inline bool is_multiple_of_8(size_t bits) {
+    return bits % 8 == 0;
 }
 
 template<size_t Bits, bool Sgn>
@@ -83,12 +69,12 @@ struct is_signed<wide_int<Bits,false>> : std::false_type {};
 template<size_t Bits, bool Sgn>
 class wide_int {
 public:
-    static_assert(Bits >= 128, "");
-    static_assert(is_power_of_two(Bits), "");
-    using base_type = uint64_t;
-    using signed_base_type = int64_t;
+    static_assert(Bits > 64, "");
+    static_assert(is_multiple_of_8(Bits), "");
+    using base_type = uint8_t;
+    using signed_base_type = int8_t;
     constexpr static int arr_size() noexcept {
-        return Bits / 64;
+        return Bits / base_bits();
     }
     constexpr static int base_bits() noexcept {
         return sizeof(base_type)*8;
@@ -102,11 +88,18 @@ public:
 private:
     template<typename T>
     constexpr void wide_int_from_T(T other) noexcept {
-        int i = 0;
-        for ( ; i < arr_size() - 1; ++i) {
-            m_arr[i] = other < 0 ? std::numeric_limits<base_type>::max() : 0;
+        int r_idx = 0;
+
+        for (; static_cast<size_t>(r_idx) < sizeof(T) && r_idx < arr_size(); ++r_idx) {
+            base_type& curr = m_arr[arr_size() - 1 - r_idx];
+            base_type curr_other = (other >> (r_idx*8)) & std::numeric_limits<base_type>::max();
+            curr = curr_other;
         }
-        m_arr[i] = static_cast<base_type>(other);
+
+        for ( ; r_idx < arr_size(); ++r_idx) {
+            base_type& curr = m_arr[arr_size() - 1 - r_idx];
+            curr = other < 0 ? std::numeric_limits<base_type>::max() : 0;
+        }
     }
     template<size_t Bits2, bool Sgn2>
     constexpr void wide_int_from_wide_int(const wide_int<Bits2,Sgn2>& other) noexcept {
@@ -209,16 +202,6 @@ public:
         return num;
     }
 
-private:
-    constexpr static void shift_right_64(base_type& num, int n, bool is_neg) noexcept {
-        if (is_neg) {
-            num = signed_base_type(num) >> n;
-        } else {
-            num >>= n;
-        }
-    }
-public:
-
     constexpr static wide_int<Bits,true> shift_right(const wide_int<Bits,true>& other, int n) noexcept {
         if (static_cast<size_t>(n) >= Bits) return 0;
         if (n <= 0) return other;
@@ -231,21 +214,8 @@ public:
         wide_int<Bits,Sgn> num = other;
         int cur_shift = n % base_bits();
         if (cur_shift) {
-            int idx = 0;
-            while(num.m_arr[idx] == std::numeric_limits<base_type>::max()) {
-                ++idx;
-            }
-            bool preamb = is_neg;
-            base_type prev = is_neg ? std::numeric_limits<base_type>::max() : 0;
-            for (; idx < arr_size(); ++idx) {
-                base_type curr = num.m_arr[idx];
-                shift_right_64(num.m_arr[idx], cur_shift, preamb);
-                num.m_arr[idx] |= prev << (sizeof(base_type)*8 - cur_shift);
-                prev = curr;
-                if (num.m_arr[idx] != std::numeric_limits<base_type>::max()) {
-                    preamb = false;
-                }
-            }
+            num = shift_right(wide_int<Bits,false>(num), cur_shift);
+            num.m_arr[0] |= std::numeric_limits<base_type>::max() << (base_bits() - cur_shift);
             n -= cur_shift;
         }
         if (n) {
@@ -254,7 +224,7 @@ public:
                 num.m_arr[i] = num.m_arr[i - n/base_bits()];
             }
             for (; i >= 0; --i) {
-                num.m_arr[i] = is_neg ? std::numeric_limits<base_type>::max() : 0;
+                num.m_arr[i] = std::numeric_limits<base_type>::max();
             }
         }
         return num;
@@ -274,11 +244,26 @@ private:
     constexpr static wide_int<Bits,Sgn> _operator_minus_T(const wide_int<Bits,Sgn>& num, T other) noexcept {
         wide_int<Bits,Sgn> res = num;
 
-        bool is_underflow = res.m_arr[arr_size() - 1] < base_type(other);
-        res.m_arr[arr_size() - 1] -= other;
-        if (is_underflow) {
-            --res.m_arr[arr_size() - 2];
-            for (int i = arr_size() - 3; i >= 0; --i) {
+        bool is_underflow = false;
+        int r_idx = 0;
+        for (; static_cast<size_t>(r_idx) < sizeof(T) && r_idx < arr_size(); ++r_idx) {
+            base_type& res_i = res.m_arr[arr_size() - 1 - r_idx];
+            base_type curr_other = (other >> (r_idx*8)) & std::numeric_limits<base_type>::max();
+
+            if (is_underflow) {
+                --res_i;
+                is_underflow = res_i == std::numeric_limits<base_type>::max();
+            }
+
+            if (res_i < curr_other) {
+                is_underflow = true;
+            }
+            res_i -= curr_other;
+        }
+
+        if (is_underflow && r_idx < arr_size()) {
+            --res.m_arr[arr_size() - 1 - r_idx];
+            for (int i = arr_size() - 1 - r_idx - 1; i >= 0; --i) {
                 if (res.m_arr[i + 1] == std::numeric_limits<base_type>::max()) {
                     --res.m_arr[i];
                 } else {
@@ -294,10 +279,26 @@ private:
     constexpr static wide_int<Bits,Sgn> _operator_plus_T(const wide_int<Bits,Sgn>& num, T other) noexcept {
         wide_int<Bits,Sgn> res = num;
 
-        res.m_arr[arr_size() - 1] += other;
-        if (res.m_arr[arr_size() - 1] < base_type(other)) {
-            ++res.m_arr[arr_size() - 2];
-            for (int i = arr_size() - 3; i >= 0; --i) {
+        bool is_overflow = false;
+        int r_idx = 0;
+        for (; static_cast<size_t>(r_idx) < sizeof(T) && r_idx < arr_size(); ++r_idx) {
+            base_type& res_i = res.m_arr[arr_size() - 1 - r_idx];
+            base_type curr_other = (other >> (r_idx*8)) & std::numeric_limits<base_type>::max();
+
+            if (is_overflow) {
+                ++res_i;
+                is_overflow = res_i == 0;
+            }
+
+            res_i += curr_other;
+            if (res_i < curr_other) {
+                is_overflow = true;
+            }
+        }
+
+        if (is_overflow && r_idx < arr_size()) {
+            ++res.m_arr[arr_size() - 1 - r_idx];
+            for (int i = arr_size() - 1 - r_idx - 1; i >= 0; --i) {
                 if (res.m_arr[i + 1] == 0) {
                     ++res.m_arr[i];
                 } else {
