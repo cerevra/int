@@ -747,6 +747,16 @@ public:
         return *this;
     }
 
+    constexpr wide_int<Bits,Sgn>& operator<<=(int n) noexcept {
+        *this = shift_left(*this, n);
+        return *this;
+    }
+
+    constexpr wide_int<Bits,Sgn>& operator>>=(int n) noexcept {
+        *this = shift_right(*this, n);
+        return *this;
+    }
+
 //private:
     base_type m_arr[arr_size()];
 };

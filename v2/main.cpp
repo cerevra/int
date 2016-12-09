@@ -1550,6 +1550,12 @@ void testNativeOperatorsAssign() {
 
     a1 ^= 0xffffffffffffffff;
     assert(a1 == 0xffffffffffffff00, "");
+
+    a1 <<= 4;
+    assert(a1 == 0xffffffffffffff000_uint128, "");
+
+    a1 >>= 8;
+    assert(a1 == 0x0ffffffffffffff0, "");
 }
 
 void testConstexpr() {
