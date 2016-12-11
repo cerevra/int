@@ -87,12 +87,21 @@ public:
         return S && static_cast<signed_base_type>(n.m_arr[0]) < 0;
     }
 
+    template<typename T, class = typename std::enable_if<std::is_signed<T>::value, T>::type>
+    constexpr static int64_t to_Integral(T f) noexcept {
+        return static_cast<int64_t>(f);
+    }
+    template<typename T, class = typename std::enable_if<!std::is_signed<T>::value, T>::type>
+    constexpr static uint64_t to_Integral(T f) noexcept {
+        return static_cast<uint64_t>(f);
+    }
+
 private:
-    template<typename T>
-    constexpr void wide_int_from_T(T other) noexcept {
+    template<typename Integral>
+    constexpr void wide_int_from_Integral(Integral other) noexcept {
         int r_idx = 0;
 
-        for (; static_cast<size_t>(r_idx) < sizeof(T) && r_idx < arr_size(); ++r_idx) {
+        for (; static_cast<size_t>(r_idx) < sizeof(Integral) && r_idx < arr_size(); ++r_idx) {
             base_type& curr = m_arr[arr_size() - 1 - r_idx];
             base_type curr_other = (other >> (r_idx*CHAR_BIT)) & std::numeric_limits<base_type>::max();
             curr = curr_other;
@@ -123,7 +132,7 @@ public:
     constexpr wide_int(T other) noexcept
         : m_arr {}
     {
-        wide_int_from_T(other);
+        wide_int_from_Integral(to_Integral(other));
     }
     template<size_t Bytes2, bool Signed2>
     constexpr wide_int(const wide_int<Bytes2,Signed2>& other) noexcept
@@ -140,7 +149,7 @@ public:
 
     template<typename T>
     constexpr wide_int<Bytes,Signed>& operator=(T other) noexcept {
-        wide_int_from_T(other);
+        wide_int_from_Integral(other);
         return *this;
     }
 
@@ -623,15 +632,41 @@ public:
 
 
     template <class T>
-    using __arithm_not_wide_int_class = typename std::enable_if< std::is_arithmetic<T>::value && sizeof(T) <= 64, T>::type;
+    using __arithm_not_wide_int_class = typename std::enable_if< std::is_integral<T>::value, T>::type;
 
     template <class T, class = __arithm_not_wide_int_class<T> >
     constexpr operator T () const noexcept {
+        static_assert(std::is_integral<T>::value, "");
         T res = 0;
         for (size_t r_idx = 0; r_idx < arr_size() && r_idx < sizeof(T); ++r_idx) {
             res |= m_arr[arr_size() - 1 - r_idx] << (base_bits() * r_idx);
         }
         return res;
+    }
+
+    constexpr operator long double () const noexcept {
+        if (operator_eq(*this, 0)) {
+            return 0;
+        }
+
+        long double res = 0;
+        wide_int<Bytes,Signed> tmp = *this;
+        for (size_t idx = 0; idx < arr_size(); ++idx) {
+            long double t = res;
+            res *= std::numeric_limits<base_type>::max();
+            res += t;
+            res += tmp.m_arr[0];
+            tmp = shift_left(tmp, base_bits());
+        }
+        return res;
+    }
+
+    constexpr operator double () const noexcept {
+        return static_cast<long double>(*this);
+    }
+
+    constexpr operator float () const noexcept {
+        return static_cast<long double>(*this);
     }
 
     constexpr explicit operator bool () const noexcept {

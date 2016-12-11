@@ -100,6 +100,28 @@ void testCtors() {
         assert(b7.m_arr[idx] == 0xff, std::to_string(idx));
     }
     assert(b7.m_arr[63] == 0xf3, "");
+
+    int512_t a8 = -13.0;
+    for (int idx = 0; idx < 63; ++idx) {
+        assert(a8.m_arr[idx] == 0xff, std::to_string(idx));
+    }
+    assert(a8.m_arr[63] == 0xf3, "");
+    uint512_t b8 = -13.0;
+    for (int idx = 0; idx < 63; ++idx) {
+        assert(b8.m_arr[idx] == 0xff, std::to_string(idx));
+    }
+    assert(b8.m_arr[63] == 0xf3, "");
+
+    int512_t a9 = 13.0;
+    for (int idx = 0; idx < 63; ++idx) {
+        assert(a9.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(a9.m_arr[63] == 13, "");
+    uint512_t b9 = 13.0;
+    for (int idx = 0; idx < 63; ++idx) {
+        assert(b9.m_arr[idx] == 0, std::to_string(idx));
+    }
+    assert(b9.m_arr[63] == 13, "");
 }
 
 void testShifts() {
@@ -1321,6 +1343,7 @@ void testToString() {
 
 void testCast() {
     assert(int(uint512_t(18)) == 18, "");
+    assert(double(uint512_t(1024)) == 1024, "");
 
     uint128_t a1 = uint512_t(18);
     for (int idx = 0; idx < 15; ++idx) {
@@ -1527,6 +1550,9 @@ void testNativeOperators() {
         assert(a21.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a21.m_arr[63] == 1, "");
+
+    assert(1024_int128 * 2.0 == 2048, "");
+    assert(2.0 * 1024_int128 == 2048, "");
 }
 
 void testNativeOperatorsAssign() {
