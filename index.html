@@ -406,7 +406,7 @@ struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2
 
 <p>The signed template parameter indicated by this specialization is following:</p>
 <ul>
-  <li><code>(Signed && Signed2)</code> if <code>Bytes == Bytes2</code></li>
+  <li><code>(Signed &amp;&amp; Signed2)</code> if <code>Bytes == Bytes2</code></li>
   <li><code>Signed</code> if <code>Bytes > Bytes2</code></li>
   <li><code>Signed2</code> otherwise</li>
 </ul>
@@ -421,7 +421,7 @@ struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt; {
   <li><code>Arithmetic</code> if <code>is_floating_point_v&lt;Arithmetic&gt;</code> is <code>true</code></li>
   <li><code>wide_int&lt;Bytes, Signed&gt;</code> if <code>Bytes &gt; sizeof(Arithmetic)</code></li>
   <li><code>Arithmetic</code> if <code>Bytes &lt; sizeof(Arithmetic)</code></li>
-  <li><code>Arithmetic</code> if <code>Bytes == Bytes2 && Signed</code> or <code>Bytes == Bytes2 && Signed == is_signed_v&lt;Arithmetic&gt;</code></li>
+  <li><code>Arithmetic</code> if <code>Bytes == Bytes2 &amp;&amp; Signed</code> or <code>Bytes == Bytes2 &amp;&amp; Signed == is_signed_v&lt;Arithmetic&gt;</code></li>
   <li><code>wide_int&lt;Bytes, Signed&gt;</code> otherwise</li>
 </ul>
 <div class="desc"><i>Requires:</i> <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
@@ -665,6 +665,9 @@ basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, T
 <pre>template&lt;size_t Bytes, bool Signed&gt; struct numeric_limits&lt;wide_int&lt;Bytes, Signed&gt;&gt;;</pre>
 <p>Specialization follows the rules described in [numeric.limits.members]. If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_int&lt;Bytes, Signed&gt;</code>, then <code>numeric_limits&lt;wide_int&lt;Bytes, Signed&gt;&gt;</code> specialized in the same way as <code>numeric_limits&lt;Integral&gt;</code>.</p>
 
+        <h2>IV. Acknowledgments</h2>
+
+<p>Antony Polukhin provided numerous comments, corrections, and suggestions for this proposal.</p>
 
         <script type="text/javascript">
             function colorize_texts(texts) {
