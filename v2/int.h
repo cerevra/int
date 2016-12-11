@@ -757,6 +757,12 @@ public:
         return *this;
     }
 
+    template<typename T>
+    constexpr wide_int<Bits,Sgn>& operator!=(const T& other) noexcept {
+        *this = !other;
+        return *this;
+    }
+
 //private:
     base_type m_arr[arr_size()];
 };

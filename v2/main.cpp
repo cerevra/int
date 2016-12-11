@@ -1556,6 +1556,11 @@ void testNativeOperatorsAssign() {
 
     a1 >>= 8;
     assert(a1 == 0x0ffffffffffffff0, "");
+
+    a1 != 0;
+    assert(a1 == 1, "");
+    a1 != 0xf;
+    assert(a1 == 0, "");
 }
 
 void testConstexpr() {
