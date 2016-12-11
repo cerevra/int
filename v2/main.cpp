@@ -1327,6 +1327,11 @@ void testCast() {
         assert(a1.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a1.m_arr[15] == 18, "");
+
+    uint512_t a2 = 1024;
+    assert(a2 == 1024 , "");
+    uint32_t a3 = a2;
+    assert(a3 == 1024 , "");
 }
 
 void testFromString() {

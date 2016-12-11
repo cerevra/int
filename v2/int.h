@@ -625,7 +625,11 @@ public:
 
     template <class T, class = __arithm_not_wide_int_class<T> >
     constexpr operator T () const noexcept {
-        return static_cast<T>(m_arr[arr_size() - 1]);
+        T res = 0;
+        for (size_t r_idx = 0; r_idx < arr_size() && r_idx < sizeof(T); ++r_idx) {
+            res |= m_arr[arr_size() - 1 - r_idx] << (base_bits() * r_idx);
+        }
+        return res;
     }
 
     constexpr explicit operator bool () const noexcept {
