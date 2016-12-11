@@ -1203,4 +1203,16 @@ struct numeric_limits<wide_int<Bytes,Signed>> {
     }
 };
 
+
+template<size_t Bytes, bool Signed>
+struct hash<wide_int<Bytes, Signed>> {
+    std::size_t operator()(const wide_int<Bytes, Signed>& num) const {
+        size_t res = 0;
+        for (auto n : num.m_arr) {
+            res += n;
+        }
+        return hash<size_t>()(res);
+    }
+};
+
 } // namespace std

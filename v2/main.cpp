@@ -4,6 +4,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include <unordered_map>
+
 using namespace std;
 
 #define assert(a, info) {if (!(a)) throw std::runtime_error(#a ", line:" + std::to_string(__LINE__) + ", info:" + info );}
@@ -1642,6 +1644,11 @@ void testConstexpr() {
     static_assert(0x80000000000000000000000000000000_uint128, "");
 }
 
+void testEtc() {
+    std::unordered_map<uint256_t, bool> m;
+    assert(m.empty(), "");
+}
+
 void tests() {
     static_assert(std::is_pod<int512_t>::value, "");
     static_assert(std::is_pod<uint512_t>::value, "");
@@ -1669,6 +1676,7 @@ void tests() {
     testNativeOperators();
     testNativeOperatorsAssign();
     testConstexpr();
+    testEtc();
     std::cout << wide_int<80, false>(18) << std::endl;
 
     std::cout << "OK" << std::endl;
