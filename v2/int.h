@@ -837,8 +837,41 @@ std::string to_string(const wide_int<Bytes,Signed>& n) {
 }
 
 template<size_t Bytes, bool Signed>
+std::wstring to_wstring(const wide_int<Bytes,Signed>& n) {
+    std::wstring res;
+    if (wide_int<Bytes, Signed>::operator_eq(n, 0U)) {
+        return L"0";
+    }
+
+    wide_int<Bytes, false> t;
+    bool is_neg = wide_int<Bytes, Signed>::is_negative(n);
+    if (is_neg) {
+        t = wide_int<Bytes, Signed>::operator_unary_minus(n);
+    } else {
+        t = n;
+    }
+
+    while (!wide_int<Bytes, false>::operator_eq(t, 0U)) {
+        res.insert(res.begin(), '0' + wchar_t(wide_int<Bytes, false>::operator_percent(t, 10U)));
+        t = wide_int<Bytes, false>::operator_slash(t, 10U);
+    }
+
+    if (is_neg) {
+        res.insert(res.begin(), '-');
+    }
+
+    return res;
+}
+
+template<size_t Bytes, bool Signed>
 std::ostream& operator<<(std::ostream& out, const wide_int<Bytes,Signed>& n) {
     out << to_string(n);
+    return out;
+}
+
+template<size_t Bytes, bool Signed>
+std::wostream& operator<<(std::wostream& out, const wide_int<Bytes,Signed>& n) {
+    out << to_wstring(n);
     return out;
 }
 } // namespace std

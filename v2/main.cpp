@@ -1339,6 +1339,10 @@ void testToString() {
     assert(to_string(uint512_t(123455)) == std::string("123455"), "");
     assert(to_string(int512_t(-123455)) == std::string("-123455"), "");
     std::cout << int512_t(-123455) << std::endl;
+
+    assert(to_wstring(uint512_t(123455)) == std::wstring(L"123455"), "");
+    assert(to_wstring(int512_t(-123455)) == std::wstring(L"-123455"), "");
+    std::wcout << 123000999_int128 << std::endl;
 }
 
 void testCast() {
