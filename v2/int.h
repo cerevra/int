@@ -65,6 +65,44 @@ template<size_t Bytes>
 struct is_signed<wide_int<Bytes,true>> : std::true_type {};
 template<size_t Bytes>
 struct is_signed<wide_int<Bytes,false>> : std::false_type {};
+
+
+template<size_t Bytes, bool Signed, size_t Bytes2, bool Signed2>
+struct common_type<wide_int<Bytes, Signed>, wide_int<Bytes2, Signed2>> {
+    using type = std::conditional_t<
+            Bytes == Bytes2,
+            wide_int<Bytes, Signed && Signed2>,
+            std::conditional_t<
+                Bytes2 < Bytes,
+                wide_int<Bytes, Signed>,
+                wide_int<Bytes2, Signed2
+            >
+        >
+    >;
+};
+
+template<size_t Bytes, bool Signed, typename Arithmetic>
+struct common_type<wide_int<Bytes, Signed>, Arithmetic> {
+    static_assert(std::is_arithmetic<Arithmetic>::value, "");
+
+    using type = std::conditional_t<
+        std::is_floating_point<Arithmetic>::value,
+        Arithmetic,
+        std::conditional_t<
+            sizeof(Arithmetic) < Bytes,
+            wide_int<Bytes, Signed>,
+            std::conditional_t<
+                Bytes < sizeof(Arithmetic),
+                Arithmetic,
+                std::conditional_t<
+                    Bytes == sizeof(Arithmetic) && ( Signed || std::is_signed<Arithmetic>::value ),
+                    Arithmetic,
+                    wide_int<Bytes, Signed>
+                >
+            >
+        >
+    >;
+};
 }
 
 template<size_t Bytes, bool Signed>
@@ -423,7 +461,7 @@ public:
 
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<Bytes,Signed> operator_star(const wide_int<Bytes,Signed>& num,
-                                                      const T& other) noexcept {
+                                                          const T& other) noexcept {
 
         wide_int<Bytes,Signed> a(num);
         wide_int<Bytes,Signed> t = other;
@@ -443,7 +481,7 @@ public:
 
     template<size_t Bytes2, bool Signed2, class = __need_increase_size<Bytes2, Signed2>>
     constexpr static wide_int<Bytes2, Signed2> operator_star(const wide_int<Bytes,Signed>& num,
-                                                         const wide_int<Bytes2,Signed2>& other) noexcept {
+                                                             const wide_int<Bytes2,Signed2>& other) noexcept {
         return wide_int<Bytes2,Signed2>::operator_star(wide_int<Bytes2,Signed2>(num), other);
     }
 
@@ -523,7 +561,7 @@ public:
 
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<Bytes,Signed> operator_pipe(const wide_int<Bytes,Signed>& num,
-                                                      const T& other) noexcept {
+                                                          const T& other) noexcept {
         wide_int<Bytes,Signed> t = other;
         wide_int<Bytes,Signed> res = num;
 
@@ -536,13 +574,13 @@ public:
 
     template<size_t Bytes2, class = __need_increase_size<Bytes2, Signed>>
     constexpr static wide_int<Bytes2,Signed> operator_pipe(const wide_int<Bytes,Signed>& num,
-                                                       const wide_int<Bytes2,Signed>& other) noexcept {
+                                                           const wide_int<Bytes2,Signed>& other) noexcept {
         return wide_int<Bytes2,Signed>::operator_pipe(wide_int<Bytes2,Signed>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<Bytes,Signed> operator_amp(const wide_int<Bytes,Signed>& num,
-                                                     const T& other) noexcept {
+                                                         const T& other) noexcept {
         wide_int<Bytes,Signed> t = other;
         wide_int<Bytes,Signed> res = num;
 
@@ -555,7 +593,7 @@ public:
 
     template<size_t Bytes2, class = __need_increase_size<Bytes2, Signed>>
     constexpr static wide_int<Bytes2,Signed> operator_amp(const wide_int<Bytes,Signed>& num,
-                                                      const wide_int<Bytes2,Signed>& other) noexcept {
+                                                          const wide_int<Bytes2,Signed>& other) noexcept {
         return wide_int<Bytes2,Signed>::operator_amp(wide_int<Bytes2,Signed>(num), other);
     }
 
@@ -602,7 +640,7 @@ public:
 
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<Bytes,Signed> operator_slash(const wide_int<Bytes,Signed>& num,
-                                                       const T& other) noexcept {
+                                                           const T& other) noexcept {
 
         wide_int<Bytes,Signed> quotient{}, remainder{};
         divide(num, wide_int<Bytes,Signed>(other), quotient, remainder);
@@ -611,13 +649,13 @@ public:
 
     template<size_t Bytes2, bool Signed2, class = __need_increase_size<Bytes2, Signed2>>
     constexpr static wide_int<Bytes2, Signed2> operator_slash(const wide_int<Bytes,Signed>& num,
-                                                          const wide_int<Bytes2,Signed2>& other) noexcept {
+                                                              const wide_int<Bytes2,Signed2>& other) noexcept {
         return wide_int<Bytes2,Signed2>::operator_slash(wide_int<Bytes2,Signed2>(num), other);
     }
 
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<Bytes,Signed> operator_percent(const wide_int<Bytes,Signed>& num,
-                                                         const T& other) noexcept {
+                                                             const T& other) noexcept {
 
         wide_int<Bytes,Signed> quotient{}, remainder{};
         divide(num, wide_int<Bytes,Signed>(other), quotient, remainder);
@@ -626,7 +664,7 @@ public:
 
     template<size_t Bytes2, bool Signed2, class = __need_increase_size<Bytes2, Signed2>>
     constexpr static wide_int<Bytes2, Signed2> operator_percent(const wide_int<Bytes,Signed>& num,
-                                                            const wide_int<Bytes2,Signed2>& other) noexcept {
+                                                                const wide_int<Bytes2,Signed2>& other) noexcept {
         return wide_int<Bytes2,Signed2>::operator_percent(wide_int<Bytes2,Signed2>(num), other);
     }
 
@@ -676,7 +714,7 @@ public:
     // ^
     template<typename T, class = __keep_size<T>>
     constexpr static wide_int<Bytes,Signed> operator_circumflex(const wide_int<Bytes,Signed>& num,
-                                                            const T& other) noexcept {
+                                                                const T& other) noexcept {
 
         wide_int<Bytes,Signed> t(other);
         wide_int<Bytes,Signed> res = num;
@@ -690,7 +728,7 @@ public:
 
     template<size_t Bytes2, bool Signed2, class = __need_increase_size<Bytes2, Signed2>>
     constexpr static wide_int<Bytes2, Signed2> operator_circumflex(const wide_int<Bytes,Signed>& num,
-                                                               const wide_int<Bytes2,Signed2>& other) noexcept {
+                                                                   const wide_int<Bytes2,Signed2>& other) noexcept {
         return wide_int<Bytes2,Signed2>::operator_circumflex(wide_int<Bytes2,Signed2>(num), other);
     }
 
@@ -901,53 +939,59 @@ constexpr wide_int<Bytes,Signed> operator+(const wide_int<Bytes,Signed>& num) no
 
 // Binary operators
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator*(const wide_int<Bytes,Signed>& num,
-                         const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator*(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_star(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator*(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
+constexpr operator*(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_star(num, other);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator/(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator/(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_slash(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator/(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
+constexpr operator/(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_slash(wide_int<Bytes,Signed>(other), num);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator%(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator%(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
     return wide_int<Bytes,Signed>::operator_percent(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator%(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
+std::common_type_t<wide_int<Bytes,Signed>, Integral>
+constexpr operator%(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept {
+    static_assert(std::is_integral<Integral>::value, "");
     return wide_int<Bytes,Signed>::operator_percent(wide_int<Bytes,Signed>(other), num);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator+(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator+(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_plus(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator+(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
+constexpr operator+(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_plus(wide_int<Bytes,Signed>(other), num);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator-(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator-(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_minus(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator-(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
+constexpr operator-(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_minus(wide_int<Bytes,Signed>(other), num);
 }
 
@@ -956,8 +1000,8 @@ constexpr bool operator<(const wide_int<Bytes,Signed>& num,
                          const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_less(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr bool operator<(const T& other,
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+constexpr bool operator<(const Arithmetic& other,
                          const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_less(wide_int<Bytes,Signed>(other), num);
 }
@@ -967,8 +1011,8 @@ constexpr bool operator>(const wide_int<Bytes,Signed>& num,
                          const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_more(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr bool operator>(const T& other,
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+constexpr bool operator>(const Arithmetic& other,
                          const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_more(wide_int<Bytes,Signed>(other), num);
 }
@@ -979,8 +1023,8 @@ constexpr bool operator<=(const wide_int<Bytes,Signed>& num,
     return wide_int<Bytes,Signed>::operator_less(num, other) ||
            wide_int<Bytes,Signed>::operator_eq(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr bool operator<=(const T& other,
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+constexpr bool operator<=(const Arithmetic& other,
                           const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_less(wide_int<Bytes,Signed>(other), num) ||
            wide_int<Bytes,Signed>::operator_eq(num, other);
@@ -992,8 +1036,8 @@ constexpr bool operator>=(const wide_int<Bytes,Signed>& num,
     return wide_int<Bytes,Signed>::operator_more(num, other) ||
            wide_int<Bytes,Signed>::operator_eq(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr bool operator>=(const T& other,
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+constexpr bool operator>=(const Arithmetic& other,
                           const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_more(wide_int<Bytes,Signed>(other), num) ||
            wide_int<Bytes,Signed>::operator_eq(num, other);
@@ -1004,39 +1048,48 @@ constexpr bool operator==(const wide_int<Bytes,Signed>& num,
                           const T& other) noexcept {
     return wide_int<Bytes,Signed>::operator_eq(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr bool operator==(const T& other,
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+constexpr bool operator==(const Arithmetic& other,
                           const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_eq(num, other);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator&(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator&(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
     return wide_int<Bytes,Signed>::operator_amp(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator&(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
+std::common_type_t<wide_int<Bytes,Signed>, Integral>
+constexpr operator&(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept {
+    static_assert(std::is_integral<Integral>::value, "");
     return wide_int<Bytes,Signed>::operator_amp(wide_int<Bytes,Signed>(other), num);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator|(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator|(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
     return wide_int<Bytes,Signed>::operator_pipe(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator|(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
+std::common_type_t<wide_int<Bytes,Signed>, Integral>
+constexpr operator|(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept {
+    static_assert(std::is_integral<Integral>::value, "");
     return wide_int<Bytes,Signed>::operator_pipe(wide_int<Bytes,Signed>(other), num);
 }
 
 template<size_t Bytes, bool Signed, typename T>
-constexpr auto operator^(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+std::common_type_t<wide_int<Bytes,Signed>, T>
+constexpr operator^(const wide_int<Bytes,Signed>& num, const T& other) noexcept {
+    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
     return wide_int<Bytes,Signed>::operator_circumflex(num, other);
 }
-template<size_t Bytes, bool Signed, typename T, class = __arithm_not_wide_int<T>>
-constexpr wide_int<Bytes,Signed> operator^(const T& other,
-                                       const wide_int<Bytes,Signed>& num) noexcept {
+template<size_t Bytes, bool Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
+std::common_type_t<wide_int<Bytes,Signed>, Integral>
+constexpr operator^(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept {
+    static_assert(std::is_integral<Integral>::value, "");
     return wide_int<Bytes,Signed>::operator_circumflex(wide_int<Bytes,Signed>(other), num);
 }
 
