@@ -421,7 +421,7 @@ struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt; {
   <li><code>Arithmetic</code> if <code>is_floating_point_v&lt;Arithmetic&gt;</code> is <code>true</code></li>
   <li><code>wide_int&lt;Bytes, Signed&gt;</code> if <code>Bytes &gt; sizeof(Arithmetic)</code></li>
   <li><code>Arithmetic</code> if <code>Bytes &lt; sizeof(Arithmetic)</code></li>
-  <li><code>Arithmetic</code> if <code>Bytes == Bytes2 &amp;&amp; Signed</code> or <code>Bytes == Bytes2 &amp;&amp; Signed == is_signed_v&lt;Arithmetic&gt;</code></li>
+  <li><code>Arithmetic</code> if <code>Bytes == sizeof(Arithmetic) &amp;&amp; Signed</code> or <code>Bytes == sizeof(Arithmetic) &amp;&amp; Signed == is_signed_v&lt;Arithmetic&gt;</code></li>
   <li><code>wide_int&lt;Bytes, Signed&gt;</code> otherwise</li>
 </ul>
 <div class="desc"><i>Requires:</i> <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
