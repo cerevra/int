@@ -33,6 +33,8 @@
 #include <limits>
 
 
+struct _test;
+
 namespace std {
 template<size_t Bytes, bool Signed>
 class wide_int;
@@ -123,13 +125,17 @@ public:
     constexpr operator double () const noexcept;
     constexpr operator float () const noexcept;
 
-public:
-
-    friend struct _test;
-
     struct _impl;
 
-//private:
+private:
+    friend struct ::_test;
+
+    template<size_t Bytes2, bool Signed2>
+    friend class wide_int;
+
+    friend class numeric_limits<wide_int<Bytes, true>>;
+    friend class numeric_limits<wide_int<Bytes, false>>;
+
     base_type m_arr[_impl::arr_size()];
 };
 

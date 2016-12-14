@@ -90,7 +90,7 @@ struct wide_int<Bytes, Signed>::_impl {
     constexpr static void wide_int_from_Integral(wide_int<Bytes, Signed>& self, Integral other) noexcept {
         int r_idx = 0;
 
-        for (; static_cast<size_t>(r_idx) < sizeof(Integral) && r_idx < arr_size(); ++r_idx) {
+        for ( ; static_cast<size_t>(r_idx) < sizeof(Integral) && r_idx < arr_size(); ++r_idx) {
             base_type& curr = self.m_arr[arr_size() - 1 - r_idx];
             base_type curr_other = (other >> (r_idx*CHAR_BIT)) & std::numeric_limits<base_type>::max();
             curr = curr_other;
