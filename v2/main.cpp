@@ -10,17 +10,22 @@ using namespace std;
 
 #define assert(a, info) {if (!(a)) throw std::runtime_error(#a ", line:" + std::to_string(__LINE__) + ", info:" + info );}
 
+struct _test {
+
 template<size_t Bits, bool Sgn>
+static
 void printNum(const wide_int<Bits, Sgn>& n) {
     for (auto c : n.m_arr) {
         std::cerr << std::hex << std::setw(16) << std::setfill('0') << uint64_t(c) << std::endl;
     }
 }
 
+static
 void printNum(uint64_t n) {
     std::cerr << std::hex << std::setw(16) << std::setfill('0') << n << std::endl;
 }
 
+static
 void testCtors() {
     int512_t a1 = 0;
     for (auto c : a1.m_arr) {
@@ -126,14 +131,15 @@ void testCtors() {
     assert(b9.m_arr[63] == 13, "");
 }
 
+static
 void testShifts() {
     //left
     uint512_t a1 = 0;
-    for (auto c : uint512_t::shift_left(a1, 0).m_arr) {
+    for (auto c : uint512_t::_impl::shift_left(a1, 0).m_arr) {
         assert(c == 0, "");
     }
     uint512_t a2 = 0;
-    for (auto c : uint512_t::shift_left(a2, 15).m_arr) {
+    for (auto c : uint512_t::_impl::shift_left(a2, 15).m_arr) {
         assert(c == 0, "");
     }
 
@@ -146,7 +152,7 @@ void testShifts() {
     a3.m_arr[61] = 0xf6;
     a3.m_arr[62] = 0xf7;
     a3.m_arr[63] = 0xf8;
-    uint512_t a31 = uint512_t::shift_left(a3, 8);
+    uint512_t a31 = uint512_t::_impl::shift_left(a3, 8);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a31.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -160,7 +166,7 @@ void testShifts() {
     assert(a31.m_arr[62] == 0xf8, "");
     assert(a31.m_arr[63] == 0x00, "");
 
-    uint512_t a32 = uint512_t::shift_left(a3, 16);
+    uint512_t a32 = uint512_t::_impl::shift_left(a3, 16);
     for (int idx = 0; idx < 54; ++idx) {
         assert(a32.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -175,7 +181,7 @@ void testShifts() {
     assert(a32.m_arr[62] == 0x00, "");
     assert(a32.m_arr[63] == 0x00, "");
 
-    uint512_t a33 = uint512_t::shift_left(a3, 4);
+    uint512_t a33 = uint512_t::_impl::shift_left(a3, 4);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a33.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -189,7 +195,7 @@ void testShifts() {
     assert(a33.m_arr[62] == 0x7f, "");
     assert(a33.m_arr[63] == 0x80, "");
 
-    uint512_t a34 = uint512_t::shift_left(a3, 64);
+    uint512_t a34 = uint512_t::_impl::shift_left(a3, 64);
     for (int idx = 0; idx < 48; ++idx) {
         assert(a34.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -205,7 +211,7 @@ void testShifts() {
         assert(a34.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a35 = uint512_t::shift_left(a3, 256);
+    uint512_t a35 = uint512_t::_impl::shift_left(a3, 256);
     for (int idx = 0; idx < 24; ++idx) {
         assert(a35.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -221,7 +227,7 @@ void testShifts() {
         assert(a35.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a36 = uint512_t::shift_left(a3, 260);
+    uint512_t a36 = uint512_t::_impl::shift_left(a3, 260);
     for (int idx = 0; idx < 23; ++idx) {
         assert(a36.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -240,11 +246,11 @@ void testShifts() {
 
     //right uint
     uint512_t a4 = 0;
-    for (auto c : uint512_t::shift_right(a4, 0).m_arr) {
+    for (auto c : uint512_t::_impl::shift_right(a4, 0).m_arr) {
         assert(c == 0, "");
     }
     uint512_t a5 = 0;
-    for (auto c : uint512_t::shift_right(a5, 15).m_arr) {
+    for (auto c : uint512_t::_impl::shift_right(a5, 15).m_arr) {
         assert(c == 0, "");
     }
 
@@ -265,7 +271,7 @@ void testShifts() {
     a6.m_arr[5] = 0xf6;
     a6.m_arr[6] = 0xf7;
     a6.m_arr[7] = 0xf8;
-    uint512_t a61 = uint512_t::shift_right(a6, 8);
+    uint512_t a61 = uint512_t::_impl::shift_right(a6, 8);
     assert(a61.m_arr[0] == 0, "");
     assert(a61.m_arr[1] == 0xf1, "");
     assert(a61.m_arr[2] == 0xf2, "");
@@ -286,7 +292,7 @@ void testShifts() {
     assert(a61.m_arr[62] == 0xf6, "");
     assert(a61.m_arr[63] == 0xf7, "");
 
-    uint512_t a62 = uint512_t::shift_right(a6, 16);
+    uint512_t a62 = uint512_t::_impl::shift_right(a6, 16);
     assert(a62.m_arr[0] == 0, "");
     assert(a62.m_arr[1] == 0, "");
     assert(a62.m_arr[2] == 0xf1, "");
@@ -307,7 +313,7 @@ void testShifts() {
     assert(a62.m_arr[62] == 0xf5, "");
     assert(a62.m_arr[63] == 0xf6, "");
 
-    uint512_t a63 = uint512_t::shift_right(a6, 4);
+    uint512_t a63 = uint512_t::_impl::shift_right(a6, 4);
     assert(a63.m_arr[0] == 0x0f, "");
     assert(a63.m_arr[1] == 0x1f, "");
     assert(a63.m_arr[2] == 0x2f, "");
@@ -329,7 +335,7 @@ void testShifts() {
     assert(a63.m_arr[62] == 0x6f, "");
     assert(a63.m_arr[63] == 0x7f, "");
 
-    uint512_t a64 = uint512_t::shift_right(a6, 64);
+    uint512_t a64 = uint512_t::_impl::shift_right(a6, 64);
     for (int idx = 0; idx < 8; ++idx) {
         assert(a64.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -345,7 +351,7 @@ void testShifts() {
         assert(a64.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a65 = uint512_t::shift_right(a6, 256);
+    uint512_t a65 = uint512_t::_impl::shift_right(a6, 256);
     for (int idx = 0; idx < 32; ++idx) {
         assert(a65.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -361,7 +367,7 @@ void testShifts() {
         assert(a65.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a66 = uint512_t::shift_right(a6, 260);
+    uint512_t a66 = uint512_t::_impl::shift_right(a6, 260);
     for (int idx = 0; idx < 32; ++idx) {
         assert(a66.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -380,11 +386,11 @@ void testShifts() {
 
     //right int > 0
     int512_t b4 = 0;
-    for (auto c : int512_t::shift_right(b4, 0).m_arr) {
+    for (auto c : int512_t::_impl::shift_right(b4, 0).m_arr) {
         assert(c == 0, "");
     }
     int512_t b5 = 0;
-    for (auto c : int512_t::shift_right(b5, 15).m_arr) {
+    for (auto c : int512_t::_impl::shift_right(b5, 15).m_arr) {
         assert(c == 0, "");
     }
 
@@ -406,7 +412,7 @@ void testShifts() {
     b6.m_arr[62] = 0xf7;
     b6.m_arr[63] = 0xf8;
 
-    int512_t b61 = int512_t::shift_right(b6, 8);
+    int512_t b61 = int512_t::_impl::shift_right(b6, 8);
     assert(b61.m_arr[0] == 0   , "");
     assert(b61.m_arr[1] == 0x71, "");
     assert(b61.m_arr[2] == 0xf2, "");
@@ -427,7 +433,7 @@ void testShifts() {
     assert(b61.m_arr[62] == 0xf6, "");
     assert(b61.m_arr[63] == 0xf7, "");
 
-    int512_t b62 = int512_t::shift_right(b6, 16);
+    int512_t b62 = int512_t::_impl::shift_right(b6, 16);
     assert(b62.m_arr[0] == 0   , "");
     assert(b62.m_arr[1] == 0   , "");
     assert(b62.m_arr[2] == 0x71, "");
@@ -448,7 +454,7 @@ void testShifts() {
     assert(b62.m_arr[62] == 0xf5, "");
     assert(b62.m_arr[63] == 0xf6, "");
 
-    int512_t b63 = int512_t::shift_right(b6, 4);
+    int512_t b63 = int512_t::_impl::shift_right(b6, 4);
     assert(b63.m_arr[0] == 0x07, "");
     assert(b63.m_arr[1] == 0x1f, "");
     assert(b63.m_arr[2] == 0x2f, "");
@@ -470,7 +476,7 @@ void testShifts() {
     assert(b63.m_arr[62] == 0x6f, "");
     assert(b63.m_arr[63] == 0x7f, "");
 
-    int512_t b64 = int512_t::shift_right(b6, 64);
+    int512_t b64 = int512_t::_impl::shift_right(b6, 64);
     assert(b64.m_arr[8] == 0x71, "");
     assert(b64.m_arr[9] == 0xf2, "");
     assert(b64.m_arr[10] == 0xf3, "");
@@ -483,7 +489,7 @@ void testShifts() {
         assert(b64.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    int512_t b65 = int512_t::shift_right(b6, 256);
+    int512_t b65 = int512_t::_impl::shift_right(b6, 256);
     for (int idx = 0; idx < 32; ++idx) {
         assert(b65.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -499,7 +505,7 @@ void testShifts() {
         assert(b65.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    int512_t b66 = int512_t::shift_right(b6, 260);
+    int512_t b66 = int512_t::_impl::shift_right(b6, 260);
     for (int idx = 0; idx < 32; ++idx) {
         assert(b66.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -534,7 +540,7 @@ void testShifts() {
     b7.m_arr[61] = 0xf6;
     b7.m_arr[62] = 0xf7;
     b7.m_arr[63] = 0xf8;
-    int512_t b71 = int512_t::shift_right(b7, 8);
+    int512_t b71 = int512_t::_impl::shift_right(b7, 8);
     assert(b71.m_arr[0] == 0xff, "");
     assert(b71.m_arr[1] == 0xf1, "");
     assert(b71.m_arr[2] == 0xf2, "");
@@ -555,7 +561,7 @@ void testShifts() {
     assert(b71.m_arr[62] == 0xf6, "");
     assert(b71.m_arr[63] == 0xf7, "");
 
-    int512_t b72 = int512_t::shift_right(b7, 16);
+    int512_t b72 = int512_t::_impl::shift_right(b7, 16);
     assert(b72.m_arr[0] == 0xff, "");
     assert(b72.m_arr[1] == 0xff, "");
     assert(b72.m_arr[2] == 0xf1, "");
@@ -576,7 +582,7 @@ void testShifts() {
     assert(b72.m_arr[62] == 0xf5, "");
     assert(b72.m_arr[63] == 0xf6, "");
 
-    int512_t b73 = int512_t::shift_right(b7, 4);
+    int512_t b73 = int512_t::_impl::shift_right(b7, 4);
     assert(b73.m_arr[0] == 0xff, "");
     assert(b73.m_arr[1] == 0x1f, "");
     assert(b73.m_arr[2] == 0x2f, "");
@@ -598,7 +604,7 @@ void testShifts() {
     assert(b73.m_arr[62] == 0x6f, "");
     assert(b73.m_arr[63] == 0x7f, "");
 
-    int512_t b74 = int512_t::shift_right(b7, 64);
+    int512_t b74 = int512_t::_impl::shift_right(b7, 64);
     for (int idx = 0; idx < 7; ++idx) {
         assert(b74.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -614,7 +620,7 @@ void testShifts() {
         assert(b74.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    int512_t b75 = int512_t::shift_right(b7, 256);
+    int512_t b75 = int512_t::_impl::shift_right(b7, 256);
     for (int idx = 0; idx < 32; ++idx) {
         assert(b75.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -630,7 +636,7 @@ void testShifts() {
         assert(b75.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    int512_t b76 = int512_t::shift_right(b7, 260);
+    int512_t b76 = int512_t::_impl::shift_right(b7, 260);
     for (int idx = 0; idx < 33; ++idx) {
         assert(b76.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -647,13 +653,14 @@ void testShifts() {
     }
 
     int512_t b8 = -13;
-    int512_t b81 = int512_t::shift_right(b8, 1);
+    int512_t b81 = int512_t::_impl::shift_right(b8, 1);
     for (int idx = 0; idx < 63; ++idx) {
         assert(b81.m_arr[idx] == 0xff, std::to_string(idx));
     }
     assert(b81.m_arr[63] == 0xf9, "");
 }
 
+static
 void testAssign() {
     uint512_t a1 = 0;
     int512_t b1 = 0;
@@ -731,11 +738,12 @@ void testAssign() {
     assert(b1.m_arr[63] == 0xfc, "");
 }
 
+static
 void testOperatorPlus() {
     uint512_t a1 = 3;
     a1.m_arr[55] = 1;
 
-    uint512_t a11 = uint512_t::operator_plus_T(a1, 5);
+    uint512_t a11 = uint512_t::_impl::operator_plus_T(a1, 5);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a11.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -745,7 +753,7 @@ void testOperatorPlus() {
     }
     assert(a11.m_arr[63] == 8, "");
 
-    uint512_t a12 = uint512_t::operator_plus_T(a1, 0);
+    uint512_t a12 = uint512_t::_impl::operator_plus_T(a1, 0);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a12.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -755,7 +763,7 @@ void testOperatorPlus() {
     }
     assert(a12.m_arr[63] == 3, "");
 
-    uint512_t a14 = uint512_t::operator_plus_T(a1, std::numeric_limits<uint64_t>::max());
+    uint512_t a14 = uint512_t::_impl::operator_plus_T(a1, std::numeric_limits<uint64_t>::max());
     for (int idx = 0; idx < 55; ++idx) {
         assert(a14.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -768,7 +776,7 @@ void testOperatorPlus() {
     int512_t b1 = 3;
     b1.m_arr[55] = 1;
 
-    int512_t b11 = int512_t::operator_plus_T(b1, 5);
+    int512_t b11 = int512_t::_impl::operator_plus_T(b1, 5);
     for (int idx = 0; idx < 55; ++idx) {
         assert(b11.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -778,7 +786,7 @@ void testOperatorPlus() {
     }
     assert(b11.m_arr[63] == 8, "");
 
-    int512_t b12 = int512_t::operator_plus_T(b1, 0);
+    int512_t b12 = int512_t::_impl::operator_plus_T(b1, 0);
     for (int idx = 0; idx < 55; ++idx) {
         assert(b12.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -791,7 +799,7 @@ void testOperatorPlus() {
     int512_t b2 = -3;
     b2.m_arr[55] = -2;
 
-    int512_t b22 = int512_t::operator_plus_T(b2, 0);
+    int512_t b22 = int512_t::_impl::operator_plus_T(b2, 0);
     for (int idx = 0; idx < 55; ++idx) {
         assert(b22.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -801,7 +809,7 @@ void testOperatorPlus() {
     }
     assert(b22.m_arr[63] == 0xfd, "");
 
-    int512_t b23 = int512_t::operator_plus_T(b2, uint16_t(5));
+    int512_t b23 = int512_t::_impl::operator_plus_T(b2, uint16_t(5));
     for (int idx = 0; idx < 56; ++idx) {
         assert(b23.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -812,7 +820,7 @@ void testOperatorPlus() {
 
     int512_t b3 = -3;
 
-    int512_t b31 = int512_t::operator_plus_T(b3, 5);
+    int512_t b31 = int512_t::_impl::operator_plus_T(b3, 5);
     for (int idx = 0; idx < 63; ++idx) {
         assert(b31.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -822,7 +830,7 @@ void testOperatorPlus() {
     b4.m_arr[55] = -2;
     b4.m_arr[63] = 3;
 
-    int512_t b41 = int512_t::operator_plus_T(b4, 5);
+    int512_t b41 = int512_t::_impl::operator_plus_T(b4, 5);
     for (int idx = 0; idx < 55; ++idx) {
         assert(b41.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -833,11 +841,12 @@ void testOperatorPlus() {
     assert(b41.m_arr[63] == 8, "");
 }
 
+static
 void testOperatorTilda() {
     uint512_t a1 = 250;
     a1.m_arr[3] = 17;
 
-    uint512_t a2 = uint512_t::operator_unary_tilda(a1);
+    uint512_t a2 = uint512_t::_impl::operator_unary_tilda(a1);
     for (int idx = 0; idx < 3; ++idx) {
         assert(a2.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -850,7 +859,7 @@ void testOperatorTilda() {
     int512_t b1 = 250;
     b1.m_arr[3] = 17;
 
-    int512_t b2 = int512_t::operator_unary_tilda(b1);
+    int512_t b2 = int512_t::_impl::operator_unary_tilda(b1);
     for (int idx = 0; idx < 3; ++idx) {
         assert(b2.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -863,7 +872,7 @@ void testOperatorTilda() {
     int512_t b3 = -250;
     b3.m_arr[3] = 17;
 
-    int512_t b4 = int512_t::operator_unary_tilda(b3);
+    int512_t b4 = int512_t::_impl::operator_unary_tilda(b3);
     for (int idx = 0; idx < 3; ++idx) {
         assert(b4.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -874,11 +883,12 @@ void testOperatorTilda() {
     assert(b4.m_arr[63] == 0xf9, "");
 }
 
+static
 void testOperatorUnaryMinus() {
     uint512_t a1 = 250;
     a1.m_arr[3] = 17;
 
-    uint512_t a2 = uint512_t::operator_unary_minus(a1);
+    uint512_t a2 = uint512_t::_impl::operator_unary_minus(a1);
     for (int idx = 0; idx < 3; ++idx) {
         assert(a2.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -891,7 +901,7 @@ void testOperatorUnaryMinus() {
     int512_t b1 = 250;
     b1.m_arr[3] = 17;
 
-    int512_t b2 = int512_t::operator_unary_minus(b1);
+    int512_t b2 = int512_t::_impl::operator_unary_minus(b1);
     for (int idx = 0; idx < 3; ++idx) {
         assert(b2.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -904,7 +914,7 @@ void testOperatorUnaryMinus() {
     int512_t b3 = -250;
     b3.m_arr[3] = 17;
 
-    int512_t b4 = int512_t::operator_unary_minus(b3);
+    int512_t b4 = int512_t::_impl::operator_unary_minus(b3);
     for (int idx = 0; idx < 3; ++idx) {
         assert(b4.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -915,11 +925,12 @@ void testOperatorUnaryMinus() {
     assert(b4.m_arr[63] == 0xfa, "");
 }
 
+static
 void testOperatorPlusWide() {
     uint512_t a1 = 3;
     a1.m_arr[55] = 1;
 
-    uint512_t a11 = uint512_t::operator_plus(a1, a1);
+    uint512_t a11 = uint512_t::_impl::operator_plus(a1, a1);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a11.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -929,7 +940,7 @@ void testOperatorPlusWide() {
     }
     assert(a11.m_arr[63] == 6, "");
 
-    uint512_t a12 = uint512_t::operator_plus(a1, uint256_t(0));
+    uint512_t a12 = uint512_t::_impl::operator_plus(a1, uint256_t(0));
     for (int idx = 0; idx < 55; ++idx) {
         assert(a12.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -939,7 +950,7 @@ void testOperatorPlusWide() {
     }
     assert(a12.m_arr[63] == 3, "");
 
-    uint512_t a13 = uint512_t::operator_minus(a1, uint128_t(5));
+    uint512_t a13 = uint512_t::_impl::operator_minus(a1, uint128_t(5));
     for (int idx = 0; idx < 56; ++idx) {
         assert(a13.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -948,7 +959,7 @@ void testOperatorPlusWide() {
     }
     assert(a13.m_arr[63] == 0xfe, "");
 
-    uint512_t a14 = uint512_t::operator_plus(a1, uint512_t::operator_plus_T(a1, std::numeric_limits<uint64_t>::max()));
+    uint512_t a14 = uint512_t::_impl::operator_plus(a1, uint512_t::_impl::operator_plus_T(a1, std::numeric_limits<uint64_t>::max()));
     for (int idx = 0; idx < 55; ++idx) {
         assert(a14.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -958,7 +969,7 @@ void testOperatorPlusWide() {
     }
     assert(a14.m_arr[63] == 5, "");
 
-    uint512_t a15 = uint512_t::operator_minus(a1, uint256_t(0));
+    uint512_t a15 = uint512_t::_impl::operator_minus(a1, uint256_t(0));
     for (int idx = 0; idx < 55; ++idx) {
         assert(a15.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -971,7 +982,7 @@ void testOperatorPlusWide() {
     int512_t b1 = 3;
     b1.m_arr[55] = 1;
 
-    int512_t b11 = int512_t::operator_plus(b1, uint128_t(5));
+    int512_t b11 = int512_t::_impl::operator_plus(b1, uint128_t(5));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b11.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -981,7 +992,7 @@ void testOperatorPlusWide() {
     }
     assert(b11.m_arr[63] == 8, "");
 
-    int512_t b12 = int512_t::operator_plus(b1, uint512_t(0));
+    int512_t b12 = int512_t::_impl::operator_plus(b1, uint512_t(0));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b12.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -991,7 +1002,7 @@ void testOperatorPlusWide() {
     }
     assert(b12.m_arr[63] == 3, "");
 
-    int512_t b13 = int512_t::operator_minus(b1, uint128_t(5));
+    int512_t b13 = int512_t::_impl::operator_minus(b1, uint128_t(5));
     for (int idx = 0; idx < 56; ++idx) {
         assert(b13.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1000,7 +1011,7 @@ void testOperatorPlusWide() {
     }
     assert(b13.m_arr[63] == 0xfe, "");
 
-    int512_t b14 = int512_t::operator_minus(b1, int128_t(0));
+    int512_t b14 = int512_t::_impl::operator_minus(b1, int128_t(0));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b14.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1013,7 +1024,7 @@ void testOperatorPlusWide() {
     int512_t b2 = -3;
     b2.m_arr[55] = -2;
 
-    int512_t b21 = int512_t::operator_minus(b2, uint128_t(5));
+    int512_t b21 = int512_t::_impl::operator_minus(b2, uint128_t(5));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b21.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -1023,7 +1034,7 @@ void testOperatorPlusWide() {
     }
     assert(static_cast<int8_t>(b21.m_arr[63]) == -8, "");
 
-    int512_t b22 = int512_t::operator_plus(b2, int256_t(0));
+    int512_t b22 = int512_t::_impl::operator_plus(b2, int256_t(0));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b22.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -1033,7 +1044,7 @@ void testOperatorPlusWide() {
     }
     assert(static_cast<int8_t>(b22.m_arr[63]) == -3, "");
 
-    int512_t b23 = int512_t::operator_plus(b2, uint128_t(5));
+    int512_t b23 = int512_t::_impl::operator_plus(b2, uint128_t(5));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b23.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -1045,7 +1056,7 @@ void testOperatorPlusWide() {
 
     int512_t b3 = -3;
 
-    int512_t b31 = int512_t::operator_plus(b3, int128_t(5));
+    int512_t b31 = int512_t::_impl::operator_plus(b3, int128_t(5));
     for (int idx = 0; idx < 63; ++idx) {
         assert(b31.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1055,7 +1066,7 @@ void testOperatorPlusWide() {
     b4.m_arr[55] = -2;
     b4.m_arr[63] = 3;
 
-    int512_t b41 = int512_t::operator_plus(b4, uint256_t(5));
+    int512_t b41 = int512_t::_impl::operator_plus(b4, uint256_t(5));
     for (int idx = 0; idx < 55; ++idx) {
         assert(b41.m_arr[idx] == 0xff, std::to_string(idx));
     }
@@ -1066,68 +1077,69 @@ void testOperatorPlusWide() {
     assert(static_cast<int8_t>(b41.m_arr[63]) == 8, "");
 
     // test cast
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_plus(uint512_t(0), uint128_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_plus(uint512_t(0), uint256_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_plus(uint512_t(0), uint512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_plus(int512_t(0), int128_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_plus(int512_t(0), int256_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_plus(int512_t(0), int512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_plus(uint512_t(0), int128_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_plus(uint512_t(0), int256_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_plus(uint512_t(0), int512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_plus(int512_t(0), uint128_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_plus(int512_t(0), uint256_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_plus(int512_t(0), uint512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_plus(uint512_t(0), uint128_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_plus(uint512_t(0), uint256_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_plus(uint512_t(0), uint512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_plus(int512_t(0), int128_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_plus(int512_t(0), int256_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_plus(int512_t(0), int512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_plus(uint512_t(0), int128_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_plus(uint512_t(0), int256_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_plus(uint512_t(0), int512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_plus(int512_t(0), uint128_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_plus(int512_t(0), uint256_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_plus(int512_t(0), uint512_t(3))), "");
 
-    assert(typeid(uint512_t) == typeid(uint128_t::operator_plus(uint128_t(0), uint512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint256_t::operator_plus(uint256_t(0), uint512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int128_t::operator_plus(int128_t(0), int512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int256_t::operator_plus(int256_t(0), int512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint128_t::operator_plus(uint128_t(0), int512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint256_t::operator_plus(uint256_t(0), int512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int128_t::operator_plus(int128_t(0), uint512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int256_t::operator_plus(int256_t(0), uint512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint128_t::_impl::operator_plus(uint128_t(0), uint512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint256_t::_impl::operator_plus(uint256_t(0), uint512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int128_t::_impl::operator_plus(int128_t(0), int512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int256_t::_impl::operator_plus(int256_t(0), int512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint128_t::_impl::operator_plus(uint128_t(0), int512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint256_t::_impl::operator_plus(uint256_t(0), int512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int128_t::_impl::operator_plus(int128_t(0), uint512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int256_t::_impl::operator_plus(int256_t(0), uint512_t(3))), "");
 
 
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_minus(uint512_t(0), uint128_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_minus(uint512_t(0), uint256_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_minus(uint512_t(0), uint512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_minus(int512_t(0), int128_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_minus(int512_t(0), int256_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_minus(int512_t(0), int512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_minus(uint512_t(0), int128_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_minus(uint512_t(0), int256_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint512_t::operator_minus(uint512_t(0), int512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_minus(int512_t(0), uint128_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_minus(int512_t(0), uint256_t(3))), "");
-    assert(typeid(int512_t) == typeid(int512_t::operator_minus(int512_t(0), uint512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_minus(uint512_t(0), uint128_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_minus(uint512_t(0), uint256_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_minus(uint512_t(0), uint512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_minus(int512_t(0), int128_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_minus(int512_t(0), int256_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_minus(int512_t(0), int512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_minus(uint512_t(0), int128_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_minus(uint512_t(0), int256_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint512_t::_impl::operator_minus(uint512_t(0), int512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_minus(int512_t(0), uint128_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_minus(int512_t(0), uint256_t(3))), "");
+    assert(typeid(int512_t) == typeid(int512_t::_impl::operator_minus(int512_t(0), uint512_t(3))), "");
 
-    assert(typeid(uint512_t) == typeid(uint128_t::operator_minus(uint128_t(0), uint512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint256_t::operator_minus(uint256_t(0), uint512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int128_t::operator_minus(int128_t(0), int512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int256_t::operator_minus(int256_t(0), int512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint128_t::operator_minus(uint128_t(0), int512_t(3))), "");
-    assert(typeid(uint512_t) == typeid(uint256_t::operator_minus(uint256_t(0), int512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int128_t::operator_minus(int128_t(0), uint512_t(3))), "");
-    assert(typeid(int512_t) == typeid(int256_t::operator_minus(int256_t(0), uint512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint128_t::_impl::operator_minus(uint128_t(0), uint512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint256_t::_impl::operator_minus(uint256_t(0), uint512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int128_t::_impl::operator_minus(int128_t(0), int512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int256_t::_impl::operator_minus(int256_t(0), int512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint128_t::_impl::operator_minus(uint128_t(0), int512_t(3))), "");
+    assert(typeid(uint512_t) == typeid(uint256_t::_impl::operator_minus(uint256_t(0), int512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int128_t::_impl::operator_minus(int128_t(0), uint512_t(3))), "");
+    assert(typeid(int512_t) == typeid(int256_t::_impl::operator_minus(int256_t(0), uint512_t(3))), "");
 }
 
+static
 void testOperatorStar() {
     uint512_t a1 = 256_uint512;
 
-    uint512_t a11 = uint512_t::operator_star(a1, uint512_t(1));
+    uint512_t a11 = uint512_t::_impl::operator_star(a1, uint512_t(1));
     for (int idx = 0; idx < 62; ++idx) {
         assert(a11.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a11.m_arr[62] == 1, "");
     assert(a11.m_arr[63] == 0, "");
 
-    uint512_t a12 = uint512_t::operator_star(a1, uint512_t(0));
+    uint512_t a12 = uint512_t::_impl::operator_star(a1, uint512_t(0));
     for (int idx = 0; idx < 63; ++idx) {
         assert(a12.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a13 = uint512_t::operator_star(a1, uint512_t(2));
+    uint512_t a13 = uint512_t::_impl::operator_star(a1, uint512_t(2));
     for (int idx = 0; idx < 62; ++idx) {
         assert(a13.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1135,7 +1147,7 @@ void testOperatorStar() {
     assert(a13.m_arr[63] == 0, "");
 
     uint512_t a2 = std::numeric_limits<uint64_t>::max();
-    uint512_t a24 = uint512_t::operator_star(a2, uint512_t(2));
+    uint512_t a24 = uint512_t::_impl::operator_star(a2, uint512_t(2));
     for (int idx = 0; idx < 55; ++idx) {
         assert(a24.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1147,19 +1159,19 @@ void testOperatorStar() {
 
     uint512_t a3 = 256;
 
-    uint512_t a31 = uint512_t::operator_star(a3, 1);
+    uint512_t a31 = uint512_t::_impl::operator_star(a3, 1);
     for (int idx = 0; idx < 62; ++idx) {
         assert(a31.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a31.m_arr[62] == 1, "");
     assert(a31.m_arr[63] == 0, "");
 
-    uint512_t a32 = uint512_t::operator_star(a3, 0);
+    uint512_t a32 = uint512_t::_impl::operator_star(a3, 0);
     for (int idx = 0; idx < 63; ++idx) {
         assert(a32.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a33 = uint512_t::operator_star(a3, 2);
+    uint512_t a33 = uint512_t::_impl::operator_star(a3, 2);
     for (int idx = 0; idx < 62; ++idx) {
         assert(a33.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1167,7 +1179,7 @@ void testOperatorStar() {
     assert(a33.m_arr[63] == 0, "");
 
     uint512_t a4 = std::numeric_limits<uint64_t>::max();
-    uint512_t a44 = uint512_t::operator_star(a4, 2);
+    uint512_t a44 = uint512_t::_impl::operator_star(a4, 2);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a44.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1178,27 +1190,30 @@ void testOperatorStar() {
     assert(a44.m_arr[63] == 0xfe, "");
 }
 
+static
 void testOperatorMore() {
-    assert(int512_t::operator_more(15, -18), "");
-    assert(!uint512_t::operator_more(15, 18U), "");
-    assert(uint512_t::operator_more(18, 15U), "");
-    assert(!uint512_t::operator_more(15, 18U), "");
-    assert(int512_t::operator_more(-15, -18), "");
-    assert(!int512_t::operator_more(-18, -15), "");
+    assert(int512_t::_impl::operator_more(15, -18), "");
+    assert(!uint512_t::_impl::operator_more(15, 18U), "");
+    assert(uint512_t::_impl::operator_more(18, 15U), "");
+    assert(!uint512_t::_impl::operator_more(15, 18U), "");
+    assert(int512_t::_impl::operator_more(-15, -18), "");
+    assert(!int512_t::_impl::operator_more(-18, -15), "");
 }
 
+static
 void testOperatorEq() {
-    assert(uint512_t::operator_eq(uint512_t(12), int64_t(12)), "");
-    assert(uint512_t::operator_eq(12, 12), "");
-    assert(uint512_t::operator_eq(0, 0), "");
+    assert(uint512_t::_impl::operator_eq(uint512_t(12), int64_t(12)), "");
+    assert(uint512_t::_impl::operator_eq(12, 12), "");
+    assert(uint512_t::_impl::operator_eq(0, 0), "");
 }
 
+static
 void testOperatorPipe() {
     uint512_t a1 = 0x0102030405060708;
     for (int i = 0; i < 7; ++i) {
         a1.m_arr[i] = 0x01;
     }
-    uint512_t a2 = uint512_t::operator_pipe(a1, 0xf0f0f0f0f0f0f0f0);
+    uint512_t a2 = uint512_t::_impl::operator_pipe(a1, 0xf0f0f0f0f0f0f0f0);
 
     for (int i = 0; i < 7; ++i) {
         assert(a2.m_arr[i] == 0x01, "");
@@ -1220,7 +1235,7 @@ void testOperatorPipe() {
         a3.m_arr[i] = 0xf0;
     }
 
-    uint512_t a4 = uint512_t::operator_pipe(a1, a3);
+    uint512_t a4 = uint512_t::_impl::operator_pipe(a1, a3);
 
     for (int i = 0; i < 7; ++i) {
         assert(a4.m_arr[i] == 0xf1, "");
@@ -1238,12 +1253,13 @@ void testOperatorPipe() {
     assert(a4.m_arr[63] == 0xf8, "");
 }
 
+static
 void testOperatorAmp() {
     uint512_t a1 = 0x0102030405060708;
     for (int i = 0; i < 7; ++i) {
         a1.m_arr[i] = 0x01;
     }
-    uint512_t a2 = uint512_t::operator_amp(a1, 0xf0f0f0f0f0f0f0f0);
+    uint512_t a2 = uint512_t::_impl::operator_amp(a1, 0xf0f0f0f0f0f0f0f0);
 
     for (int idx = 0; idx < 63; ++idx) {
         assert(a2.m_arr[idx] == 0, std::to_string(idx));
@@ -1254,7 +1270,7 @@ void testOperatorAmp() {
         a2.m_arr[i] = 0xf0;
     }
 
-    uint512_t a4 = uint512_t::operator_amp(a1, a3);
+    uint512_t a4 = uint512_t::_impl::operator_amp(a1, a3);
 
     for (int idx = 0; idx < 56; ++idx) {
         assert(a4.m_arr[idx] == 0, std::to_string(idx));
@@ -1269,27 +1285,28 @@ void testOperatorAmp() {
     assert(a4.m_arr[63] == 0x08, "");
 }
 
+static
 void testOperatorSlash() {
-    uint512_t a1 = uint512_t::operator_slash(15, 3);
+    uint512_t a1 = uint512_t::_impl::operator_slash(15, 3);
     for (int idx = 0; idx < 63; ++idx) {
         assert(a1.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a1.m_arr[63] == 5, "");
 
-    uint512_t a2 = uint512_t::operator_slash(17, 3);
+    uint512_t a2 = uint512_t::_impl::operator_slash(17, 3);
     for (int idx = 0; idx < 63; ++idx) {
         assert(a2.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a2.m_arr[63] == 5, "");
 
-    uint512_t a3 = uint512_t::operator_slash(0, 3);
+    uint512_t a3 = uint512_t::_impl::operator_slash(0, 3);
     for (int idx = 0; idx < 64; ++idx) {
         assert(a3.m_arr[idx] == 0, std::to_string(idx));
     }
 
     uint512_t a4 = 2048;
     a4.m_arr[55] = 2;
-    uint512_t a41 = uint512_t::operator_slash(a4, 2);
+    uint512_t a41 = uint512_t::_impl::operator_slash(a4, 2);
     for (int idx = 0; idx < 55; ++idx) {
         assert(a41.m_arr[idx] == 0, std::to_string(idx));
     }
@@ -1301,42 +1318,45 @@ void testOperatorSlash() {
     assert(a41.m_arr[63] == 0, "");
 }
 
+static
 void testOperatorPercent() {
-    uint512_t a1 = uint512_t::operator_percent(15, 3);
+    uint512_t a1 = uint512_t::_impl::operator_percent(15, 3);
     for (int idx = 0; idx < 64; ++idx) {
         assert(a1.m_arr[idx] == 0, std::to_string(idx));
     }
 
-    uint512_t a2 = uint512_t::operator_percent(17, 3);
+    uint512_t a2 = uint512_t::_impl::operator_percent(17, 3);
     for (int idx = 0; idx < 63; ++idx) {
         assert(a2.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a2.m_arr[63] == 2, "");
 
-    uint512_t a3 = uint512_t::operator_percent(0, 3);
+    uint512_t a3 = uint512_t::_impl::operator_percent(0, 3);
     for (int idx = 0; idx < 64; ++idx) {
         assert(a3.m_arr[idx] == 0, std::to_string(idx));
     }
 
     uint512_t a4 = 2049;
     a4.m_arr[55] = 2;
-    uint512_t a41 = uint512_t::operator_percent(a4, 2);
+    uint512_t a41 = uint512_t::_impl::operator_percent(a4, 2);
     for (int idx = 0; idx < 63; ++idx) {
         assert(a41.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a41.m_arr[63] == 1, "");
 }
 
+static
 void testCircumflex() {
     uint512_t a1 = 0xff;
 
-    uint512_t a2 = uint512_t::operator_circumflex(a1, 0xf);
+    uint512_t a2 = uint512_t::_impl::operator_circumflex(a1, 0xf);
     for (int idx = 0; idx < 63; ++idx) {
         assert(a2.m_arr[idx] == 0, std::to_string(idx));
     }
     assert(a2.m_arr[63] == 0xf0, "");
 }
 
+static
 void testToString() {
     assert(to_string(uint512_t(123455)) == std::string("123455"), "");
     assert(to_string(int512_t(-123455)) == std::string("-123455"), "");
@@ -1347,6 +1367,7 @@ void testToString() {
     std::wcout << 123000999_int128 << std::endl;
 }
 
+static
 void testCast() {
     assert(int(uint512_t(18)) == 18, "");
     assert(double(uint512_t(1024)) == 1024, "");
@@ -1363,8 +1384,9 @@ void testCast() {
     assert(a3 == 1024 , "");
 }
 
+static
 void testFromString() {
-    auto a1 = uint512_t::from_str("1234567");
+    auto a1 = uint512_t::_impl::from_str("1234567");
     assert(typeid(uint512_t) == typeid(a1), "");
     assert(std::to_string(a1) == "1234567", "");
     for (int idx = 0; idx < 61; ++idx) {
@@ -1375,6 +1397,7 @@ void testFromString() {
     assert(a1.m_arr[63] == 0x87, "");
 }
 
+static
 void testNativeOperators() {
     auto a1 = ~uint512_t(0xff);
     assert(typeid(uint512_t) == typeid(a1), "");
@@ -1561,6 +1584,7 @@ void testNativeOperators() {
     assert(2.0 * 1024_int128 == 2048, "");
 }
 
+static
 void testNativeOperatorsAssign() {
     uint512_t a1 = 18;
 
@@ -1595,10 +1619,12 @@ void testNativeOperatorsAssign() {
     assert(a1 == 0x0ffffffffffffff0, "");
 }
 
+static
 void testConstexpr() {
     constexpr uint256_t a0 {};
     static_assert(a0 == 0, "");
     static_assert(a0 != 1, "");
+    static_assert(1 != a0, "");
     static_assert(a0 >= 0U, "");
     static_assert(a0 <  1U, "");
     static_assert(a0 <= 1U, "");
@@ -1640,11 +1666,13 @@ void testConstexpr() {
     static_assert(0x80000000000000000000000000000000_uint128, "");
 }
 
+static
 void testEtc() {
     std::unordered_map<uint256_t, bool> m;
     assert(m.empty(), "");
 }
 
+static
 void tests() {
     static_assert(std::is_pod<int512_t>::value, "");
     static_assert(std::is_pod<uint512_t>::value, "");
@@ -1677,9 +1705,10 @@ void tests() {
 
     std::cout << "OK" << std::endl;
 }
+};
 
 int main() {
-    tests();
+    _test::tests();
 
     return 0;
 }
