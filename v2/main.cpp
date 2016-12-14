@@ -1593,16 +1593,12 @@ void testNativeOperatorsAssign() {
 
     a1 >>= 8;
     assert(a1 == 0x0ffffffffffffff0, "");
-
-    a1 != 0;
-    assert(a1 == 1, "");
-    a1 != 0xf;
-    assert(a1 == 0, "");
 }
 
 void testConstexpr() {
     constexpr uint256_t a0 {};
     static_assert(a0 == 0, "");
+    static_assert(a0 != 1, "");
     static_assert(a0 >= 0U, "");
     static_assert(a0 <  1U, "");
     static_assert(a0 <= 1U, "");

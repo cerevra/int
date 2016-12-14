@@ -200,12 +200,6 @@ public:
         return *this;
     }
 
-    template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator!=(const T& other) noexcept {
-        *this = !other;
-        return *this;
-    }
-
     // observers
     template <class T>
     using __arithm_not_wide_int_class = typename std::enable_if< std::is_integral<T>::value, T>::type;
@@ -1036,6 +1030,17 @@ template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wi
 constexpr bool operator==(const Arithmetic& other,
                           const wide_int<Bytes,Signed>& num) noexcept {
     return wide_int<Bytes,Signed>::operator_eq(num, other);
+}
+
+template<size_t Bytes, bool Signed, typename T>
+constexpr bool operator!=(const wide_int<Bytes,Signed>& num,
+                          const T& other) noexcept {
+    return !wide_int<Bytes,Signed>::operator_eq(num, other);
+}
+template<size_t Bytes, bool Signed, typename Arithmetic, class = __arithm_not_wide_int<Arithmetic>>
+constexpr bool operator!=(const Arithmetic& other,
+                          const wide_int<Bytes,Signed>& num) noexcept {
+    return !wide_int<Bytes,Signed>::operator_eq(num, other);
 }
 
 
