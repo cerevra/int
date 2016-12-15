@@ -1395,6 +1395,16 @@ void testFromString() {
     assert(a1.m_arr[61] == 0x12, "");
     assert(a1.m_arr[62] == 0xd6, "");
     assert(a1.m_arr[63] == 0x87, "");
+
+    std::string s = "1000000000000000000";
+    std::istringstream in(s);
+    in >> a1;
+    assert(a1 == 1000000000000000000_int256, "");
+
+    std::wstring ws = L"7000000000000000000";
+    std::wistringstream win(ws);
+    win >> a1;
+    assert(a1 == 7000000000000000000_int256, "");
 }
 
 static

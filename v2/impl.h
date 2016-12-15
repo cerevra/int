@@ -665,6 +665,52 @@ public:
         return res;
     }
 
+    constexpr static wide_int<Bytes, Signed> from_str(const wchar_t* c) noexcept {
+        wide_int<Bytes,Signed> res = 0;
+
+        bool is_neg = Signed && *c == L'-';
+        if (is_neg) {
+            ++c;
+        }
+
+        if (*c == L'0' && *(c+1) == L'x') { // hex
+            ++c;
+            ++c;
+            while (*c) {
+                if (*c >= L'0' && *c <= L'9') {
+                    res = operator_star(res, 16U);
+                    res = operator_plus_T(res, *c - L'0');
+                    ++c;
+                } else if (*c >= L'a' && *c <= L'f') {
+                    res = operator_star(res, 16U);
+                    res = operator_plus_T(res, *c - L'a' + 10U);
+                    ++c;
+                } else if (*c >= L'A' && *c <= L'F') { // tolower must be used, but it is not constexpr
+                    res = operator_star(res, 16U);
+                    res = operator_plus_T(res, *c - L'A' + 10U);
+                    ++c;
+                } else {
+                    throw std::runtime_error("invalid char from");
+                }
+            }
+        } else { // dec
+            while (*c) {
+                if (*c < L'0' || *c > L'9') {
+                    throw std::runtime_error("invalid char from");
+                }
+                res = operator_star(res, 10U);
+                res = operator_plus_T(res, *c - L'0');
+                ++c;
+            }
+        }
+
+        if (is_neg) {
+            res = operator_unary_minus(res);
+        }
+
+        return res;
+    }
+
 };
 
 
@@ -1084,6 +1130,23 @@ std::wostream& operator<<(std::wostream& out, const wide_int<Bytes,Signed>& n) {
     out << to_wstring(n);
     return out;
 }
+
+template<size_t Bytes, bool Signed>
+std::istream& operator>>(std::istream& in, wide_int<Bytes,Signed>& n) {
+    std::string s;
+    in >> s;
+    n = wide_int<Bytes,Signed>::_impl::from_str(s.c_str());
+    return in;
+}
+
+template<size_t Bytes, bool Signed>
+std::wistream& operator>>(std::wistream& in, wide_int<Bytes,Signed>& n) {
+    std::wstring s;
+    in >> s;
+    n = wide_int<Bytes,Signed>::_impl::from_str(s.c_str());
+    return in;
+}
+
 
 constexpr int128_t operator "" _int128(const char* n) noexcept { return int128_t::_impl::from_str(n); }
 constexpr int256_t operator "" _int256(const char* n) noexcept { return int256_t::_impl::from_str(n); }

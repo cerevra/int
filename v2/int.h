@@ -255,6 +255,12 @@ std::ostream& operator<<(std::ostream& out, const wide_int<Bytes,Signed>& n);
 template<size_t Bytes, bool Signed>
 std::wostream& operator<<(std::wostream& out, const wide_int<Bytes,Signed>& n);
 
+template<size_t Bytes, bool Signed>
+std::istream& operator>>(std::istream& in, wide_int<Bytes,Signed>& n);
+
+template<size_t Bytes, bool Signed>
+std::wistream& operator>>(std::wistream& in, wide_int<Bytes,Signed>& n);
+
 inline namespace literals {
 inline namespace wide_int_literals {
 
