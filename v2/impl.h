@@ -1,5 +1,7 @@
 #pragma once
 
+#include "int.h"
+
 namespace std {
 
 // type traits
