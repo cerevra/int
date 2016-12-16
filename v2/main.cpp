@@ -16,8 +16,9 @@ template<size_t Bits, bool Sgn>
 static
 void printNum(const wide_int<Bits, Sgn>& n) {
     for (auto c : n.m_arr) {
-        std::cerr << std::hex << std::setw(16) << std::setfill('0') << uint64_t(c) << std::endl;
+        std::cerr << std::hex << std::setw(2) << std::setfill('0') << uint64_t(c);// << std::endl;
     }
+    std::cerr << std::endl;
 }
 
 static
@@ -1680,6 +1681,26 @@ static
 void testEtc() {
     std::unordered_map<uint256_t, bool> m;
     assert(m.empty(), "");
+
+    static_assert((34562625464547567_uint512 * 234623412124100_uint256) == 8109201118459457025988957064700_uint256, "");
+    static_assert((34562625464547567_uint512 / 234623412124100_uint256) == 147, "");
+    static_assert((34562625464547567_uint512 + 234623412124100_uint256) == 34797248876671667_uint256, "");
+    static_assert((34562625464547567_uint512 - 234623412124100_uint256) == 34328002052423467_uint256, "");
+    static_assert((34562625464547567_uint512 % 234623412124100_uint256) == 72983882304867_uint256, "");
+    static_assert((34562625464547567_uint512 & 234623412124100_uint512) == 211114906400964_uint256, "");
+    static_assert((34562625464547567_uint512 | 234623412124100_uint256) == 34586133970270703_uint256, "");
+
+    static_assert(34562625464547567_uint512 << 3 == 276501003716380536_uint512, "");
+    static_assert(34562625464547567_uint512 >> 3 == 4320328183068445_uint512, "");
+
+    static_assert(234623412124100_uint256   <  34562625464547567_uint512, "");
+    static_assert(34562625464547567_uint512 >  234623412124100_uint256, "");
+    static_assert(234623412124100_uint256   <= 34562625464547567_uint512, "");
+    static_assert(34562625464547567_uint512 >= 234623412124100_uint256, "");
+    static_assert(34562625464547567_uint512 == 34562625464547567_uint256, "");
+    static_assert(34562625464547567_uint512 != 234623412124100_uint256, "");
+
+//    static_assert(wide_int<1024,false>::_impl::from_str("1"), "");
 }
 
 static
