@@ -71,59 +71,59 @@
 
   // 26.??.?? unary operations
   template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator~(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;
-  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator-(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;
-  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator+(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;
+  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator-(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);
+  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator+(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);
 
   // 26.??.?? binary operations
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
+    constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+    constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+    constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
+    constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+    constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+    constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
+    constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+    constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+    constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
+    constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+    constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
   template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+    constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
+    constexpr operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Integral&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr  operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+    constexpr  operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Integral&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator%(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+    constexpr operator%(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
@@ -157,11 +157,11 @@
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr  operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
+    constexpr  operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt; operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt; operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);
   template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+    constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
 
   template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
     common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
@@ -243,12 +243,12 @@
   inline namespace literals {
   inline namespace wide_int_literals {
 
-  constexpr int128_t operator &quot;&quot; _int128(const char*) noexcept;
-  constexpr int256_t operator &quot;&quot; _int256(const char*) noexcept;
-  constexpr int512_t operator &quot;&quot; _int512(const char*) noexcept;
-  constexpr uint128_t operator &quot;&quot; _uint128(const char*) noexcept;
-  constexpr uint256_t operator &quot;&quot; _uint256(const char*) noexcept;
-  constexpr uint512_t operator &quot;&quot; _uint512(const char*) noexcept;
+  constexpr int128_t operator &quot;&quot; _int128(const char*);
+  constexpr int256_t operator &quot;&quot; _int256(const char*);
+  constexpr int512_t operator &quot;&quot; _int512(const char*);
+  constexpr uint128_t operator &quot;&quot; _uint128(const char*);
+  constexpr uint256_t operator &quot;&quot; _uint256(const char*);
+  constexpr uint512_t operator &quot;&quot; _uint512(const char*);
 
   } // namespace wide_int_literals
   } // namespace literals
@@ -284,29 +284,29 @@
 
     // 26.??.2.?? compound assignment:
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const Arithmetic&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const Arithmetic&amp;);
     template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
 
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const Arithmetic&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const Arithmetic&amp;);
     template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
 
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept(!Signed);
     template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
 
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept(!Signed);
     template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const Integral&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const Integral&amp;);
     template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
 
     template&lt;typename Integral&gt;
     constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const Integral&amp;) noexcept;
@@ -324,9 +324,9 @@
     constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;);
     template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
 
     template&lt;typename Integral&gt;
     constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;
@@ -366,30 +366,30 @@ constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const wide_int&lt;Bytes2,
 <div class="desc"><i>Effects:</i> Constructs an object from <code>other</code>.</div>
 
 <h4>26.??.2.?? wide_int compound assignments <span class="right">[wide_int.cassign]</span></h4>
-<pre>template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+<pre>template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
+template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
+template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
+template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
+template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
 template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
 template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator|=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
 template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
 template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;</pre>
 <div class="desc"><i>Effects:</i> Behavior of these operators is similar to operators for built-in integral types.</div>
 
-<pre>template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const Arithmetic&amp;) noexcept;
-template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const Arithmetic&amp;) noexcept;
-template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept;
-template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept;</pre>
+<pre>template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const Arithmetic&amp;);
+template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const Arithmetic&amp;);
+template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept(!Signed);
+template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept(!Signed);</pre>
 <div class="desc"><i>Remarks:</i> Functions shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
 <div class="desc"><i>Effects:</i> As if an object <code>wi</code> of type <code>wide_int&lt;Bytes, Signed&gt;</code> was created from input value and the corresponding operator was called for <code>*this</code> and the <code>wi</code>.</div>
 
-<pre>template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const Integral&amp;) noexcept;
+<pre>template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const Integral&amp;);
 template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const Integral&amp;) noexcept;
 template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator|=(const Integral&amp;) noexcept;
 template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const Integral&amp;) noexcept;
-template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;) noexcept;
+template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;);
 template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;</pre>
 <div class="desc"><i>Remarks:</i> Functions shall not participate in overload resolution unless <code>is_integral_v&lt;Integral&gt;</code> is true.</div>
 <div class="desc"><i>Effects:</i> As if an object <code>wi</code> of type <code>wide_int&lt;Bytes, Signed&gt;</code> was created from input value and the corresponding operator was called for <code>*this</code> and the <code>wi</code>.</div>
@@ -437,10 +437,10 @@ struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt; {
 <pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator~(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;</pre>
 <div class="desc"><i>Returns:</i> value with inverted significant bits of <code>val</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator-(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;</pre>
+<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator-(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>val *= -1</code> if <code>Signed</code> is true, otherwise the result is unspecified.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator+(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;</pre>
+<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator+(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>val</code>.</div>
 
 <h3>26.??.?? Binary operators <span class="right">[wide_int.binary_ops]</span></h3>
@@ -452,67 +452,67 @@ struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt; {
 </p>
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) *= rhs</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
 template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) * CT(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) /= rhs</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
 template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) / CT(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) += rhs</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
 template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) + CT(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) -= rhs</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
 template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) - CT(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) %= rhs</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr  operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+  constexpr  operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);
 template&lt;size_t Bytes, bool Signed, typename Integral&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator%(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+  constexpr operator%(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) % CT(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
@@ -556,15 +556,15 @@ template&lt;size_t Bytes, bool Signed, typename Integral&gt;
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
   common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr  operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+  constexpr  operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt;&lt;= rhs</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  constexpr wide_int&lt;Bytes, Signed&gt; operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;</pre>
+  constexpr wide_int&lt;Bytes, Signed&gt; operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt;&lt; CT(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+  constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>lhs &lt;&lt; Integral(rhs)</code>.</div>
 
 <pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
