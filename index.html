@@ -25,7 +25,7 @@
         <address>Igor Klevanets &lt;<a href="mailto:cerevra@yandex.ru">cerevra@yandex.ru</a>&gt;, &lt;<a href="mailto:cerevra@yandex-team.ru">cerevra@yandex-team.ru</a>&gt;</address>
         <address>Antony Polukhin &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;</address>
         <address>&nbsp;</address>
-        <address>Date: 2016-12-13</address>
+        <address>Date: 2017-01-17</address>
         <h1>A Proposal to add wide_int Template Class</h1>
 
         <h2>I. Introduction and Motivation</h2>
@@ -350,20 +350,20 @@
 
 <pre>template&lt;typename Arithmetic&gt; constexpr wide_int(const Arithmetic&amp; other) noexcept;</pre>
 <div class="desc"><i>Remarks:</i> This function shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
-<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code>.</div>
+<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
 <pre>template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int(const wide_int&lt;Bytes2, Signed2&gt;&amp; other) noexcept;</pre>
-<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code>.</div>
+<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
 <h4>26.??.2.?? wide_int assignments <span class="right">[wide_int.assign]</span></h4>
 <pre>template&lt;typename Arithmetic&gt;
 constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const Arithmetic&amp; other) noexcept;</pre>
 <div class="desc"><i>Remarks:</i> This function shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
-<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code>.</div>
+<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
 <pre>template&lt;size_t Bytes2, bool Signed2&gt;
 constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const wide_int&lt;Bytes2, Signed2&gt;&amp; other) noexcept;</pre>
-<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code>.</div>
+<div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
 <h4>26.??.2.?? wide_int compound assignments <span class="right">[wide_int.cassign]</span></h4>
 <pre>template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
@@ -398,7 +398,7 @@ template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; o
 <h4>26.??.2.?? wide_int observers <span class="right">[wide_int.observers]</span></h4>
 <pre>template &lt;typename Arithmetic&gt; constexpr operator Arithmetic() const noexcept;</pre>
 <div class="desc"><i>Remarks:</i> This function shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
-<div class="desc"><i>Returns:</i> Value of <code>*this</code> represented in Arithmetic type. Behavior is unspecified if <code>*this</code> is not representable in Arithmetic type.</div>
+<div class="desc"><i>Returns:</i> If <code>Arithmetic</code> type is an integral type then it is constructed from <code>*this</code> using the integral conversion rules [conv.integral]. Otherwise <code>Arithmetic</code> is constructed from <code>*this</code> using the floating-integral conversion rules [conv.fpint].</div>
 
 <pre>constexpr explicit operator bool() const noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>true</code> if <code>*this</code> is not equal to 0.</div>
