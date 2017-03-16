@@ -1732,7 +1732,7 @@ void tests() {
     testNativeOperatorsAssign();
     testConstexpr();
     testEtc();
-    std::cout << wide_int<80, false>(18) << std::endl;
+    std::cout << wide_int<80, wide_int_s::Unsigned>(18) << std::endl;
 
     std::cout << "OK" << std::endl;
 }
