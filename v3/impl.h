@@ -5,23 +5,6 @@
 namespace std {
 
 // type traits
-
-template<size_t Bytes,bool Signed>
-struct is_scalar<wide_int<Bytes,Signed>> : std::true_type {};
-
-template<size_t Bytes,bool Signed>
-struct is_compound<wide_int<Bytes,Signed>> : std::true_type {};
-
-template<size_t Bytes>
-struct is_unsigned<wide_int<Bytes,true>> : std::false_type {};
-template<size_t Bytes>
-struct is_unsigned<wide_int<Bytes,false>> : std::true_type {};
-
-template<size_t Bytes>
-struct is_signed<wide_int<Bytes,true>> : std::true_type {};
-template<size_t Bytes>
-struct is_signed<wide_int<Bytes,false>> : std::false_type {};
-
 template<size_t Bytes, bool Signed, size_t Bytes2, bool Signed2>
 struct common_type<wide_int<Bytes, Signed>, wide_int<Bytes2, Signed2>> {
     using type = std::conditional_t<

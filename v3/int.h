@@ -40,23 +40,6 @@ template<size_t Bytes, bool Signed>
 class wide_int;
 
 
-template<size_t Bytes,bool Signed>
-struct is_scalar<wide_int<Bytes,Signed>>;
-
-template<size_t Bytes,bool Signed>
-struct is_compound<wide_int<Bytes,Signed>>;
-
-template<size_t Bytes>
-struct is_unsigned<wide_int<Bytes,true>>;
-template<size_t Bytes>
-struct is_unsigned<wide_int<Bytes,false>>;
-
-template<size_t Bytes>
-struct is_signed<wide_int<Bytes,true>>;
-template<size_t Bytes>
-struct is_signed<wide_int<Bytes,false>>;
-
-
 template<size_t Bytes, bool Signed, size_t Bytes2, bool Signed2>
 struct common_type<wide_int<Bytes, Signed>, wide_int<Bytes2, Signed2>>;
 
