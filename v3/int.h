@@ -41,18 +41,18 @@ enum class wide_int_s {
     Signed = 1
 };
 
-template<size_t Bytes, wide_int_s Signed>
+template<size_t MaichineWords, wide_int_s Signed>
 class wide_int;
 
 
-template<size_t Bytes, wide_int_s Signed, size_t Bytes2, wide_int_s Signed2>
-struct common_type<wide_int<Bytes, Signed>, wide_int<Bytes2, Signed2>>;
+template<size_t MaichineWords, wide_int_s Signed, size_t MaichineWords2, wide_int_s Signed2>
+struct common_type<wide_int<MaichineWords, Signed>, wide_int<MaichineWords2, Signed2>>;
 
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic>
-struct common_type<wide_int<Bytes, Signed>, Arithmetic>;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic>
+struct common_type<wide_int<MaichineWords, Signed>, Arithmetic>;
 
 
-template<size_t Bytes, wide_int_s Signed>
+template<size_t MaichineWords, wide_int_s Signed>
 class wide_int {
 public:
     using base_type = uint8_t;
@@ -62,42 +62,42 @@ public:
     wide_int() = default;
 
     template<typename T> constexpr wide_int(T other) noexcept;
-    template<size_t Bytes2, wide_int_s Signed2> constexpr wide_int(const wide_int<Bytes2,Signed2>& other) noexcept;
+    template<size_t MaichineWords2, wide_int_s Signed2> constexpr wide_int(const wide_int<MaichineWords2,Signed2>& other) noexcept;
 
     // assignment
-    template<size_t Bytes2, wide_int_s Signed2>
-    constexpr wide_int<Bytes,Signed>& operator=(const wide_int<Bytes2,Signed2>& other) noexcept;
+    template<size_t MaichineWords2, wide_int_s Signed2>
+    constexpr wide_int<MaichineWords,Signed>& operator=(const wide_int<MaichineWords2,Signed2>& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator=(T other) noexcept;
+    constexpr wide_int<MaichineWords,Signed>& operator=(T other) noexcept;
 
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator*=(const T& other);
+    constexpr wide_int<MaichineWords,Signed>& operator*=(const T& other);
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator/=(const T& other);
+    constexpr wide_int<MaichineWords,Signed>& operator/=(const T& other);
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator+=(const T& other) noexcept(Signed == wide_int_s::Unsigned);
+    constexpr wide_int<MaichineWords,Signed>& operator+=(const T& other) noexcept(Signed == wide_int_s::Unsigned);
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator-=(const T& other) noexcept(Signed == wide_int_s::Unsigned);
+    constexpr wide_int<MaichineWords,Signed>& operator-=(const T& other) noexcept(Signed == wide_int_s::Unsigned);
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator%=(const T& other);
+    constexpr wide_int<MaichineWords,Signed>& operator%=(const T& other);
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator&=(const T& other) noexcept;
+    constexpr wide_int<MaichineWords,Signed>& operator&=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator|=(const T& other) noexcept;
+    constexpr wide_int<MaichineWords,Signed>& operator|=(const T& other) noexcept;
 
     template<typename T>
-    constexpr wide_int<Bytes,Signed>& operator^=(const T& other) noexcept;
+    constexpr wide_int<MaichineWords,Signed>& operator^=(const T& other) noexcept;
 
-    constexpr wide_int<Bytes,Signed>& operator<<=(int n);
-    constexpr wide_int<Bytes,Signed>& operator>>=(int n) noexcept;
+    constexpr wide_int<MaichineWords,Signed>& operator<<=(int n);
+    constexpr wide_int<MaichineWords,Signed>& operator>>=(int n) noexcept;
 
     // observers
 
@@ -118,148 +118,148 @@ public:
 private:
     friend struct ::_test;
 
-    template<size_t Bytes2, wide_int_s Signed2>
+    template<size_t MaichineWords2, wide_int_s Signed2>
     friend class wide_int;
 
-    friend class numeric_limits<wide_int<Bytes, wide_int_s::Signed>>;
-    friend class numeric_limits<wide_int<Bytes, wide_int_s::Unsigned>>;
+    friend class numeric_limits<wide_int<MaichineWords, wide_int_s::Signed>>;
+    friend class numeric_limits<wide_int<MaichineWords, wide_int_s::Unsigned>>;
 
-    base_type m_arr[_impl::arr_size()];
+    base_type m_arr[_impl::arr_size];
 };
 
 // Unary operators
-template<size_t Bytes, wide_int_s Signed>
-constexpr wide_int<Bytes,Signed> operator~(const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed>
+constexpr wide_int<MaichineWords,Signed> operator~(const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed>
-constexpr wide_int<Bytes,Signed> operator-(const wide_int<Bytes,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
+template<size_t MaichineWords, wide_int_s Signed>
+constexpr wide_int<MaichineWords,Signed> operator-(const wide_int<MaichineWords,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
 
-template<size_t Bytes, wide_int_s Signed>
-constexpr wide_int<Bytes,Signed> operator+(const wide_int<Bytes,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
+template<size_t MaichineWords, wide_int_s Signed>
+constexpr wide_int<MaichineWords,Signed> operator+(const wide_int<MaichineWords,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
 
 
 // Binary operators
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator*(const wide_int<Bytes,Signed>& num, const T& other);
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
-constexpr operator*(const Arithmetic& other, const wide_int<Bytes,Signed>& num);
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator*(const wide_int<MaichineWords,Signed>& num, const T& other);
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Arithmetic>
+constexpr operator*(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num);
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator/(const wide_int<Bytes,Signed>& num, const T& other);
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
-constexpr operator/(const Arithmetic& other, const wide_int<Bytes,Signed>& num);
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator/(const wide_int<MaichineWords,Signed>& num, const T& other);
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Arithmetic>
+constexpr operator/(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num);
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator+(const wide_int<Bytes,Signed>& num, const T& other) noexcept(Signed == wide_int_s::Unsigned);
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
-constexpr operator+(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator+(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept(Signed == wide_int_s::Unsigned);
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Arithmetic>
+constexpr operator+(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator-(const wide_int<Bytes,Signed>& num, const T& other) noexcept(Signed == wide_int_s::Unsigned);
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-std::common_type_t<wide_int<Bytes,Signed>, Arithmetic>
-constexpr operator-(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator-(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept(Signed == wide_int_s::Unsigned);
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Arithmetic>
+constexpr operator-(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept(Signed == wide_int_s::Unsigned);
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator%(const wide_int<Bytes,Signed>& num, const T& other);
-template<size_t Bytes, wide_int_s Signed, typename Integral, class>
-std::common_type_t<wide_int<Bytes,Signed>, Integral>
-constexpr operator%(const Integral& other, const wide_int<Bytes,Signed>& num);
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator%(const wide_int<MaichineWords,Signed>& num, const T& other);
+template<size_t MaichineWords, wide_int_s Signed, typename Integral, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Integral>
+constexpr operator%(const Integral& other, const wide_int<MaichineWords,Signed>& num);
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator&(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Integral, class>
-std::common_type_t<wide_int<Bytes,Signed>, Integral>
-constexpr operator&(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator&(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Integral, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Integral>
+constexpr operator&(const Integral& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator|(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Integral, class>
-std::common_type_t<wide_int<Bytes,Signed>, Integral>
-constexpr operator|(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator|(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Integral, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Integral>
+constexpr operator|(const Integral& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-std::common_type_t<wide_int<Bytes,Signed>, T>
-constexpr operator^(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Integral, class>
-std::common_type_t<wide_int<Bytes,Signed>, Integral>
-constexpr operator^(const Integral& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+std::common_type_t<wide_int<MaichineWords,Signed>, T>
+constexpr operator^(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Integral, class>
+std::common_type_t<wide_int<MaichineWords,Signed>, Integral>
+constexpr operator^(const Integral& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed>
-constexpr wide_int<Bytes,Signed> operator<<(const wide_int<Bytes,Signed>& num, int n) noexcept;
-template<size_t Bytes, wide_int_s Signed>
-constexpr wide_int<Bytes,Signed> operator>>(const wide_int<Bytes,Signed>& num, int n) noexcept;
+template<size_t MaichineWords, wide_int_s Signed>
+constexpr wide_int<MaichineWords,Signed> operator<<(const wide_int<MaichineWords,Signed>& num, int n) noexcept;
+template<size_t MaichineWords, wide_int_s Signed>
+constexpr wide_int<MaichineWords,Signed> operator>>(const wide_int<MaichineWords,Signed>& num, int n) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-constexpr bool operator<(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-constexpr bool operator<(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+constexpr bool operator<(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+constexpr bool operator<(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-constexpr bool operator>(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-constexpr bool operator>(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+constexpr bool operator>(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+constexpr bool operator>(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-constexpr bool operator<=(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-constexpr bool operator<=(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+constexpr bool operator<=(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+constexpr bool operator<=(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-constexpr bool operator>=(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-constexpr bool operator>=(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+constexpr bool operator>=(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+constexpr bool operator>=(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-constexpr bool operator==(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-constexpr bool operator==(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+constexpr bool operator==(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+constexpr bool operator==(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
-template<size_t Bytes, wide_int_s Signed, typename T>
-constexpr bool operator!=(const wide_int<Bytes,Signed>& num, const T& other) noexcept;
-template<size_t Bytes, wide_int_s Signed, typename Arithmetic, class>
-constexpr bool operator!=(const Arithmetic& other, const wide_int<Bytes,Signed>& num) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename T>
+constexpr bool operator!=(const wide_int<MaichineWords,Signed>& num, const T& other) noexcept;
+template<size_t MaichineWords, wide_int_s Signed, typename Arithmetic, class>
+constexpr bool operator!=(const Arithmetic& other, const wide_int<MaichineWords,Signed>& num) noexcept;
 
 
-template<size_t Bytes, wide_int_s Signed>
-std::string to_string(const wide_int<Bytes,Signed>& n);
+template<size_t MaichineWords, wide_int_s Signed>
+std::string to_string(const wide_int<MaichineWords,Signed>& n);
 
-template<size_t Bytes, wide_int_s Signed>
-std::wstring to_wstring(const wide_int<Bytes,Signed>& n);
+template<size_t MaichineWords, wide_int_s Signed>
+std::wstring to_wstring(const wide_int<MaichineWords,Signed>& n);
 
-template<size_t Bytes, wide_int_s Signed>
-std::ostream& operator<<(std::ostream& out, const wide_int<Bytes,Signed>& n);
+template<size_t MaichineWords, wide_int_s Signed>
+std::ostream& operator<<(std::ostream& out, const wide_int<MaichineWords,Signed>& n);
 
-template<size_t Bytes, wide_int_s Signed>
-std::wostream& operator<<(std::wostream& out, const wide_int<Bytes,Signed>& n);
+template<size_t MaichineWords, wide_int_s Signed>
+std::wostream& operator<<(std::wostream& out, const wide_int<MaichineWords,Signed>& n);
 
-template<size_t Bytes, wide_int_s Signed>
-std::istream& operator>>(std::istream& in, wide_int<Bytes,Signed>& n);
+template<size_t MaichineWords, wide_int_s Signed>
+std::istream& operator>>(std::istream& in, wide_int<MaichineWords,Signed>& n);
 
-template<size_t Bytes, wide_int_s Signed>
-std::wistream& operator>>(std::wistream& in, wide_int<Bytes,Signed>& n);
+template<size_t MaichineWords, wide_int_s Signed>
+std::wistream& operator>>(std::wistream& in, wide_int<MaichineWords,Signed>& n);
 
 inline namespace literals {
 inline namespace wide_int_literals {
 
-using int128_t = wide_int<16,wide_int_s::Signed>;
-using uint128_t = wide_int<16,wide_int_s::Unsigned>;
+using int128_t = wide_int<128/CHAR_BIT/sizeof(long),wide_int_s::Signed>;
+using uint128_t = wide_int<128/CHAR_BIT/sizeof(long),wide_int_s::Unsigned>;
 
-using int256_t = wide_int<32,wide_int_s::Signed>;
-using uint256_t = wide_int<32,wide_int_s::Unsigned>;
+using int256_t = wide_int<256/CHAR_BIT/sizeof(long),wide_int_s::Signed>;
+using uint256_t = wide_int<256/CHAR_BIT/sizeof(long),wide_int_s::Unsigned>;
 
-using int512_t = wide_int<64,wide_int_s::Signed>;
-using uint512_t = wide_int<64,wide_int_s::Unsigned>;
+using int512_t = wide_int<512/CHAR_BIT/sizeof(long),wide_int_s::Signed>;
+using uint512_t = wide_int<512/CHAR_BIT/sizeof(long),wide_int_s::Unsigned>;
 
 } // namespace wide_int_literals
 } // namespace literals
@@ -272,12 +272,12 @@ constexpr uint256_t operator "" _uint256(const char* n);
 constexpr uint512_t operator "" _uint512(const char* n);
 
 // numeric limits
-template<size_t Bytes, wide_int_s Signed>
-class numeric_limits<wide_int<Bytes,Signed>>;
+template<size_t MaichineWords, wide_int_s Signed>
+class numeric_limits<wide_int<MaichineWords,Signed>>;
 
 
-template<size_t Bytes, wide_int_s Signed>
-struct hash<wide_int<Bytes, Signed>>;
+template<size_t MaichineWords, wide_int_s Signed>
+struct hash<wide_int<MaichineWords, Signed>>;
 
 } // namespace std
 

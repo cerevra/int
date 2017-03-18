@@ -12,9 +12,9 @@ using namespace std;
 
 struct _test {
 
-template<size_t Bits, bool Sgn>
+template<size_t MaichineWords, bool Sgn>
 static
-void printNum(const wide_int<Bits, Sgn>& n) {
+void printNum(const wide_int<MaichineWords, Sgn>& n) {
     for (auto c : n.m_arr) {
         std::cerr << std::hex << std::setw(2) << std::setfill('0') << uint64_t(c);// << std::endl;
     }
@@ -1732,7 +1732,7 @@ void tests() {
     testNativeOperatorsAssign();
     testConstexpr();
     testEtc();
-    std::cout << wide_int<80, wide_int_s::Unsigned>(18) << std::endl;
+    std::cout << wide_int<19, wide_int_s::Unsigned>(18) << std::endl;
 
     std::cout << "OK" << std::endl;
 }
