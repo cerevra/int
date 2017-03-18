@@ -2,6 +2,7 @@
 
 #include "int.h"
 
+#include <array>
 #include <cstring>
 
 namespace std {
@@ -1115,12 +1116,12 @@ to_chars_result to_chars(char* first,
                          const wide_int<MaichineWords, Signed>& value,
                          int base) {
     if (base < 2 || base > 36) {
-        return {nullptr,
-                std::make_error_code(std::errc::argument_out_of_domain)};
+        return {last,
+                std::make_error_code(std::errc::invalid_argument)};
     }
     if (first >= last) {
-        return {nullptr,
-                std::make_error_code(std::errc::argument_out_of_domain)};
+        return {last,
+                std::make_error_code(std::errc::invalid_argument)};
     }
 
     if (value == 0) {
@@ -1148,12 +1149,74 @@ to_chars_result to_chars(char* first,
                 std::make_error_code(std::errc::value_too_large)};
     }
 
-    size_t size = last - cur;
-    std::memcpy(first, cur, size);
-    char* one_past_end = first + size;
-    *one_past_end = '\0';
+    while (cur < last) {
+        *(first++) = *(cur++);
+    }
+    if (first < last) {
+        *first = '\0';
+    }
 
-    return {one_past_end, {}};
+    return {first, {}};
+}
+
+std::array<char, 256> genReverseAlpha() noexcept {
+    static const char ALPHA[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+    std::array<char, 256> res;
+    res.fill(-1);
+    for (size_t i = 0; i < sizeof(ALPHA); ++i) {
+        res[ALPHA[i]] = i;
+    }
+    return res;
+}
+
+template <size_t MaichineWords, wide_int_s Signed>
+from_chars_result from_chars(const char* first,
+                             const char* last,
+                             wide_int<MaichineWords, Signed>& value,
+                             int base) {
+    if (base < 2 || base > 36) {
+        return {first,
+                std::make_error_code(std::errc::invalid_argument)};
+    }
+    if (first >= last) {
+        return {first,
+                std::make_error_code(std::errc::invalid_argument)};
+    }
+
+    bool is_negative = *first == '-';
+    if (is_negative) {
+        if (Signed == wide_int_s::Unsigned) {
+            return {first,
+                    std::make_error_code(std::errc::result_out_of_range)};
+        }
+        if (++first >= last) {
+            return {first,
+                    std::make_error_code(std::errc::invalid_argument)};
+        }
+    }
+
+    wide_int<MaichineWords, Signed> v = 0;
+    const char* cur = first;
+
+    do {
+        static const std::array<char, 256> ALPHA = genReverseAlpha();
+        char cv = ALPHA[*cur];
+        if (cv >= base || cv == -1) {
+            if (cur == first) {
+                return {cur,
+                        std::make_error_code(std::errc::result_out_of_range)};
+            } else {
+                value = v;
+                return {cur, {}};
+            }
+        }
+
+        v *= base;
+        v += cv;
+    } while (++cur < last);
+
+    value = is_negative ? -v : v;
+    return {cur, {}};
 }
 
 constexpr int128_t operator"" _int128(const char* n) {

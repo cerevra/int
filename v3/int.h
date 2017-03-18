@@ -235,6 +235,11 @@ struct to_chars_result {
     char* ptr;
     std::error_code ec;
 };
+
+struct from_chars_result {
+    const char* ptr;
+    std::error_code ec;
+};
 ////
 
 template <size_t MaichineWords, wide_int_s Signed>
@@ -242,6 +247,12 @@ to_chars_result to_chars(char* first,
                          char* last,
                          const wide_int<MaichineWords, Signed>& value,
                          int base = 10);
+
+template <size_t MaichineWords, wide_int_s Signed>
+from_chars_result from_chars(const char* first,
+                             const char* last,
+                             wide_int<MaichineWords, Signed>& value,
+                             int base = 10);
 
 inline namespace literals {
 inline namespace wide_int_literals {

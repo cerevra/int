@@ -1691,11 +1691,11 @@ struct _test {
 
         char arr1[1];
         std::to_chars_result res = to_chars(arr1, arr1 + sizeof(arr1), a, 1);
-        assert(res.ec.value() == (int)std::errc::argument_out_of_domain, "");
+        assert(res.ec.value() == (int)std::errc::invalid_argument, "");
         res = to_chars(arr1, arr1 + sizeof(arr1), a, 50);
-        assert(res.ec.value() == (int)std::errc::argument_out_of_domain, "");
+        assert(res.ec.value() == (int)std::errc::invalid_argument, "");
         res = to_chars(arr1 + sizeof(arr1), arr1, a);
-        assert(res.ec.value() == (int)std::errc::argument_out_of_domain, "");
+        assert(res.ec.value() == (int)std::errc::invalid_argument, "");
 
         res = to_chars(arr1, arr1 + sizeof(arr1), a);
         assert(res.ec.value() == (int)std::errc::value_too_large, "");
@@ -1786,41 +1786,115 @@ struct _test {
         check(b, 35, "-1ihf");
         check(b, 36, "-1ekf");
 
-        check(c, 2, "0");
-        check(c, 3, "0");
-        check(c, 4, "0");
-        check(c, 5, "0");
-        check(c, 6, "0");
-        check(c, 7, "0");
-        check(c, 8, "0");
-        check(c, 9, "0");
-        check(c, 10, "0");
-        check(c, 11, "0");
-        check(c, 12, "0");
-        check(c, 13, "0");
-        check(c, 14, "0");
-        check(c, 15, "0");
-        check(c, 16, "0");
-        check(c, 17, "0");
-        check(c, 18, "0");
-        check(c, 19, "0");
-        check(c, 20, "0");
-        check(c, 21, "0");
-        check(c, 22, "0");
-        check(c, 23, "0");
-        check(c, 24, "0");
-        check(c, 25, "0");
-        check(c, 26, "0");
-        check(c, 27, "0");
-        check(c, 28, "0");
-        check(c, 29, "0");
-        check(c, 30, "0");
-        check(c, 31, "0");
-        check(c, 32, "0");
-        check(c, 33, "0");
-        check(c, 34, "0");
-        check(c, 35, "0");
-        check(c, 36, "0");
+        for (int i = 2; i <= 36; ++i) {
+            check(c, i, "0");
+        }
+    }
+
+    template <class T>
+    static void checkFromChars(int64_t expect, int base, const std::string& str) {
+        T num = 0;
+        std::from_chars_result res = from_chars(str.data(), str.data() + str.size(), num, base);
+        assert(!res.ec, res.ec.message());
+        assert(expect == num,
+               std::to_string(expect) + " " + std::to_string(base) + " " + std::to_string(num));
+    }
+
+    static void testFromChars() {
+        uint128_t a = 0;
+        int128_t b = 0;
+
+        char arr1[] = "65535";
+        std::from_chars_result res = from_chars(arr1, arr1 + sizeof(arr1), a, 1);
+        assert(res.ec.value() == (int)std::errc::invalid_argument, res.ec.message());
+        res = from_chars(arr1, arr1 + sizeof(arr1), a, 50);
+        assert(res.ec.value() == (int)std::errc::invalid_argument, res.ec.message());
+        res = from_chars(arr1 + sizeof(arr1), arr1, a);
+        assert(res.ec.value() == (int)std::errc::invalid_argument, res.ec.message());
+
+        char arr2[] = "-65535";
+        res = from_chars(arr2, arr2 + sizeof(arr2), a);
+        assert(res.ec.value() == (int)std::errc::result_out_of_range, res.ec.message());
+
+        char arr3[] = "-";
+        res = from_chars(arr3, arr3 + 1, b);
+        assert(res.ec.value() == (int)std::errc::invalid_argument, res.ec.message());
+
+        checkFromChars<uint128_t>(65535, 2, "1111111111111111");
+        checkFromChars<uint128_t>(65535, 3, "10022220020");
+        checkFromChars<uint128_t>(65535, 4, "33333333");
+        checkFromChars<uint128_t>(65535, 5, "4044120");
+        checkFromChars<uint128_t>(65535, 6, "1223223");
+        checkFromChars<uint128_t>(65535, 7, "362031");
+        checkFromChars<uint128_t>(65535, 8, "177777");
+        checkFromChars<uint128_t>(65535, 9, "108806");
+        checkFromChars<uint128_t>(65535, 10, "65535");
+        checkFromChars<uint128_t>(65535, 11, "45268");
+        checkFromChars<uint128_t>(65535, 12, "31b13");
+        checkFromChars<uint128_t>(65535, 13, "23aa2");
+        checkFromChars<uint128_t>(65535, 14, "19c51");
+        checkFromChars<uint128_t>(65535, 15, "14640");
+        checkFromChars<uint128_t>(65535, 16, "ffff");
+        checkFromChars<uint128_t>(65535, 17, "d5d0");
+        checkFromChars<uint128_t>(65535, 18, "b44f");
+        checkFromChars<uint128_t>(65535, 19, "9aa4");
+        checkFromChars<uint128_t>(65535, 20, "83gf");
+        checkFromChars<uint128_t>(65535, 21, "71cf");
+        checkFromChars<uint128_t>(65535, 22, "638j");
+        checkFromChars<uint128_t>(65535, 23, "58k8");
+        checkFromChars<uint128_t>(65535, 24, "4hif");
+        checkFromChars<uint128_t>(65535, 25, "44la");
+        checkFromChars<uint128_t>(65535, 26, "3iof");
+        checkFromChars<uint128_t>(65535, 27, "38o6");
+        checkFromChars<uint128_t>(65535, 28, "2rgf");
+        checkFromChars<uint128_t>(65535, 29, "2jqo");
+        checkFromChars<uint128_t>(65535, 30, "2cof");
+        checkFromChars<uint128_t>(65535, 31, "2661");
+        checkFromChars<uint128_t>(65535, 32, "1vvv");
+        checkFromChars<uint128_t>(65535, 33, "1r5u");
+        checkFromChars<uint128_t>(65535, 34, "1mnh");
+        checkFromChars<uint128_t>(65535, 35, "1ihf");
+        checkFromChars<uint128_t>(65535, 36, "1ekf");
+
+        checkFromChars<int128_t>(-65535, 2, "-1111111111111111");
+        checkFromChars<int128_t>(-65535, 3, "-10022220020");
+        checkFromChars<int128_t>(-65535, 4, "-33333333");
+        checkFromChars<int128_t>(-65535, 5, "-4044120");
+        checkFromChars<int128_t>(-65535, 6, "-1223223");
+        checkFromChars<int128_t>(-65535, 7, "-362031");
+        checkFromChars<int128_t>(-65535, 8, "-177777");
+        checkFromChars<int128_t>(-65535, 9, "-108806");
+        checkFromChars<int128_t>(-65535, 10, "-65535");
+        checkFromChars<int128_t>(-65535, 11, "-45268");
+        checkFromChars<int128_t>(-65535, 12, "-31b13");
+        checkFromChars<int128_t>(-65535, 13, "-23aa2");
+        checkFromChars<int128_t>(-65535, 14, "-19c51");
+        checkFromChars<int128_t>(-65535, 15, "-14640");
+        checkFromChars<int128_t>(-65535, 16, "-ffff");
+        checkFromChars<int128_t>(-65535, 17, "-d5d0");
+        checkFromChars<int128_t>(-65535, 18, "-b44f");
+        checkFromChars<int128_t>(-65535, 19, "-9aa4");
+        checkFromChars<int128_t>(-65535, 20, "-83gf");
+        checkFromChars<int128_t>(-65535, 21, "-71cf");
+        checkFromChars<int128_t>(-65535, 22, "-638j");
+        checkFromChars<int128_t>(-65535, 23, "-58k8");
+        checkFromChars<int128_t>(-65535, 24, "-4hif");
+        checkFromChars<int128_t>(-65535, 25, "-44la");
+        checkFromChars<int128_t>(-65535, 26, "-3iof");
+        checkFromChars<int128_t>(-65535, 27, "-38o6");
+        checkFromChars<int128_t>(-65535, 28, "-2rgf");
+        checkFromChars<int128_t>(-65535, 29, "-2jqo");
+        checkFromChars<int128_t>(-65535, 30, "-2cof");
+        checkFromChars<int128_t>(-65535, 31, "-2661");
+        checkFromChars<int128_t>(-65535, 32, "-1vvv");
+        checkFromChars<int128_t>(-65535, 33, "-1r5u");
+        checkFromChars<int128_t>(-65535, 34, "-1mnh");
+        checkFromChars<int128_t>(-65535, 35, "-1ihf");
+        checkFromChars<int128_t>(-65535, 36, "-1ekf");
+
+        for (int i = 2; i <= 36; ++i) {
+            checkFromChars<uint128_t>(0, i, "0");
+        }
     }
 
     static void tests() {
@@ -1852,6 +1926,7 @@ struct _test {
         testConstexpr();
         testEtc();
         testToChars();
+        testFromChars();
         std::cout << wide_int<19, wide_int_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
