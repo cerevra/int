@@ -15,8 +15,8 @@ using namespace std;
     }
 
 struct _test {
-    template <size_t MaichineWords, bool Sgn>
-    static void printNum(const wide_int<MaichineWords, Sgn>& n) {
+    template <size_t MachineWords, bool Sgn>
+    static void printNum(const wide_int<MachineWords, Sgn>& n) {
         for (auto c : n.m_arr) {
             std::cerr << std::hex << std::setw(2) << std::setfill('0') << uint64_t(c); // << std::endl;
         }
