@@ -30,6 +30,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <stdint.h>
+#include <system_error>
 #include <type_traits>
 
 struct _test;
@@ -228,6 +229,19 @@ std::istream& operator>>(std::istream& in, wide_int<MaichineWords, Signed>& n);
 
 template <size_t MaichineWords, wide_int_s Signed>
 std::wistream& operator>>(std::wistream& in, wide_int<MaichineWords, Signed>& n);
+
+//// Must be defined in another header
+struct to_chars_result {
+    char* ptr;
+    std::error_code ec;
+};
+////
+
+template <size_t MaichineWords, wide_int_s Signed>
+to_chars_result to_chars(char* first,
+                         char* last,
+                         const wide_int<MaichineWords, Signed>& value,
+                         int base = 10);
 
 inline namespace literals {
 inline namespace wide_int_literals {

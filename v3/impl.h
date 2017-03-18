@@ -2,6 +2,8 @@
 
 #include "int.h"
 
+#include <cstring>
+
 namespace std {
 
 // type traits
@@ -48,6 +50,11 @@ struct wide_int<MaichineWords, Signed>::_impl {
     template <size_t B, wide_int_s S>
     constexpr static bool is_negative(const wide_int<B, S>& n) noexcept {
         return S == wide_int_s::Signed && static_cast<signed_base_type>(n.m_arr[0]) < 0;
+    }
+
+    template <size_t B, wide_int_s S>
+    constexpr static wide_int<B, S> make_positive(const wide_int<B, S>& n) noexcept {
+        return is_negative(n) ? operator_unary_minus(n) : n;
     }
 
     template <typename T, class = typename std::enable_if<std::is_signed<T>::value, T>::type>
@@ -370,8 +377,8 @@ public:
     template <typename T, class = __keep_size<T>>
     constexpr static wide_int<MaichineWords, Signed> operator_star(const wide_int<MaichineWords, Signed>& num,
                                                                    const T& other) {
-        wide_int<MaichineWords, Signed> a(num);
-        wide_int<MaichineWords, Signed> t = other;
+        wide_int<MaichineWords, Signed> a = make_positive(num);
+        wide_int<MaichineWords, Signed> t = make_positive(wide_int<MaichineWords, Signed>(other));
 
         wide_int<MaichineWords, Signed> res = 0;
 
@@ -381,6 +388,11 @@ public:
             }
 
             t = shift_right(t, 1);
+        }
+
+        if (Signed == wide_int_s::Signed &&
+            is_negative(wide_int<MaichineWords, Signed>(other)) != is_negative(num)) {
+            res = operator_unary_minus(res);
         }
 
         return res;
@@ -428,7 +440,7 @@ public:
         wide_int<MaichineWords, Signed> t = other;
 
         if (std::is_signed<T>::value && (is_negative(num) != is_negative(t))) {
-            return is_negative(t);
+            return is_negative(num);
         }
 
         for (int i = 0; i < arr_size; ++i) {
@@ -547,8 +559,15 @@ public:
     template <typename T, class = __keep_size<T>>
     constexpr static wide_int<MaichineWords, Signed> operator_slash(const wide_int<MaichineWords, Signed>& num,
                                                                     const T& other) {
+        wide_int<MaichineWords, Signed> o = other;
         wide_int<MaichineWords, Signed> quotient{}, remainder{};
-        divide(num, wide_int<MaichineWords, Signed>(other), quotient, remainder);
+        divide(make_positive(num), o, quotient, remainder);
+
+        if (Signed == wide_int_s::Signed &&
+            is_negative(o) != is_negative(num)) {
+            quotient = operator_unary_minus(quotient);
+        }
+
         return quotient;
     }
 
@@ -562,7 +581,7 @@ public:
     constexpr static wide_int<MaichineWords, Signed> operator_percent(const wide_int<MaichineWords, Signed>& num,
                                                                       const T& other) {
         wide_int<MaichineWords, Signed> quotient{}, remainder{};
-        divide(num, wide_int<MaichineWords, Signed>(other), quotient, remainder);
+        divide(make_positive(num), wide_int<MaichineWords, Signed>(other), quotient, remainder);
         return remainder;
     }
 
@@ -1088,6 +1107,53 @@ std::wistream& operator>>(std::wistream& in, wide_int<MaichineWords, Signed>& n)
     in >> s;
     n = wide_int<MaichineWords, Signed>::_impl::from_str(s.c_str());
     return in;
+}
+
+template <size_t MaichineWords, wide_int_s Signed>
+to_chars_result to_chars(char* first,
+                         char* last,
+                         const wide_int<MaichineWords, Signed>& value,
+                         int base) {
+    if (base < 2 || base > 36) {
+        return {nullptr,
+                std::make_error_code(std::errc::argument_out_of_domain)};
+    }
+    if (first >= last) {
+        return {nullptr,
+                std::make_error_code(std::errc::argument_out_of_domain)};
+    }
+
+    if (value == 0) {
+        *first = '0';
+        *(++first) = '\0';
+        return {++first, {}};
+    }
+
+    wide_int<MaichineWords, Signed> v = value;
+    if (v < 0) {
+        v = -v;
+        *(first++) = '-';
+    }
+
+    char* cur = last;
+
+    while (v != 0 && --cur >= first) {
+        static const char ALPHA[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+        *cur = ALPHA[v % base];
+        v /= base;
+    }
+
+    if (v && cur + 1 == first) {
+        return {nullptr,
+                std::make_error_code(std::errc::value_too_large)};
+    }
+
+    size_t size = last - cur;
+    std::memcpy(first, cur, size);
+    char* one_past_end = first + size;
+    *one_past_end = '\0';
+
+    return {one_past_end, {}};
 }
 
 constexpr int128_t operator"" _int128(const char* n) {

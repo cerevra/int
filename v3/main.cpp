@@ -1574,6 +1574,9 @@ struct _test {
 
         assert(1024_int128 * 2.0 == 2048, "");
         assert(2.0 * 1024_int128 == 2048, "");
+
+        int128_t b = -123;
+        assert(b < 0, "");
     }
 
     static void testNativeOperatorsAssign() {
@@ -1681,6 +1684,145 @@ struct _test {
         //    static_assert(wide_int<1024,false>::_impl::from_str("1"), "");
     }
 
+    static void testToChars() {
+        uint128_t a = 65535;
+        int128_t b = -65535;
+        uint128_t c = 0;
+
+        char arr1[1];
+        std::to_chars_result res = to_chars(arr1, arr1 + sizeof(arr1), a, 1);
+        assert(res.ec.value() == (int)std::errc::argument_out_of_domain, "");
+        res = to_chars(arr1, arr1 + sizeof(arr1), a, 50);
+        assert(res.ec.value() == (int)std::errc::argument_out_of_domain, "");
+        res = to_chars(arr1 + sizeof(arr1), arr1, a);
+        assert(res.ec.value() == (int)std::errc::argument_out_of_domain, "");
+
+        res = to_chars(arr1, arr1 + sizeof(arr1), a);
+        assert(res.ec.value() == (int)std::errc::value_too_large, "");
+
+        char arr2[5];
+        res = to_chars(arr2, arr2 + sizeof(arr2), a);
+        assert(!res.ec, "");
+        res = to_chars(arr2, arr2 + sizeof(arr2), b);
+        assert(res.ec.value() == (int)std::errc::value_too_large, "");
+
+        auto check = [](auto num, int base, const std::string& str) {
+            char arr3[24];
+            std::to_chars_result res = to_chars(arr3, arr3 + sizeof(arr3), num, base);
+            assert(!res.ec, "");
+            assert(str == std::string(arr3),
+                   std::to_string(num) + " " + std::to_string(base) + " " + arr3);
+        };
+
+        check(a, 2, "1111111111111111");
+        check(a, 3, "10022220020");
+        check(a, 4, "33333333");
+        check(a, 5, "4044120");
+        check(a, 6, "1223223");
+        check(a, 7, "362031");
+        check(a, 8, "177777");
+        check(a, 9, "108806");
+        check(a, 10, "65535");
+        check(a, 11, "45268");
+        check(a, 12, "31b13");
+        check(a, 13, "23aa2");
+        check(a, 14, "19c51");
+        check(a, 15, "14640");
+        check(a, 16, "ffff");
+        check(a, 17, "d5d0");
+        check(a, 18, "b44f");
+        check(a, 19, "9aa4");
+        check(a, 20, "83gf");
+        check(a, 21, "71cf");
+        check(a, 22, "638j");
+        check(a, 23, "58k8");
+        check(a, 24, "4hif");
+        check(a, 25, "44la");
+        check(a, 26, "3iof");
+        check(a, 27, "38o6");
+        check(a, 28, "2rgf");
+        check(a, 29, "2jqo");
+        check(a, 30, "2cof");
+        check(a, 31, "2661");
+        check(a, 32, "1vvv");
+        check(a, 33, "1r5u");
+        check(a, 34, "1mnh");
+        check(a, 35, "1ihf");
+        check(a, 36, "1ekf");
+
+        check(b, 2, "-1111111111111111");
+        check(b, 3, "-10022220020");
+        check(b, 4, "-33333333");
+        check(b, 5, "-4044120");
+        check(b, 6, "-1223223");
+        check(b, 7, "-362031");
+        check(b, 8, "-177777");
+        check(b, 9, "-108806");
+        check(b, 10, "-65535");
+        check(b, 11, "-45268");
+        check(b, 12, "-31b13");
+        check(b, 13, "-23aa2");
+        check(b, 14, "-19c51");
+        check(b, 15, "-14640");
+        check(b, 16, "-ffff");
+        check(b, 17, "-d5d0");
+        check(b, 18, "-b44f");
+        check(b, 19, "-9aa4");
+        check(b, 20, "-83gf");
+        check(b, 21, "-71cf");
+        check(b, 22, "-638j");
+        check(b, 23, "-58k8");
+        check(b, 24, "-4hif");
+        check(b, 25, "-44la");
+        check(b, 26, "-3iof");
+        check(b, 27, "-38o6");
+        check(b, 28, "-2rgf");
+        check(b, 29, "-2jqo");
+        check(b, 30, "-2cof");
+        check(b, 31, "-2661");
+        check(b, 32, "-1vvv");
+        check(b, 33, "-1r5u");
+        check(b, 34, "-1mnh");
+        check(b, 35, "-1ihf");
+        check(b, 36, "-1ekf");
+
+        check(c, 2, "0");
+        check(c, 3, "0");
+        check(c, 4, "0");
+        check(c, 5, "0");
+        check(c, 6, "0");
+        check(c, 7, "0");
+        check(c, 8, "0");
+        check(c, 9, "0");
+        check(c, 10, "0");
+        check(c, 11, "0");
+        check(c, 12, "0");
+        check(c, 13, "0");
+        check(c, 14, "0");
+        check(c, 15, "0");
+        check(c, 16, "0");
+        check(c, 17, "0");
+        check(c, 18, "0");
+        check(c, 19, "0");
+        check(c, 20, "0");
+        check(c, 21, "0");
+        check(c, 22, "0");
+        check(c, 23, "0");
+        check(c, 24, "0");
+        check(c, 25, "0");
+        check(c, 26, "0");
+        check(c, 27, "0");
+        check(c, 28, "0");
+        check(c, 29, "0");
+        check(c, 30, "0");
+        check(c, 31, "0");
+        check(c, 32, "0");
+        check(c, 33, "0");
+        check(c, 34, "0");
+        check(c, 35, "0");
+        check(c, 36, "0");
+    }
+
     static void tests() {
         static_assert(std::is_pod<int512_t>::value, "");
         static_assert(std::is_pod<uint512_t>::value, "");
@@ -1709,6 +1851,7 @@ struct _test {
         testNativeOperatorsAssign();
         testConstexpr();
         testEtc();
+        testToChars();
         std::cout << wide_int<19, wide_int_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
