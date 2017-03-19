@@ -7,6 +7,89 @@
 
 namespace std {
 
+// numeric limits
+template <size_t MachineWords, wide_int_s Signed>
+class numeric_limits<wide_int<MachineWords, Signed>> {
+public:
+    static constexpr bool is_specialized = true;
+    static constexpr bool is_signed = Signed == wide_int_s::Signed;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = true;
+    static constexpr bool has_infinity = false;
+    static constexpr bool has_quiet_NaN = false;
+    static constexpr bool has_signaling_NaN = true;
+    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr bool has_denorm_loss = false;
+    static constexpr std::float_round_style round_style = std::round_toward_zero;
+    static constexpr bool is_iec559 = false;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = true;
+    static constexpr int digits = CHAR_BIT * MachineWords - (Signed == wide_int_s::Signed ? 1 : 0);
+    static constexpr int digits10 = digits * 38.2308 /*std::log10(2)*/;
+    static constexpr int max_digits10 = 0;
+    static constexpr int radix = 2;
+    static constexpr int min_exponent = 0;
+    static constexpr int min_exponent10 = 0;
+    static constexpr int max_exponent = 0;
+    static constexpr int max_exponent10 = 0;
+    static constexpr bool traps = true;
+    static constexpr bool tinyness_before = false;
+
+    static constexpr wide_int<MachineWords, Signed> min() noexcept {
+        if (Signed == wide_int_s::Signed) {
+            wide_int<MachineWords, wide_int_s::Signed> res{};
+            res.m_arr[0] = std::numeric_limits<typename wide_int<MachineWords, Signed>::signed_base_type>::min();
+            return res;
+        } else {
+            return 0;
+        }
+    }
+
+    static constexpr wide_int<MachineWords, Signed> lowest() noexcept {
+        return min();
+    }
+
+    static constexpr wide_int<MachineWords, Signed> max() noexcept {
+        wide_int<MachineWords, Signed> res{};
+        res.m_arr[0] = Signed == wide_int_s::Signed
+                           ? std::numeric_limits<typename wide_int<MachineWords, Signed>::signed_base_type>::max()
+                           : std::numeric_limits<typename wide_int<MachineWords, Signed>::base_type>::max();
+        for (int i = 1; i < res.arr_size; ++i) {
+            res.m_arr[i] = std::numeric_limits<typename wide_int<MachineWords, Signed>::base_type>::max();
+        }
+        return res;
+    }
+
+    static constexpr wide_int<MachineWords, Signed> epsilon() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<MachineWords, Signed> round_error() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<MachineWords, Signed> infinity() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<MachineWords, Signed> quiet_NaN() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<MachineWords, Signed> signaling_NaN() noexcept {
+        return 0;
+    }
+
+    static constexpr wide_int<MachineWords, Signed> denorm_min() noexcept {
+        return 0;
+    }
+};
+
+template <typename T>
+static constexpr bool is_arithmetic___() noexcept {
+    return std::numeric_limits<T>::is_integer || std::numeric_limits<T>::epsilon();
+}
+
 // type traits
 template <size_t MachineWords, wide_int_s Signed, size_t MachineWords2, wide_int_s Signed2>
 struct common_type<wide_int<MachineWords, Signed>, wide_int<MachineWords2, Signed2>> {
@@ -25,7 +108,7 @@ struct common_type<wide_int<MachineWords, Signed>, wide_int<MachineWords2, Signe
 
 template <size_t MachineWords, wide_int_s Signed, typename Arithmetic>
 struct common_type<wide_int<MachineWords, Signed>, Arithmetic> {
-    static_assert(std::is_arithmetic<Arithmetic>::value, "");
+    static_assert(is_arithmetic___<Arithmetic>(), "");
 
     using type = std::conditional_t <
                  std::is_floating_point<Arithmetic>::value,
@@ -811,7 +894,7 @@ constexpr wide_int<MachineWords, Signed>::operator bool() const noexcept {
 template <size_t MachineWords, wide_int_s Signed>
 template <class T, class>
 constexpr wide_int<MachineWords, Signed>::operator T() const noexcept {
-    static_assert(std::is_integral<T>::value, "");
+    static_assert(std::numeric_limits<T>::is_integer, "");
     T res = 0;
     for (size_t r_idx = 0; r_idx < _impl::arr_size && r_idx < sizeof(T); ++r_idx) {
         res |= m_arr[_impl::arr_size - 1 - r_idx] << (_impl::base_bits * r_idx);
@@ -866,7 +949,7 @@ struct __is_wide_int : std::false_type {};
 template <size_t MachineWords, wide_int_s Signed>
 struct __is_wide_int<wide_int<MachineWords, Signed>> : std::true_type {};
 template <class T>
-using __arithm_not_wide_int = typename std::enable_if<std::is_arithmetic<T>::value && !__is_wide_int<T>::value, T&>::type;
+using __arithm_not_wide_int = typename std::enable_if<is_arithmetic___<T>() && !__is_wide_int<T>::value, T&>::type;
 
 // Binary operators
 template <size_t MachineWords, wide_int_s Signed, typename T>
@@ -907,45 +990,45 @@ std::common_type_t<wide_int<MachineWords, Signed>, Arithmetic> constexpr operato
 
 template <size_t MachineWords, wide_int_s Signed, typename T>
 std::common_type_t<wide_int<MachineWords, Signed>, T> constexpr operator%(const wide_int<MachineWords, Signed>& num, const T& other) {
-    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
+    static_assert(__is_wide_int<T>::value || std::numeric_limits<T>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_percent(num, other);
 }
 template <size_t MachineWords, wide_int_s Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
 std::common_type_t<wide_int<MachineWords, Signed>, Integral> constexpr operator%(const Integral& other, const wide_int<MachineWords, Signed>& num) {
-    static_assert(std::is_integral<Integral>::value, "");
+    static_assert(std::numeric_limits<Integral>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_percent(wide_int<MachineWords, Signed>(other), num);
 }
 
 template <size_t MachineWords, wide_int_s Signed, typename T>
 std::common_type_t<wide_int<MachineWords, Signed>, T> constexpr operator&(const wide_int<MachineWords, Signed>& num, const T& other) noexcept {
-    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
+    static_assert(__is_wide_int<T>::value || std::numeric_limits<T>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_amp(num, other);
 }
 template <size_t MachineWords, wide_int_s Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
 std::common_type_t<wide_int<MachineWords, Signed>, Integral> constexpr operator&(const Integral& other, const wide_int<MachineWords, Signed>& num) noexcept {
-    static_assert(std::is_integral<Integral>::value, "");
+    static_assert(std::numeric_limits<Integral>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_amp(wide_int<MachineWords, Signed>(other), num);
 }
 
 template <size_t MachineWords, wide_int_s Signed, typename T>
 std::common_type_t<wide_int<MachineWords, Signed>, T> constexpr operator|(const wide_int<MachineWords, Signed>& num, const T& other) noexcept {
-    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
+    static_assert(__is_wide_int<T>::value || std::numeric_limits<T>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_pipe(num, other);
 }
 template <size_t MachineWords, wide_int_s Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
 std::common_type_t<wide_int<MachineWords, Signed>, Integral> constexpr operator|(const Integral& other, const wide_int<MachineWords, Signed>& num) noexcept {
-    static_assert(std::is_integral<Integral>::value, "");
+    static_assert(std::numeric_limits<Integral>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_pipe(wide_int<MachineWords, Signed>(other), num);
 }
 
 template <size_t MachineWords, wide_int_s Signed, typename T>
 std::common_type_t<wide_int<MachineWords, Signed>, T> constexpr operator^(const wide_int<MachineWords, Signed>& num, const T& other) noexcept {
-    static_assert(__is_wide_int<T>::value || std::is_integral<T>::value, "");
+//    static_assert(__is_wide_int<T>::value || std::numeric_limits<T>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_circumflex(num, other);
 }
 template <size_t MachineWords, wide_int_s Signed, typename Integral, class = __arithm_not_wide_int<Integral>>
 std::common_type_t<wide_int<MachineWords, Signed>, Integral> constexpr operator^(const Integral& other, const wide_int<MachineWords, Signed>& num) noexcept {
-    static_assert(std::is_integral<Integral>::value, "");
+    static_assert(std::numeric_limits<Integral>::is_integer, "");
     return wide_int<MachineWords, Signed>::_impl::operator_circumflex(wide_int<MachineWords, Signed>(other), num);
 }
 
@@ -1237,84 +1320,6 @@ constexpr uint256_t operator"" _uint256(const char* n) {
 constexpr uint512_t operator"" _uint512(const char* n) {
     return uint512_t::_impl::from_str(n);
 }
-
-// numeric limits
-template <size_t MachineWords, wide_int_s Signed>
-class numeric_limits<wide_int<MachineWords, Signed>> {
-public:
-    static constexpr bool is_specialized = true;
-    static constexpr bool is_signed = Signed == wide_int_s::Signed;
-    static constexpr bool is_integer = true;
-    static constexpr bool is_exact = true;
-    static constexpr bool has_infinity = false;
-    static constexpr bool has_quiet_NaN = false;
-    static constexpr bool has_signaling_NaN = true;
-    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
-    static constexpr bool has_denorm_loss = false;
-    static constexpr std::float_round_style round_style = std::round_toward_zero;
-    static constexpr bool is_iec559 = false;
-    static constexpr bool is_bounded = true;
-    static constexpr bool is_modulo = true;
-    static constexpr int digits = CHAR_BIT * MachineWords - (Signed == wide_int_s::Signed ? 1 : 0);
-    static constexpr int digits10 = digits * 38.2308 /*std::log10(2)*/;
-    static constexpr int max_digits10 = 0;
-    static constexpr int radix = 2;
-    static constexpr int min_exponent = 0;
-    static constexpr int min_exponent10 = 0;
-    static constexpr int max_exponent = 0;
-    static constexpr int max_exponent10 = 0;
-    static constexpr bool traps = true;
-    static constexpr bool tinyness_before = false;
-
-    static constexpr wide_int<MachineWords, Signed> min() noexcept {
-        if (Signed == wide_int_s::Signed) {
-            wide_int<MachineWords, wide_int_s::Signed> res{};
-            res.m_arr[0] = std::numeric_limits<typename wide_int<MachineWords, Signed>::signed_base_type>::min();
-            return res;
-        } else {
-            return 0;
-        }
-    }
-
-    static constexpr wide_int<MachineWords, Signed> lowest() noexcept {
-        return min();
-    }
-
-    static constexpr wide_int<MachineWords, Signed> max() noexcept {
-        wide_int<MachineWords, Signed> res{};
-        res.m_arr[0] = Signed == wide_int_s::Signed
-                           ? std::numeric_limits<typename wide_int<MachineWords, Signed>::signed_base_type>::max()
-                           : std::numeric_limits<typename wide_int<MachineWords, Signed>::base_type>::max();
-        for (int i = 1; i < res.arr_size; ++i) {
-            res.m_arr[i] = std::numeric_limits<typename wide_int<MachineWords, Signed>::base_type>::max();
-        }
-        return res;
-    }
-
-    static constexpr wide_int<MachineWords, Signed> epsilon() noexcept {
-        return 0;
-    }
-
-    static constexpr wide_int<MachineWords, Signed> round_error() noexcept {
-        return 0;
-    }
-
-    static constexpr wide_int<MachineWords, Signed> infinity() noexcept {
-        return 0;
-    }
-
-    static constexpr wide_int<MachineWords, Signed> quiet_NaN() noexcept {
-        return 0;
-    }
-
-    static constexpr wide_int<MachineWords, Signed> signaling_NaN() noexcept {
-        return 0;
-    }
-
-    static constexpr wide_int<MachineWords, Signed> denorm_min() noexcept {
-        return 0;
-    }
-};
 
 template <size_t MachineWords, wide_int_s Signed>
 struct hash<wide_int<MachineWords, Signed>> {

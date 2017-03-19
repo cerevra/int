@@ -103,7 +103,7 @@ public:
     constexpr explicit operator bool() const noexcept;
 
     template <class T>
-    using __integral_not_wide_int_class = typename std::enable_if<std::is_integral<T>::value, T>::type;
+    using __integral_not_wide_int_class = typename std::enable_if<std::is_fundamental<T>::value, T>::type;
 
     template <class T, class = __integral_not_wide_int_class<T>>
     constexpr operator T() const noexcept;
