@@ -8,6 +8,9 @@
         <style type="text/css">
             .addition { color: green; }
             .right { float:right; }
+            .changed-deleted { background-color: #CFF0FC ; text-decoration: line-through; display: none; }
+            .addition.changed-deleted { color: green; background-color: #CFF0FC ; text-decoration: line-through; text-decoration: black double line-through; display: none; }
+            .changed-added { background-color: #CFF0FC ;}
             pre { line-height: 1.2; font-size: 10pt; margin-top: 25px; }
             .desc { margin-left: 35px; margin-top: 10px; padding:0; white-space: normal; }
             body {max-width: 1024px; margin-left: 25px;}
@@ -18,26 +21,27 @@
         </style>
     </head>
     <body bgcolor="#ffffff">
-        <address>Document number: P0539R0</address>
+        <address>Document number: P0539R1</address>
         <address>Project: Programming Language C++</address>
         <address>Audience: SG6 Numerics</address>
         <address>&nbsp;</address>
         <address>Igor Klevanets &lt;<a href="mailto:cerevra@yandex.ru">cerevra@yandex.ru</a>&gt;, &lt;<a href="mailto:cerevra@yandex-team.ru">cerevra@yandex-team.ru</a>&gt;</address>
         <address>Antony Polukhin &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;</address>
         <address>&nbsp;</address>
-        <address>Date: 2017-01-28</address>
+        <address>Date: 2017-03-25</address>
         <h1>A Proposal to add wide_int Template Class</h1>
 
+        <span class='changed-added'>Changes to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0539r0.html">P0539R0</a> are marked with blue.</span> <button onclick="show_hide_deleted()">Show/Hide deleted lines from P0275R0</button>
         <h2>I. Introduction and Motivation</h2>
         <p>Current standard provides signed and unsigned int8_t, int16_t, int32_t, int64_t. It is usually enough for every day tasks, but sometimes appears a need in big numbers: for cryptography, IPv6, very big counters etc. Non-standard type __int128 which is provided by gcc and clang illuminates this need. But there is no cross-platform solution and no way to satisfy future needs in even more big numbers.</p>
         <p>This is an attempt to solve the problem in a generic way on a library level and provide wording for <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0104r0.html">P0104R0: Multi-Word Integer Operations and Types</a>.</p>
-        <p>A proof of concept implementation available at: <a href="https://github.com/cerevra/int/tree/master/v2">https://github.com/cerevra/int/tree/master/v2</a>.
+        <p>A proof of concept implementation available at: <a href="https://github.com/cerevra/int/tree/master/v2">https://github.com/cerevra/int/tree/master/v3</a>.
         </p>
 
         <h2>II. P0104R0 and this proposal</h2>
         <p>Differences with P0104R0:</p>
         <ul>
-            <li>Template parameters were changed, from <code>int words</code> to <code>size_t Bytes, bool Signed</code> in attempt to make the class less platform dependent (avoid description of "machine word" term and it's size) and in attept to minimize wording size by describing only one class, instead of two.</li>
+            <li>Template parameters were changed, from <code>int words</code> to <code>size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed</code> in attempt to make the class less platform dependent (avoid description of "machine word" term and it's size) and in attept to minimize wording size by describing only one class, instead of two.</li>
             <li>Conversion to bool was made explicit to avoid user errors.</li>
             <li>Result of the arithmetic operations is a <code>common_type_t</code> of two types instead of a left-hand side type. This makes the <code>wide_int</code> class behave more close to the built-in types.</li>
         </ul>
@@ -53,176 +57,180 @@
 
 <h3>26.??.1 Header &lt;wide_int&gt; synopsis<span class="right">[wide_int.syn]</span></h3>
 <pre>namespace std {
-
+<span class='changed-added'>  enum class wide_int_s {
+      Unsigned,
+      Signed
+  };
+</span>
   // 26.??.2 class template wide_int
-  template&lt;size_t Bytes, bool Signed&gt; class wide_int;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; class wide_int;
 
   // 26.??.?? type traits specializations
-  template&lt;size_t Bytes, bool Signed&gt; struct is_scalar&lt;wide_int&lt;Bytes, Signed&gt;&gt;: true_type {};
-  template&lt;size_t Bytes, bool Signed&gt; struct is_compound&lt;wide_int&lt;Bytes, Signed&gt;&gt;: true_type {};
-  template&lt;size_t Bytes, bool Signed&gt; struct is_unsigned&lt;wide_int&lt;Bytes, Signed&gt;&gt;: bool_constant&lt;!Signed&gt; {};
-  template&lt;size_t Bytes, bool Signed&gt; struct is_signed&lt;wide_int&lt;Bytes, Signed&gt;&gt;: bool_constant&lt;Signed&gt; {};
+<span class='changed-deleted'>  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct is_scalar&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;: true_type {};
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct is_compound&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;: true_type {};
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct is_unsigned&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;: bool_constant&lt;!Signed&gt; {};
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct is_signed&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;: bool_constant&lt;Signed&gt; {};
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;;
+</span>  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  struct common_type&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;;
 
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  struct common_type&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;;
 
   // 26.??.?? unary operations
-  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator~(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;
-  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator-(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);
-  template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator+(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator~(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator-(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator+(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val) noexcept(!Signed);
 
   // 26.??.?? binary operations
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator*(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator*(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator/(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator/(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator+(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator+(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept(!Signed);
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-    constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator-(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator-(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+    constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept(!Signed);
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr  operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator%(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator%(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr  operator%(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator%(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator&amp;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator&amp;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator&amp;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator&amp;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator&amp;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator&amp;(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr operator|(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator|(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator|(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr operator|(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator|(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator|(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr  operator^(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator^(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-    constexpr operator^(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr  operator^(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator^(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+    constexpr operator^(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr  operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt; operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr  operator&lt;&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator&lt;&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-    constexpr  operator&gt;&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt; operator&gt;&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-    constexpr Integral operator&gt;&gt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+    constexpr  operator&gt;&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator&gt;&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+    constexpr Integral operator&gt;&gt;(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    constexpr bool operator&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&lt;(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr bool operator&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&lt;(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    constexpr bool operator&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&gt;(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr bool operator&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&gt;(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    constexpr bool operator&lt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&lt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&lt;=(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr bool operator&lt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&lt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&lt;=(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    constexpr bool operator&gt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&gt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator&gt;=(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr bool operator&gt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&gt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator&gt;=(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    constexpr bool operator==(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator==(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator==(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr bool operator==(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator==(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator==(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
-  template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-    constexpr bool operator!=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator!=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-  template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-    constexpr bool operator!=(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr bool operator!=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator!=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+    constexpr bool operator!=(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;
 
   // 26.??.?? numeric conversions
-  template&lt;size_t Bytes, bool Signed&gt; std::string to_string(const wide_int&lt;Bytes, Signed&gt;&amp; val);
-  template&lt;size_t Bytes, bool Signed&gt; std::wstring to_wstring(const wide_int&lt;Bytes, Signed&gt;&amp; val);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; std::string to_string(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; std::wstring to_wstring(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);
 
   // 26.??.?? iostream specializations
-  template&lt;class Char, class Traits, size_t Bytes, bool Signed&gt;
-  basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(basic_ostream&lt;Char, Traits&gt;&amp; os, const wide_int&lt;Bytes, Signed&gt;&amp; val);
+  template&lt;class Char, class Traits, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt;
+  basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(basic_ostream&lt;Char, Traits&gt;&amp; os, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);
 
-  template&lt;class Char, class Traits, size_t Bytes, bool Signed&gt;
-  basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, Traits&gt;&amp; is, wide_int&lt;Bytes, Signed&gt;&amp; val);
+  template&lt;class Char, class Traits, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt;
+  basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, Traits&gt;&amp; is, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);
 
   using int128_t  = wide_int&lt;128 / 8,true&gt;;
   using uint128_t = wide_int&lt;128 / 8,false&gt;;
@@ -235,11 +243,23 @@
 
   // 26.??.?? hash support
   template&lt;class T&gt; struct hash;
-  template&lt;size_t Bytes, bool Signed&gt; struct hash&lt;wide_int&lt;Bytes, Signed&gt;&gt;;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct hash&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;;
 
   // 26.??.?? numeric_limits specialization
-  template&lt;size_t Bytes, bool Signed&gt; struct numeric_limits&lt;wide_int&lt;Bytes, Signed&gt;&gt;;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct numeric_limits&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;;
 
+<span class='changed-added'>  template &lt;size_t MachineWords, wide_int_s Signed&gt;
+  to_chars_result to_chars(char* first,
+                           char* last,
+                           const wide_int&lt;MachineWords, Signed&gt;&amp; value,
+                           int base = 10);
+
+  template &lt;size_t MachineWords, wide_int_s Signed&gt;
+  from_chars_result from_chars(const char* first,
+                               const char* last,
+                               wide_int&lt;MachineWords, Signed&gt;&amp; value,
+                               int base = 10);
+</span>
   inline namespace literals {
   inline namespace wide_int_literals {
 
@@ -268,80 +288,80 @@
 
 <h3>26.??.2 Template class wide_int overview<span class="right">[wide_int.overview]</span></h3>
 <pre>namespace std {
-  template&lt;size_t Bytes, bool Signed&gt;
+  template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt;
   class wide_int {
   public:
     // 26.??.2.?? construct:
     constexpr wide_int() noexcept = default;
     template&lt;typename Arithmetic&gt; constexpr wide_int(const Arithmetic&amp; other) noexcept;
-    template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int(const wide_int&lt;Bytes2, Signed2&gt;&amp; other) noexcept;
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; other) noexcept;
 
     // 26.??.2.?? assignment:
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const Arithmetic&amp; other) noexcept;
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const wide_int&lt;Bytes2, Signed2&gt;&amp; other) noexcept;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator=(const Arithmetic&amp; other) noexcept;
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; other) noexcept;
 
     // 26.??.2.?? compound assignment:
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const Arithmetic&amp;);
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator*=(const Arithmetic&amp;);
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator*=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
 
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const Arithmetic&amp;);
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator/=(const Arithmetic&amp;);
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator/=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
 
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept(!Signed);
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept(!Signed);
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator+=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept(!Signed);
 
     template&lt;typename Arithmetic&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept(!Signed);
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept(!Signed);
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator-=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept(!Signed);
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const Integral&amp;);
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator%=(const Integral&amp;);
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator%=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const Integral&amp;) noexcept;
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&amp;=(const Integral&amp;) noexcept;
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&amp;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator|=(const Integral&amp;) noexcept;
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator|=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator|=(const Integral&amp;) noexcept;
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator|=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const Integral&amp;) noexcept;
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator^=(const Integral&amp;) noexcept;
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator^=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;);
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;);
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
 
     template&lt;typename Integral&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;
-    template&lt;size_t Bytes2, bool Signed2&gt;
-    constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;
+    template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+    constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&gt;&gt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
 
     // 26.??.2.?? observers:
     template &lt;typename Arithmetic&gt; constexpr operator Arithmetic() const noexcept;
     constexpr explicit operator bool() const noexcept;
 
   private:
-    uint32_t data[Bytes / sizeof(uint32_t) + 1]; // exposition only
+    uint32_t data[<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> / sizeof(uint32_t) + 1]; // exposition only
   };
 }</pre>
-<p>The class template <code>wide_int&lt;size_t Bytes, bool Signed&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code>Bytes</code> specifies significant bytes count to store the integer value. <i>[Note:</i> <code>sizeof(wide_int&lt;Bytes, true&gt;)</code> and <code>sizeof(wide_int&lt;Bytes, false&gt;)</code> are not requred to be equal to <code>Bytes</code>. <i>- end note]</i>  Template parameter <code>Signed</code> specifies signedness of the stored integer value.</p>
+<p>The class template <code>wide_int&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span></code> specifies significant <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> count to store the integer value. <i>[Note:</i> <code>sizeof(wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, true&gt;)</code> and <code>sizeof(wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, false&gt;)</code> are not requred to be equal to <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span></code>. <i>- end note]</i>  Template parameter <code>Signed</code> specifies signedness of the stored integer value.</p>
 
 
 <h4>26.??.2.?? wide_int constructors <span class="right">[wide_int.cons]</span></h4>
@@ -352,47 +372,47 @@
 <div class="desc"><i>Remarks:</i> This function shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
 <div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
-<pre>template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int(const wide_int&lt;Bytes2, Signed2&gt;&amp; other) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; other) noexcept;</pre>
 <div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
 <h4>26.??.2.?? wide_int assignments <span class="right">[wide_int.assign]</span></h4>
 <pre>template&lt;typename Arithmetic&gt;
-constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const Arithmetic&amp; other) noexcept;</pre>
+constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator=(const Arithmetic&amp; other) noexcept;</pre>
 <div class="desc"><i>Remarks:</i> This function shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
 <div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
-<pre>template&lt;size_t Bytes2, bool Signed2&gt;
-constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator=(const wide_int&lt;Bytes2, Signed2&gt;&amp; other) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; other) noexcept;</pre>
 <div class="desc"><i>Effects:</i> Constructs an object from <code>other</code> using the integral conversion rules [conv.integral].</div>
 
 <h4>26.??.2.?? wide_int compound assignments <span class="right">[wide_int.cassign]</span></h4>
-<pre>template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept(!Signed);
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator|=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;);
-template&lt;size_t Bytes2, bool Signed2&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const wide_int&lt;Bytes2, Signed2&gt;&amp;) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator*=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator/=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator+=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept(!Signed);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator-=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept(!Signed);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator%=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&amp;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator|=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator^=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&lt;&lt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&gt;&gt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp;) noexcept;</pre>
 <div class="desc"><i>Effects:</i> Behavior of these operators is similar to operators for built-in integral types.</div>
 
-<pre>template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator*=(const Arithmetic&amp;);
-template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator/=(const Arithmetic&amp;);
-template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept(!Signed);
-template&lt;typename Arithmetic&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept(!Signed);</pre>
+<pre>template&lt;typename Arithmetic&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator*=(const Arithmetic&amp;);
+template&lt;typename Arithmetic&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator/=(const Arithmetic&amp;);
+template&lt;typename Arithmetic&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator+=(const Arithmetic&amp;) noexcept(!Signed);
+template&lt;typename Arithmetic&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator-=(const Arithmetic&amp;) noexcept(!Signed);</pre>
 <div class="desc"><i>Remarks:</i> Functions shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
-<div class="desc"><i>Effects:</i> As if an object <code>wi</code> of type <code>wide_int&lt;Bytes, Signed&gt;</code> was created from input value and the corresponding operator was called for <code>*this</code> and the <code>wi</code>.</div>
+<div class="desc"><i>Effects:</i> As if an object <code>wi</code> of type <code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code> was created from input value and the corresponding operator was called for <code>*this</code> and the <code>wi</code>.</div>
 
-<pre>template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator%=(const Integral&amp;);
-template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&amp;=(const Integral&amp;) noexcept;
-template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator|=(const Integral&amp;) noexcept;
-template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator^=(const Integral&amp;) noexcept;
-template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;);
-template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;</pre>
+<pre>template&lt;typename Integral&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator%=(const Integral&amp;);
+template&lt;typename Integral&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&amp;=(const Integral&amp;) noexcept;
+template&lt;typename Integral&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator|=(const Integral&amp;) noexcept;
+template&lt;typename Integral&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator^=(const Integral&amp;) noexcept;
+template&lt;typename Integral&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&lt;&lt;=(const Integral&amp;);
+template&lt;typename Integral&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;</pre>
 <div class="desc"><i>Remarks:</i> Functions shall not participate in overload resolution unless <code>is_integral_v&lt;Integral&gt;</code> is true.</div>
-<div class="desc"><i>Effects:</i> As if an object <code>wi</code> of type <code>wide_int&lt;Bytes, Signed&gt;</code> was created from input value and the corresponding operator was called for <code>*this</code> and the <code>wi</code>.</div>
+<div class="desc"><i>Effects:</i> As if an object <code>wi</code> of type <code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code> was created from input value and the corresponding operator was called for <code>*this</code> and the <code>wi</code>.</div>
 
 
 <h4>26.??.2.?? wide_int observers <span class="right">[wide_int.observers]</span></h4>
@@ -405,42 +425,42 @@ template&lt;typename Integral&gt; constexpr wide_int&lt;Bytes, Signed&gt;&amp; o
 
 
 <h3>26.??.?? Specializations of common_type <span class="right">[wide_int.traits.specializations]</span></h3>
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt; {
-  using type = wide_int&lt;max(Bytes, Bytes2), <i>see below</i>&gt;;
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+struct common_type&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt; {
+  using type = wide_int&lt;max(<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2), <i>see below</i>&gt;;
 };</pre>
 
 <p>The signed template parameter indicated by this specialization is following:</p>
 <ul>
-  <li><code>(Signed &amp;&amp; Signed2)</code> if <code>Bytes == Bytes2</code></li>
-  <li><code>Signed</code> if <code>Bytes > Bytes2</code></li>
+  <li><code>(Signed &amp;&amp; Signed2)</code> if <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> == <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2</code></li>
+  <li><code>Signed</code> if <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> > <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2</code></li>
   <li><code>Signed2</code> otherwise</li>
 </ul>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt; {
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+struct common_type&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt; {
   using type = <i>see below</i>;
 };</pre>
 
 <p>The member typedef <code>type</code> is following:</p>
 <ul>
   <li><code>Arithmetic</code> if <code>is_floating_point_v&lt;Arithmetic&gt;</code> is <code>true</code></li>
-  <li><code>wide_int&lt;Bytes, Signed&gt;</code> if <code>Bytes &gt; sizeof(Arithmetic)</code></li>
-  <li><code>Arithmetic</code> if <code>Bytes &lt; sizeof(Arithmetic)</code></li>
-  <li><code>Arithmetic</code> if <code>Bytes == sizeof(Arithmetic) &amp;&amp; Signed</code> or <code>Bytes == sizeof(Arithmetic) &amp;&amp; Signed == is_signed_v&lt;Arithmetic&gt;</code></li>
-  <li><code>wide_int&lt;Bytes, Signed&gt;</code> otherwise</li>
+  <li><code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code> if <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> &gt; sizeof(Arithmetic)</code></li>
+  <li><code>Arithmetic</code> if <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> &lt; sizeof(Arithmetic)</code></li>
+  <li><code>Arithmetic</code> if <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> == sizeof(Arithmetic) &amp;&amp; Signed</code> or <code><span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span> == sizeof(Arithmetic) &amp;&amp; Signed == is_signed_v&lt;Arithmetic&gt;</code></li>
+  <li><code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code> otherwise</li>
 </ul>
 <div class="desc"><i>Requires:</i> <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</div>
 
 
 <h3>26.??.?? Unary operators <span class="right">[wide_int.unary_ops]</span></h3>
-<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator~(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator~(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val) noexcept;</pre>
 <div class="desc"><i>Returns:</i> value with inverted significant bits of <code>val</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator-(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator-(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>val *= -1</code> if <code>Signed</code> is true, otherwise the result is unspecified.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed&gt; constexpr wide_int&lt;Bytes, Signed&gt; operator+(const wide_int&lt;Bytes, Signed&gt;&amp; val) noexcept(!Signed);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator+(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>val</code>.</div>
 
 <h3>26.??.?? Binary operators <span class="right">[wide_int.binary_ops]</span></h3>
@@ -450,226 +470,226 @@ struct common_type&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt; {
 <p><i>[Note:</i> To reduce template instantinations count operators that accept <code>Integral</code> and <code>Arithmetic</code> parameter convert to common type first, as the common type may be a built-in type. <i>- end note]</i></p>
 
 </p>
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator*(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) *= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator*(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator*(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator*(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) * CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator/(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) /= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator/(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator/(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator/(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) / CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator+(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) += rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator+(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator+(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator+(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) + CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept(!Signed);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator-(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) -= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator-(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Arithmetic&gt;
-  constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept(!Signed);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator-(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept(!Signed);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Arithmetic&gt;
+  constexpr operator-(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept(!Signed);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) - CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator%(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) %= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr  operator%(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);
-template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator%(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr  operator%(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator%(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) % CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator&amp;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator&amp;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &amp;= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator&amp;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator&amp;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator&amp;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator&amp;(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &amp; CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr operator|(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr operator|(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) |= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator|(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator|(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator|(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator|(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) | CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr  operator^(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr  operator^(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) ^= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator^(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, Integral&gt;
-  constexpr operator^(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator^(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, Integral&gt;
+  constexpr operator^(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) ^ CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr  operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr  operator&lt;&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt;&lt;= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  constexpr wide_int&lt;Bytes, Signed&gt; operator&lt;&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator&lt;&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt;&lt; CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  constexpr Integral operator&lt;&lt;(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>lhs &lt;&lt; Integral(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  common_type_t&lt;wide_int&lt;Bytes, Signed&gt;, wide_int&lt;Bytes2, Signed2&gt;&gt;
-  constexpr  operator&gt;&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  common_type_t&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&gt;
+  constexpr  operator&gt;&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &gt;&gt;= rhs</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  constexpr wide_int&lt;Bytes, Signed&gt; operator&gt;&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  constexpr wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt; operator&gt;&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Integral&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &gt;&gt; CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Integral&gt;
-  constexpr Integral operator&gt;&gt;(const Integral&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Integral&gt;
+  constexpr Integral operator&gt;&gt;(const Integral&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>lhs &gt;&gt; Integral(rhs)</code>.</div>
 
 
 
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  constexpr bool operator&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  constexpr bool operator&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>true</code> if value of <code>CT(lhs)</code> is less than the value of <code>CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&lt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&lt;(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&lt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&lt;(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt; CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  constexpr bool operator&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  constexpr bool operator&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>true</code> if value of <code>CT(lhs)</code> is greater than the value of <code>CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&gt;(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&gt;(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&gt;(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&gt;(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &gt; CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  constexpr bool operator&lt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  constexpr bool operator&lt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>true</code> if value of <code>CT(lhs)</code> is equal or less than the value of <code>CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&lt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&lt;=(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&lt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&lt;=(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt;= CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  constexpr bool operator&gt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  constexpr bool operator&gt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>true</code> if value of <code>CT(lhs)</code> is equal or greater than the value of <code>CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&gt;=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator&gt;=(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&gt;=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator&gt;=(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &gt;= CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  constexpr bool operator==(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  constexpr bool operator==(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>true</code> if significant bits of <code>CT(lhs)</code> and <code>CT(rhs)</code> are the same.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator==(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator==(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator==(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator==(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) == CT(rhs)</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, size_t Bytes2, bool Signed2&gt;
-  constexpr bool operator!=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const wide_int&lt;Bytes2, Signed2&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed2&gt;
+  constexpr bool operator!=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>2, Signed2&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>!(CT(lhs) == CT(rhs))</code>.</div>
 
-<pre>template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator!=(const wide_int&lt;Bytes, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
-template&lt;size_t Bytes, bool Signed, typename Arithmetic&gt;
-  constexpr bool operator!=(const Arithmetic&amp; lhs, const wide_int&lt;Bytes, Signed&gt;&amp; rhs) noexcept;</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator!=(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; lhs, const Arithmetic&amp; rhs) noexcept;
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed, typename Arithmetic&gt;
+  constexpr bool operator!=(const Arithmetic&amp; lhs, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; rhs) noexcept;</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) != CT(rhs)</code>.</div>
 
 
 <h3>26.??.?? Numeric conversions <span class="right">[wide_int.conversions]</span></h3>
-<pre>template&lt;size_t Bytes, bool Signed&gt; std::string to_string(const wide_int&lt;Bytes, Signed&gt;&amp; val);
-template&lt;size_t Bytes, bool Signed&gt; std::wstring to_wstring(const wide_int&lt;Bytes, Signed&gt;&amp; val);</pre>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; std::string to_string(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);
+template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; std::wstring to_wstring(const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);</pre>
 <div class="desc"><i>Returns:</i> Each function returns an object holding the character representation of the value of its argument. All the significant bits of the argument are outputed as a signed decimal in the style <code>[-]dddd</code>.</div>
 
 <h3>26.??.?? iostream specializations <span class="right">[wide_int.io]</span></h3>
-<pre>template&lt;class Char, class Traits, size_t Bytes, bool Signed&gt;
-basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(basic_ostream&lt;Char, Traits&gt;&amp; os, const wide_int&lt;Bytes, Signed&gt;&amp; val);</pre>
+<pre>template&lt;class Char, class Traits, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt;
+basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(basic_ostream&lt;Char, Traits&gt;&amp; os, const wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);</pre>
 <div class="desc"><i>Effects:</i> As if by: <code>os &lt;&lt; to_string(val)</code>.</div>
 <div class="desc"><i>Returns:</i> <code>os</code>.</div>
 
 
-<pre>template&lt;class Char, class Traits, size_t Bytes, bool Signed&gt;
-basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, Traits&gt;&amp; is, wide_int&lt;Bytes, Signed&gt;&amp; val);</pre>
+<pre>template&lt;class Char, class Traits, size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt;
+basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, Traits&gt;&amp; is, wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&amp; val);</pre>
 <div class="desc"><i>Effects:</i> Extracts a <code>wide_int</code> that is represented as a decimal number in the <code>is</code>. If bad input is encountered, calls <code>is.setstate(ios_base::failbit)</code> (which may throw <code>ios::failure</code> ([iostate.flags])).</div>
 <div class="desc"><i>Returns:</i> <code>is</code>.</div>
 
 
 <h3>26.??.?? Hash support <span class="right">[wide_int.hash]</span></h3>
-<pre>template&lt;size_t Bytes, bool Signed&gt; struct hash&lt;wide_int&lt;Bytes, Signed&gt;&gt;;</pre>
-<p>The specialization is enabled (20.14.14). If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_int&lt;Bytes, Signed&gt;</code>, and <code>wi</code> is an object of type <code>wide_int&lt;Bytes, Signed&gt;</code>, then <code>hash&lt;wide_int&lt;Bytes, Signed&gt;&gt;()(wi) == hash&lt;Integral&gt;()(Integral(wi))</code>.</p>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct hash&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;;</pre>
+<p>The specialization is enabled (20.14.14). If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code>, and <code>wi</code> is an object of type <code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code>, then <code>hash&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;()(wi) == hash&lt;Integral&gt;()(Integral(wi))</code>.</p>
 
 
 <h3>26.??.?? numeric_limits specialization <span class="right">[wide_int.numeric_limits]</span></h3>
-<pre>template&lt;size_t Bytes, bool Signed&gt; struct numeric_limits&lt;wide_int&lt;Bytes, Signed&gt;&gt;;</pre>
-<p>Specialization follows the rules described in [numeric.limits.members]. If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_int&lt;Bytes, Signed&gt;</code>, then <code>numeric_limits&lt;wide_int&lt;Bytes, Signed&gt;&gt;</code> specialized in the same way as <code>numeric_limits&lt;Integral&gt;</code>.</p>
+<pre>template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct numeric_limits&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;;</pre>
+<p>Specialization follows the rules described in [numeric.limits.members]. If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;</code>, then <code>numeric_limits&lt;wide_int&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;</code> specialized in the same way as <code>numeric_limits&lt;Integral&gt;</code>.</p>
 
         <h2>IV. Feature-testing macro</h2>
         <p>For the purposes of SG10 it is sufficient to check for header <code>&lt;wide_int&gt;</code> using <code>__has_include</code>.</p>
@@ -678,14 +698,23 @@ basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, T
             function colorize_texts(texts) {
                 for (var i = 0; i < texts.length; ++i) {
                     var text = texts[i].innerHTML;
-                    text = text.replace(/namespace|enum|void|using |template|class|struct|auto|const |typename|explicit|public|private|operator|#include|char|typedef|static_assert|static_cast|static/g,"<span class='cppkeyword'>$&</span>");
+                    text = text.replace(/namespace|enum|void|constexpr|extern|noexcept|bool|template|class |struct|auto|const|typename|explicit|public|private|operator|#include|inline| char|typedef|static_assert|static_cast|static/g,"<span class='cppkeyword'>$&</span>");
                     text = text.replace(/\/\/[\s\S]+?\n/g,"<span class='cppcomment'>$&</span>");
-                    text = text.replace(/\"[\s\S]*?\"/g,"<span class='cpptext'>$&</span>");
+                    //text = text.replace(/\"[\s\S]+?\"/g,"<span class='cpptext'>$&</span>");
                     texts[i].innerHTML = text;
                 }
             }
 
             colorize_texts(document.getElementsByTagName("pre"));
             colorize_texts(document.getElementsByTagName("code"));
-        </script>
+
+            var show = true;
+            function show_hide_deleted() {
+                var to_change = document.getElementsByClassName('changed-deleted');
+                for (var i = 0; i < to_change.length; ++i) {
+                    to_change[i].style.display = (show ? 'inline' : 'none');
+                }
+
+                show = !show;
+            }        </script>
 </body></html>
