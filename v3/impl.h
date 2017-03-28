@@ -87,7 +87,7 @@ public:
 
 template <typename T>
 static constexpr bool is_arithmetic___() noexcept {
-    return std::numeric_limits<T>::is_integer || std::numeric_limits<T>::epsilon();
+    return std::numeric_limits<T>::is_integer || std::numeric_limits<T>::is_specialized;
 }
 
 // type traits
