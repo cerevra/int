@@ -16,7 +16,7 @@ using namespace std;
 
 struct _test {
     template <size_t MachineWords, bool Sgn>
-    static void printNum(const wide_int<MachineWords, Sgn>& n) {
+    static void printNum(const wide_integer<MachineWords, Sgn>& n) {
         for (auto c : n.m_arr) {
             std::cerr << std::hex << std::setw(2) << std::setfill('0') << uint64_t(c); // << std::endl;
         }
@@ -1681,7 +1681,7 @@ struct _test {
         static_assert(34562625464547567_uint512 == 34562625464547567_uint256, "");
         static_assert(34562625464547567_uint512 != 234623412124100_uint256, "");
 
-        //    static_assert(wide_int<1024,false>::_impl::from_str("1"), "");
+        //    static_assert(wide_integer<1024,false>::_impl::from_str("1"), "");
     }
 
     static void testToChars() {
@@ -1927,7 +1927,7 @@ struct _test {
         testEtc();
         testToChars();
         testFromChars();
-        std::cout << wide_int<19, wide_int_s::Unsigned>(18) << std::endl;
+        std::cout << wide_integer<19, wide_integer_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
     }
