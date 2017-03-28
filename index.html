@@ -241,7 +241,13 @@
   using int512_t  = <span class='changed-deleted'>wide_int</span><span class='changed-added'>wide_integer</span>&lt;512 / 8,true&gt;;
   using uint512_t = <span class='changed-deleted'>wide_int</span><span class='changed-added'>wide_integer</span>&lt;512 / 8,false&gt;;
 
-  // 26.??.?? hash support
+<span class='changed-added'>  template &lt;size_t MachineWords&gt;
+  using wide_int = wide_integer&lt;MachineWords, wide_int_s::Signed&gt;;
+
+  template &lt;size_t MachineWords&gt;
+  using wide_uint = wide_integer&lt;MachineWords, wide_int_s::Unsigned&gt;
+
+</span>  // 26.??.?? hash support
   template&lt;class T&gt; struct hash;
   template&lt;size_t <span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, <span class='changed-added'>wide_int_s</span><span class='changed-deleted'>bool</span> Signed&gt; struct hash&lt;<span class='changed-deleted'>wide_int</span><span class='changed-added'>wide_integer</span>&lt;<span class='changed-added'>MachineWords</span><span class='changed-deleted'>Bytes</span>, Signed&gt;&gt;;
 
