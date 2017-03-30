@@ -125,6 +125,10 @@ struct common_type<wide_integer<MachineWords, Signed>, Arithmetic> {
                                    wide_integer<MachineWords, Signed>>>>>;
 };
 
+template <typename Arithmetic, size_t MachineWords, wide_integer_s Signed>
+struct common_type<Arithmetic, wide_integer<MachineWords, Signed>>
+    : std::common_type<wide_integer<MachineWords, Signed>, Arithmetic> {};
+
 template <size_t MachineWords, wide_integer_s Signed>
 struct wide_integer<MachineWords, Signed>::_impl {
     // utils
@@ -165,6 +169,7 @@ struct wide_integer<MachineWords, Signed>::_impl {
             curr = other < 0 ? std::numeric_limits<base_type>::max() : 0;
         }
     }
+
     template <size_t MachineWords2, wide_integer_s Signed2>
     constexpr static void wide_integer_from_wide_integer(wide_integer<MachineWords, Signed>& self, const wide_integer<MachineWords2, Signed2>& other) noexcept {
         //        int MachineWords_to_copy = std::min(arr_size, other.arr_size);
