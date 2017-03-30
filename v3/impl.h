@@ -6,6 +6,10 @@
 #include <cstring>
 
 namespace std {
+#define CT(x)                                                                        \
+    std::common_type_t<std::decay_t<decltype(rhs)>, std::decay_t<decltype(lhs)>> { \
+        x                                                                            \
+    }
 
 // numeric limits
 template <size_t MachineWords, wide_integer_s Signed>
@@ -155,32 +159,32 @@ struct wide_integer<MachineWords, Signed>::_impl {
     }
 
     template <typename Integral>
-    constexpr static void wide_integer_from_Integral(wide_integer<MachineWords, Signed>& self, Integral other) noexcept {
+    constexpr static void wide_integer_from_Integral(wide_integer<MachineWords, Signed>& self, Integral rhs) noexcept {
         int r_idx = 0;
 
         for (; static_cast<size_t>(r_idx) < sizeof(Integral) && r_idx < arr_size; ++r_idx) {
             base_type& curr = self.m_arr[arr_size - 1 - r_idx];
-            base_type curr_other = (other >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
-            curr = curr_other;
+            base_type curr_rhs = (rhs >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
+            curr = curr_rhs;
         }
 
         for (; r_idx < arr_size; ++r_idx) {
             base_type& curr = self.m_arr[arr_size - 1 - r_idx];
-            curr = other < 0 ? std::numeric_limits<base_type>::max() : 0;
+            curr = rhs < 0 ? std::numeric_limits<base_type>::max() : 0;
         }
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2>
-    constexpr static void wide_integer_from_wide_integer(wide_integer<MachineWords, Signed>& self, const wide_integer<MachineWords2, Signed2>& other) noexcept {
-        //        int MachineWords_to_copy = std::min(arr_size, other.arr_size);
-        auto other_arr_size = wide_integer<MachineWords2, Signed2>::_impl::arr_size;
-        int base_elems_to_copy = _impl::arr_size < other_arr_size ? _impl::arr_size
-                                                                  : other_arr_size;
+    constexpr static void wide_integer_from_wide_integer(wide_integer<MachineWords, Signed>& self, const wide_integer<MachineWords2, Signed2>& rhs) noexcept {
+        //        int MachineWords_to_copy = std::min(arr_size, rhs.arr_size);
+        auto rhs_arr_size = wide_integer<MachineWords2, Signed2>::_impl::arr_size;
+        int base_elems_to_copy = _impl::arr_size < rhs_arr_size ? _impl::arr_size
+                                                                  : rhs_arr_size;
         for (int i = 0; i < base_elems_to_copy; ++i) {
-            self.m_arr[_impl::arr_size - 1 - i] = other.m_arr[other_arr_size - 1 - i];
+            self.m_arr[_impl::arr_size - 1 - i] = rhs.m_arr[rhs_arr_size - 1 - i];
         }
         for (int i = 0; i < arr_size - base_elems_to_copy; ++i) {
-            self.m_arr[i] = is_negative(other) ? std::numeric_limits<base_type>::max() : 0;
+            self.m_arr[i] = is_negative(rhs) ? std::numeric_limits<base_type>::max() : 0;
         }
     }
 
@@ -189,129 +193,129 @@ struct wide_integer<MachineWords, Signed>::_impl {
     template <size_t MachineWords2, wide_integer_s Signed2>
     using __need_increase_size = typename std::enable_if < MachineWords<MachineWords2, wide_integer<MachineWords2, Signed>>::type;
 
-    constexpr static wide_integer<MachineWords, wide_integer_s::Unsigned> shift_left(const wide_integer<MachineWords, wide_integer_s::Unsigned>& other, int n) {
+    constexpr static wide_integer<MachineWords, wide_integer_s::Unsigned> shift_left(const wide_integer<MachineWords, wide_integer_s::Unsigned>& rhs, int n) {
         if (static_cast<size_t>(n) >= base_bits * arr_size)
             return 0;
         if (n <= 0)
-            return other;
+            return rhs;
 
-        wide_integer<MachineWords, Signed> num = other;
+        wide_integer<MachineWords, Signed> lhs = rhs;
         int cur_shift = n % base_bits;
         if (cur_shift) {
-            num.m_arr[0] <<= cur_shift;
+            lhs.m_arr[0] <<= cur_shift;
             for (int i = 1; i < arr_size; ++i) {
-                num.m_arr[i - 1] |= num.m_arr[i] >> (base_bits - cur_shift);
-                num.m_arr[i] <<= cur_shift;
+                lhs.m_arr[i - 1] |= lhs.m_arr[i] >> (base_bits - cur_shift);
+                lhs.m_arr[i] <<= cur_shift;
             }
             n -= cur_shift;
         }
         if (n) {
             int i = 0;
             for (; i < arr_size - n / base_bits; ++i) {
-                num.m_arr[i] = num.m_arr[i + n / base_bits];
+                lhs.m_arr[i] = lhs.m_arr[i + n / base_bits];
             }
             for (; i < arr_size; ++i) {
-                num.m_arr[i] = 0;
+                lhs.m_arr[i] = 0;
             }
         }
-        return num;
+        return lhs;
     }
 
-    constexpr static wide_integer<MachineWords, wide_integer_s::Signed> shift_left(const wide_integer<MachineWords, wide_integer_s::Signed>& other, int n) {
-        // static_assert(is_negative(other), "shift left for negative numbers is underfined!");
-        if (is_negative(other)) {
-            throw std::runtime_error("shift left for negative numbers is underfined!");
+    constexpr static wide_integer<MachineWords, wide_integer_s::Signed> shift_left(const wide_integer<MachineWords, wide_integer_s::Signed>& rhs, int n) {
+        // static_assert(is_negative(rhs), "shift left for negative lhsbers is underfined!");
+        if (is_negative(rhs)) {
+            throw std::runtime_error("shift left for negative lhsbers is underfined!");
         }
-        return wide_integer<MachineWords, wide_integer_s::Signed>(shift_left(wide_integer<MachineWords, wide_integer_s::Unsigned>(other), n));
+        return wide_integer<MachineWords, wide_integer_s::Signed>(shift_left(wide_integer<MachineWords, wide_integer_s::Unsigned>(rhs), n));
     }
 
-    constexpr static wide_integer<MachineWords, wide_integer_s::Unsigned> shift_right(const wide_integer<MachineWords, wide_integer_s::Unsigned>& other, int n) noexcept {
+    constexpr static wide_integer<MachineWords, wide_integer_s::Unsigned> shift_right(const wide_integer<MachineWords, wide_integer_s::Unsigned>& rhs, int n) noexcept {
         if (static_cast<size_t>(n) >= base_bits * arr_size)
             return 0;
         if (n <= 0)
-            return other;
+            return rhs;
 
-        wide_integer<MachineWords, Signed> num = other;
+        wide_integer<MachineWords, Signed> lhs = rhs;
         int cur_shift = n % base_bits;
         if (cur_shift) {
-            num.m_arr[arr_size - 1] >>= cur_shift;
+            lhs.m_arr[arr_size - 1] >>= cur_shift;
             for (int i = arr_size - 2; i >= 0; --i) {
-                num.m_arr[i + 1] |= num.m_arr[i] << (base_bits - cur_shift);
-                num.m_arr[i] >>= cur_shift;
+                lhs.m_arr[i + 1] |= lhs.m_arr[i] << (base_bits - cur_shift);
+                lhs.m_arr[i] >>= cur_shift;
             }
             n -= cur_shift;
         }
         if (n) {
             int i = arr_size - 1;
             for (; i >= static_cast<int>(n / base_bits); --i) {
-                num.m_arr[i] = num.m_arr[i - n / base_bits];
+                lhs.m_arr[i] = lhs.m_arr[i - n / base_bits];
             }
             for (; i >= 0; --i) {
-                num.m_arr[i] = 0;
+                lhs.m_arr[i] = 0;
             }
         }
-        return num;
+        return lhs;
     }
 
-    constexpr static wide_integer<MachineWords, wide_integer_s::Signed> shift_right(const wide_integer<MachineWords, wide_integer_s::Signed>& other, int n) noexcept {
+    constexpr static wide_integer<MachineWords, wide_integer_s::Signed> shift_right(const wide_integer<MachineWords, wide_integer_s::Signed>& rhs, int n) noexcept {
         if (static_cast<size_t>(n) >= base_bits * arr_size)
             return 0;
         if (n <= 0)
-            return other;
+            return rhs;
 
-        bool is_neg = is_negative(other);
+        bool is_neg = is_negative(rhs);
         if (!is_neg) {
-            return shift_right(wide_integer<MachineWords, wide_integer_s::Unsigned>(other), n);
+            return shift_right(wide_integer<MachineWords, wide_integer_s::Unsigned>(rhs), n);
         }
 
-        wide_integer<MachineWords, Signed> num = other;
+        wide_integer<MachineWords, Signed> lhs = rhs;
         int cur_shift = n % base_bits;
         if (cur_shift) {
-            num = shift_right(wide_integer<MachineWords, wide_integer_s::Unsigned>(num), cur_shift);
-            num.m_arr[0] |= std::numeric_limits<base_type>::max() << (base_bits - cur_shift);
+            lhs = shift_right(wide_integer<MachineWords, wide_integer_s::Unsigned>(lhs), cur_shift);
+            lhs.m_arr[0] |= std::numeric_limits<base_type>::max() << (base_bits - cur_shift);
             n -= cur_shift;
         }
         if (n) {
             int i = arr_size - 1;
             for (; i >= static_cast<int>(n / base_bits); --i) {
-                num.m_arr[i] = num.m_arr[i - n / base_bits];
+                lhs.m_arr[i] = lhs.m_arr[i - n / base_bits];
             }
             for (; i >= 0; --i) {
-                num.m_arr[i] = std::numeric_limits<base_type>::max();
+                lhs.m_arr[i] = std::numeric_limits<base_type>::max();
             }
         }
-        return num;
+        return lhs;
     }
 
     template <typename T>
-    constexpr static wide_integer<MachineWords, Signed> operator_plus_T(const wide_integer<MachineWords, Signed>& num, T other) noexcept(Signed == wide_integer_s::Unsigned) {
-        if (other < 0) {
-            return _operator_minus_T(num, -other);
+    constexpr static wide_integer<MachineWords, Signed> operator_plus_T(const wide_integer<MachineWords, Signed>& lhs, T rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        if (rhs < 0) {
+            return _operator_minus_T(lhs, -rhs);
         } else {
-            return _operator_plus_T(num, other);
+            return _operator_plus_T(lhs, rhs);
         }
     }
 
 private:
     template <typename T>
-    constexpr static wide_integer<MachineWords, Signed> _operator_minus_T(const wide_integer<MachineWords, Signed>& num, T other) noexcept(Signed == wide_integer_s::Unsigned) {
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> _operator_minus_T(const wide_integer<MachineWords, Signed>& lhs, T rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        wide_integer<MachineWords, Signed> res = lhs;
 
         bool is_underflow = false;
         int r_idx = 0;
         for (; static_cast<size_t>(r_idx) < sizeof(T) && r_idx < arr_size; ++r_idx) {
             base_type& res_i = res.m_arr[arr_size - 1 - r_idx];
-            base_type curr_other = (other >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
+            base_type curr_rhs = (rhs >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
 
             if (is_underflow) {
                 --res_i;
                 is_underflow = res_i == std::numeric_limits<base_type>::max();
             }
 
-            if (res_i < curr_other) {
+            if (res_i < curr_rhs) {
                 is_underflow = true;
             }
-            res_i -= curr_other;
+            res_i -= curr_rhs;
         }
 
         if (is_underflow && r_idx < arr_size) {
@@ -329,22 +333,22 @@ private:
     }
 
     template <typename T>
-    constexpr static wide_integer<MachineWords, Signed> _operator_plus_T(const wide_integer<MachineWords, Signed>& num, T other) noexcept(Signed == wide_integer_s::Unsigned) {
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> _operator_plus_T(const wide_integer<MachineWords, Signed>& lhs, T rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        wide_integer<MachineWords, Signed> res = lhs;
 
         bool is_overflow = false;
         int r_idx = 0;
         for (; static_cast<size_t>(r_idx) < sizeof(T) && r_idx < arr_size; ++r_idx) {
             base_type& res_i = res.m_arr[arr_size - 1 - r_idx];
-            base_type curr_other = (other >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
+            base_type curr_rhs = (rhs >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
 
             if (is_overflow) {
                 ++res_i;
                 is_overflow = res_i == 0;
             }
 
-            res_i += curr_other;
-            if (res_i < curr_other) {
+            res_i += curr_rhs;
+            if (res_i < curr_rhs) {
                 is_overflow = true;
             }
         }
@@ -364,16 +368,16 @@ private:
     }
 
 public:
-    constexpr static wide_integer<MachineWords, Signed> operator_unary_tilda(const wide_integer<MachineWords, Signed>& num) noexcept {
+    constexpr static wide_integer<MachineWords, Signed> operator_unary_tilda(const wide_integer<MachineWords, Signed>& lhs) noexcept {
         wide_integer<MachineWords, Signed> res{};
         for (int i = 0; i < arr_size; ++i) {
-            res.m_arr[i] = ~num.m_arr[i];
+            res.m_arr[i] = ~lhs.m_arr[i];
         }
         return res;
     }
 
-    constexpr static wide_integer<MachineWords, Signed> operator_unary_minus(const wide_integer<MachineWords, Signed>& num) noexcept(Signed == wide_integer_s::Unsigned) {
-        return operator_plus_T(operator_unary_tilda(num), 1);
+    constexpr static wide_integer<MachineWords, Signed> operator_unary_minus(const wide_integer<MachineWords, Signed>& lhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        return operator_plus_T(operator_unary_tilda(lhs), 1);
     }
 
     template <typename T>
@@ -382,79 +386,79 @@ public:
     using __need_increase_size = typename std::enable_if < MachineWords<MachineWords2, wide_integer<MachineWords2, Signed>>::type;
 
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_plus(const wide_integer<MachineWords, Signed>& num,
-                                                                      const T& other) noexcept(Signed == wide_integer_s::Unsigned) {
-        wide_integer<MachineWords, Signed> t = other;
+    constexpr static wide_integer<MachineWords, Signed> operator_plus(const wide_integer<MachineWords, Signed>& lhs,
+                                                                      const T& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        wide_integer<MachineWords, Signed> t = rhs;
         if (is_negative(t)) {
-            return _operator_minus_wide_integer(num, operator_unary_minus(t));
+            return _operator_minus_wide_integer(lhs, operator_unary_minus(t));
         } else {
-            return _operator_plus_wide_integer(num, t);
+            return _operator_plus_wide_integer(lhs, t);
         }
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2, class = __need_increase_size<MachineWords2, Signed2>>
-    constexpr static wide_integer<MachineWords2, Signed> operator_plus(const wide_integer<MachineWords, Signed>& num,
-                                                                       const wide_integer<MachineWords2, Signed2>& other) noexcept(Signed == wide_integer_s::Unsigned) {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_plus(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed> operator_plus(const wide_integer<MachineWords, Signed>& lhs,
+                                                                       const wide_integer<MachineWords2, Signed2>& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_plus(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_minus(const wide_integer<MachineWords, Signed>& num,
-                                                                       const T& other) noexcept(Signed == wide_integer_s::Unsigned) {
-        wide_integer<MachineWords, Signed> t = other;
+    constexpr static wide_integer<MachineWords, Signed> operator_minus(const wide_integer<MachineWords, Signed>& lhs,
+                                                                       const T& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        wide_integer<MachineWords, Signed> t = rhs;
         if (is_negative(t)) {
-            return _operator_plus_wide_integer(num, operator_unary_minus(t));
+            return _operator_plus_wide_integer(lhs, operator_unary_minus(t));
         } else {
-            return _operator_minus_wide_integer(num, t);
+            return _operator_minus_wide_integer(lhs, t);
         }
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2, class = __need_increase_size<MachineWords2, Signed2>>
-    constexpr static wide_integer<MachineWords2, Signed> operator_minus(const wide_integer<MachineWords, Signed>& num,
-                                                                        const wide_integer<MachineWords2, Signed2>& other) noexcept(Signed == wide_integer_s::Unsigned) {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_minus(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed> operator_minus(const wide_integer<MachineWords, Signed>& lhs,
+                                                                        const wide_integer<MachineWords2, Signed2>& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_minus(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
 private:
-    constexpr static wide_integer<MachineWords, Signed> _operator_minus_wide_integer(const wide_integer<MachineWords, Signed>& num,
-                                                                                     const wide_integer<MachineWords, Signed>& other) noexcept(Signed == wide_integer_s::Unsigned) {
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> _operator_minus_wide_integer(const wide_integer<MachineWords, Signed>& lhs,
+                                                                                     const wide_integer<MachineWords, Signed>& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        wide_integer<MachineWords, Signed> res = lhs;
 
         bool is_underflow = false;
         for (int idx = arr_size - 1; idx >= 0; --idx) {
             base_type& res_i = res.m_arr[idx];
-            const base_type other_i = other.m_arr[idx];
+            const base_type rhs_i = rhs.m_arr[idx];
 
             if (is_underflow) {
                 --res_i;
                 is_underflow = res_i == std::numeric_limits<base_type>::max();
             }
 
-            if (res_i < other_i) {
+            if (res_i < rhs_i) {
                 is_underflow = true;
             }
-            res_i -= other_i;
+            res_i -= rhs_i;
         }
 
         return res;
     }
 
-    constexpr static wide_integer<MachineWords, Signed> _operator_plus_wide_integer(const wide_integer<MachineWords, Signed>& num,
-                                                                                    const wide_integer<MachineWords, Signed>& other) noexcept(Signed == wide_integer_s::Unsigned) {
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> _operator_plus_wide_integer(const wide_integer<MachineWords, Signed>& lhs,
+                                                                                    const wide_integer<MachineWords, Signed>& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+        wide_integer<MachineWords, Signed> res = lhs;
 
         bool is_overflow = false;
         for (int idx = arr_size - 1; idx >= 0; --idx) {
             base_type& res_i = res.m_arr[idx];
-            const base_type other_i = other.m_arr[idx];
+            const base_type rhs_i = rhs.m_arr[idx];
 
             if (is_overflow) {
                 ++res_i;
                 is_overflow = res_i == 0;
             }
 
-            res_i += other_i;
-            if (res_i < other_i) {
+            res_i += rhs_i;
+            if (res_i < rhs_i) {
                 is_overflow = true;
             }
         }
@@ -464,10 +468,10 @@ private:
 
 public:
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_star(const wide_integer<MachineWords, Signed>& num,
-                                                                      const T& other) {
-        wide_integer<MachineWords, Signed> a = make_positive(num);
-        wide_integer<MachineWords, Signed> t = make_positive(wide_integer<MachineWords, Signed>(other));
+    constexpr static wide_integer<MachineWords, Signed> operator_star(const wide_integer<MachineWords, Signed>& lhs,
+                                                                      const T& rhs) {
+        wide_integer<MachineWords, Signed> a = make_positive(lhs);
+        wide_integer<MachineWords, Signed> t = make_positive(wide_integer<MachineWords, Signed>(rhs));
 
         wide_integer<MachineWords, Signed> res = 0;
 
@@ -480,7 +484,7 @@ public:
         }
 
         if (Signed == wide_integer_s::Signed &&
-            is_negative(wide_integer<MachineWords, Signed>(other)) != is_negative(num)) {
+            is_negative(wide_integer<MachineWords, Signed>(rhs)) != is_negative(lhs)) {
             res = operator_unary_minus(res);
         }
 
@@ -488,26 +492,26 @@ public:
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2, class = __need_increase_size<MachineWords2, Signed2>>
-    constexpr static wide_integer<MachineWords2, Signed2> operator_star(const wide_integer<MachineWords, Signed>& num,
-                                                                        const wide_integer<MachineWords2, Signed2>& other) {
-        return wide_integer<MachineWords2, Signed2>::_impl::operator_star(wide_integer<MachineWords2, Signed2>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed2> operator_star(const wide_integer<MachineWords, Signed>& lhs,
+                                                                        const wide_integer<MachineWords2, Signed2>& rhs) {
+        return wide_integer<MachineWords2, Signed2>::_impl::operator_star(wide_integer<MachineWords2, Signed2>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static bool operator_more(const wide_integer<MachineWords, Signed>& num,
-                                        const T& other) noexcept {
+    constexpr static bool operator_more(const wide_integer<MachineWords, Signed>& lhs,
+                                        const T& rhs) noexcept {
         //        static_assert(Signed == std::is_signed<T>::value,
         //                      "warning: operator_more: comparison of integers of different signs");
 
-        wide_integer<MachineWords, Signed> t = other;
+        wide_integer<MachineWords, Signed> t = rhs;
 
-        if (std::is_signed<T>::value && (is_negative(num) != is_negative(t))) {
+        if (std::is_signed<T>::value && (is_negative(lhs) != is_negative(t))) {
             return is_negative(t);
         }
 
         for (int i = 0; i < arr_size; ++i) {
-            if (num.m_arr[i] != t.m_arr[i]) {
-                return num.m_arr[i] > t.m_arr[i];
+            if (lhs.m_arr[i] != t.m_arr[i]) {
+                return lhs.m_arr[i] > t.m_arr[i];
             }
         }
 
@@ -515,26 +519,26 @@ public:
     }
 
     template <size_t MachineWords2, class = __need_increase_size<MachineWords2, Signed>>
-    constexpr static bool operator_more(const wide_integer<MachineWords, Signed>& num,
-                                        const wide_integer<MachineWords2, Signed>& other) noexcept {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_more(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static bool operator_more(const wide_integer<MachineWords, Signed>& lhs,
+                                        const wide_integer<MachineWords2, Signed>& rhs) noexcept {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_more(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static bool operator_less(const wide_integer<MachineWords, Signed>& num,
-                                        const T& other) noexcept {
+    constexpr static bool operator_less(const wide_integer<MachineWords, Signed>& lhs,
+                                        const T& rhs) noexcept {
         //        static_assert(Signed == std::is_signed<T>::value,
         //                      "warning: operator_less: comparison of integers of different signs");
 
-        wide_integer<MachineWords, Signed> t = other;
+        wide_integer<MachineWords, Signed> t = rhs;
 
-        if (std::is_signed<T>::value && (is_negative(num) != is_negative(t))) {
-            return is_negative(num);
+        if (std::is_signed<T>::value && (is_negative(lhs) != is_negative(t))) {
+            return is_negative(lhs);
         }
 
         for (int i = 0; i < arr_size; ++i) {
-            if (num.m_arr[i] != t.m_arr[i]) {
-                return num.m_arr[i] < t.m_arr[i];
+            if (lhs.m_arr[i] != t.m_arr[i]) {
+                return lhs.m_arr[i] < t.m_arr[i];
             }
         }
 
@@ -542,18 +546,18 @@ public:
     }
 
     template <size_t MachineWords2, class = __need_increase_size<MachineWords2, Signed>>
-    constexpr static bool operator_less(const wide_integer<MachineWords, Signed>& num,
-                                        const wide_integer<MachineWords2, Signed>& other) noexcept {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_less(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static bool operator_less(const wide_integer<MachineWords, Signed>& lhs,
+                                        const wide_integer<MachineWords2, Signed>& rhs) noexcept {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_less(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static bool operator_eq(const wide_integer<MachineWords, Signed>& num,
-                                      const T& other) noexcept {
-        wide_integer<MachineWords, Signed> t = other;
+    constexpr static bool operator_eq(const wide_integer<MachineWords, Signed>& lhs,
+                                      const T& rhs) noexcept {
+        wide_integer<MachineWords, Signed> t = rhs;
 
         for (int i = 0; i < arr_size; ++i) {
-            if (num.m_arr[i] != t.m_arr[i]) {
+            if (lhs.m_arr[i] != t.m_arr[i]) {
                 return false;
             }
         }
@@ -562,16 +566,16 @@ public:
     }
 
     template <size_t MachineWords2, class = __need_increase_size<MachineWords2, Signed>>
-    constexpr static bool operator_eq(const wide_integer<MachineWords, Signed>& num,
-                                      const wide_integer<MachineWords2, Signed>& other) noexcept {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_eq(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static bool operator_eq(const wide_integer<MachineWords, Signed>& lhs,
+                                      const wide_integer<MachineWords2, Signed>& rhs) noexcept {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_eq(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_pipe(const wide_integer<MachineWords, Signed>& num,
-                                                                      const T& other) noexcept {
-        wide_integer<MachineWords, Signed> t = other;
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> operator_pipe(const wide_integer<MachineWords, Signed>& lhs,
+                                                                      const T& rhs) noexcept {
+        wide_integer<MachineWords, Signed> t = rhs;
+        wide_integer<MachineWords, Signed> res = lhs;
 
         for (int i = 0; i < arr_size; ++i) {
             res.m_arr[i] |= t.m_arr[i];
@@ -581,16 +585,16 @@ public:
     }
 
     template <size_t MachineWords2, class = __need_increase_size<MachineWords2, Signed>>
-    constexpr static wide_integer<MachineWords2, Signed> operator_pipe(const wide_integer<MachineWords, Signed>& num,
-                                                                       const wide_integer<MachineWords2, Signed>& other) noexcept {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_pipe(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed> operator_pipe(const wide_integer<MachineWords, Signed>& lhs,
+                                                                       const wide_integer<MachineWords2, Signed>& rhs) noexcept {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_pipe(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_amp(const wide_integer<MachineWords, Signed>& num,
-                                                                     const T& other) noexcept {
-        wide_integer<MachineWords, Signed> t = other;
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> operator_amp(const wide_integer<MachineWords, Signed>& lhs,
+                                                                     const T& rhs) noexcept {
+        wide_integer<MachineWords, Signed> t = rhs;
+        wide_integer<MachineWords, Signed> res = lhs;
 
         for (int i = 0; i < arr_size; ++i) {
             res.m_arr[i] &= t.m_arr[i];
@@ -600,14 +604,14 @@ public:
     }
 
     template <size_t MachineWords2, class = __need_increase_size<MachineWords2, Signed>>
-    constexpr static wide_integer<MachineWords2, Signed> operator_amp(const wide_integer<MachineWords, Signed>& num,
-                                                                      const wide_integer<MachineWords2, Signed>& other) noexcept {
-        return wide_integer<MachineWords2, Signed>::_impl::operator_amp(wide_integer<MachineWords2, Signed>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed> operator_amp(const wide_integer<MachineWords, Signed>& lhs,
+                                                                      const wide_integer<MachineWords2, Signed>& rhs) noexcept {
+        return wide_integer<MachineWords2, Signed>::_impl::operator_amp(wide_integer<MachineWords2, Signed>(lhs), rhs);
     }
 
 private:
     template <typename T>
-    constexpr static void divide(const T& numerator, const T& denominator, T& quotient, T& remainder) {
+    constexpr static void divide(const T& lhserator, const T& denominator, T& quotient, T& remainder) {
         bool is_zero = true;
         for (auto c : denominator.m_arr) {
             if (c != 0) {
@@ -620,7 +624,7 @@ private:
             throw std::domain_error("divide by zero");
         }
 
-        T n = numerator;
+        T n = lhserator;
         T d = denominator;
         T x = 1;
         T answer = 0;
@@ -646,14 +650,14 @@ private:
 
 public:
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_slash(const wide_integer<MachineWords, Signed>& num,
-                                                                       const T& other) {
-        wide_integer<MachineWords, Signed> o = other;
+    constexpr static wide_integer<MachineWords, Signed> operator_slash(const wide_integer<MachineWords, Signed>& lhs,
+                                                                       const T& rhs) {
+        wide_integer<MachineWords, Signed> o = rhs;
         wide_integer<MachineWords, Signed> quotient{}, remainder{};
-        divide(make_positive(num), o, quotient, remainder);
+        divide(make_positive(lhs), o, quotient, remainder);
 
         if (Signed == wide_integer_s::Signed &&
-            is_negative(o) != is_negative(num)) {
+            is_negative(o) != is_negative(lhs)) {
             quotient = operator_unary_minus(quotient);
         }
 
@@ -661,31 +665,31 @@ public:
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2, class = __need_increase_size<MachineWords2, Signed2>>
-    constexpr static wide_integer<MachineWords2, Signed2> operator_slash(const wide_integer<MachineWords, Signed>& num,
-                                                                         const wide_integer<MachineWords2, Signed2>& other) {
-        return wide_integer<MachineWords2, Signed2>::operator_slash(wide_integer<MachineWords2, Signed2>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed2> operator_slash(const wide_integer<MachineWords, Signed>& lhs,
+                                                                         const wide_integer<MachineWords2, Signed2>& rhs) {
+        return wide_integer<MachineWords2, Signed2>::operator_slash(wide_integer<MachineWords2, Signed2>(lhs), rhs);
     }
 
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_percent(const wide_integer<MachineWords, Signed>& num,
-                                                                         const T& other) {
+    constexpr static wide_integer<MachineWords, Signed> operator_percent(const wide_integer<MachineWords, Signed>& lhs,
+                                                                         const T& rhs) {
         wide_integer<MachineWords, Signed> quotient{}, remainder{};
-        divide(make_positive(num), wide_integer<MachineWords, Signed>(other), quotient, remainder);
+        divide(make_positive(lhs), wide_integer<MachineWords, Signed>(rhs), quotient, remainder);
         return remainder;
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2, class = __need_increase_size<MachineWords2, Signed2>>
-    constexpr static wide_integer<MachineWords2, Signed2> operator_percent(const wide_integer<MachineWords, Signed>& num,
-                                                                           const wide_integer<MachineWords2, Signed2>& other) {
-        return wide_integer<MachineWords2, Signed2>::operator_percent(wide_integer<MachineWords2, Signed2>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed2> operator_percent(const wide_integer<MachineWords, Signed>& lhs,
+                                                                           const wide_integer<MachineWords2, Signed2>& rhs) {
+        return wide_integer<MachineWords2, Signed2>::operator_percent(wide_integer<MachineWords2, Signed2>(lhs), rhs);
     }
 
     // ^
     template <typename T, class = __keep_size<T>>
-    constexpr static wide_integer<MachineWords, Signed> operator_circumflex(const wide_integer<MachineWords, Signed>& num,
-                                                                            const T& other) noexcept {
-        wide_integer<MachineWords, Signed> t(other);
-        wide_integer<MachineWords, Signed> res = num;
+    constexpr static wide_integer<MachineWords, Signed> operator_circumflex(const wide_integer<MachineWords, Signed>& lhs,
+                                                                            const T& rhs) noexcept {
+        wide_integer<MachineWords, Signed> t(rhs);
+        wide_integer<MachineWords, Signed> res = lhs;
 
         for (int i = 0; i < arr_size; ++i) {
             res.m_arr[i] ^= t.m_arr[i];
@@ -695,9 +699,9 @@ public:
     }
 
     template <size_t MachineWords2, wide_integer_s Signed2, class = __need_increase_size<MachineWords2, Signed2>>
-    constexpr static wide_integer<MachineWords2, Signed2> operator_circumflex(const wide_integer<MachineWords, Signed>& num,
-                                                                              const wide_integer<MachineWords2, Signed2>& other) noexcept {
-        return wide_integer<MachineWords2, Signed2>::operator_circumflex(wide_integer<MachineWords2, Signed2>(num), other);
+    constexpr static wide_integer<MachineWords2, Signed2> operator_circumflex(const wide_integer<MachineWords, Signed>& lhs,
+                                                                              const wide_integer<MachineWords2, Signed2>& rhs) noexcept {
+        return wide_integer<MachineWords2, Signed2>::operator_circumflex(wide_integer<MachineWords2, Signed2>(lhs), rhs);
     }
 
     constexpr static wide_integer<MachineWords, Signed> from_str(const char* c) {
@@ -797,85 +801,85 @@ public:
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>::wide_integer(T other) noexcept
+constexpr wide_integer<MachineWords, Signed>::wide_integer(T rhs) noexcept
     : m_arr{} {
-    _impl::wide_integer_from_Integral(*this, _impl::to_Integral(other));
+    _impl::wide_integer_from_Integral(*this, _impl::to_Integral(rhs));
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <size_t MachineWords2, wide_integer_s Signed2>
-constexpr wide_integer<MachineWords, Signed>::wide_integer(const wide_integer<MachineWords2, Signed2>& other) noexcept
+constexpr wide_integer<MachineWords, Signed>::wide_integer(const wide_integer<MachineWords2, Signed2>& rhs) noexcept
     : m_arr{} {
-    _impl::wide_integer_from_wide_integer(*this, other);
+    _impl::wide_integer_from_wide_integer(*this, rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <size_t MachineWords2, wide_integer_s Signed2>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator=(const wide_integer<MachineWords2, Signed2>& other) noexcept {
-    _impl::wide_integer_from_wide_integer(*this, other);
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator=(const wide_integer<MachineWords2, Signed2>& rhs) noexcept {
+    _impl::wide_integer_from_wide_integer(*this, rhs);
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator=(T other) noexcept {
-    _impl::wide_integer_from_Integral(*this, other);
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator=(T rhs) noexcept {
+    _impl::wide_integer_from_Integral(*this, rhs);
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator*=(const T& other) {
-    *this = _impl::operator_star(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator*=(const T& rhs) {
+    *this = _impl::operator_star(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator/=(const T& other) {
-    *this = _impl::operator_slash(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator/=(const T& rhs) {
+    *this = _impl::operator_slash(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator+=(const T& other) noexcept(Signed == wide_integer_s::Unsigned) {
-    *this = _impl::operator_plus(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator+=(const T& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+    *this = _impl::operator_plus(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator-=(const T& other) noexcept(Signed == wide_integer_s::Unsigned) {
-    *this = _impl::operator_minus(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator-=(const T& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
+    *this = _impl::operator_minus(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator%=(const T& other) {
-    *this = _impl::operator_percent(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator%=(const T& rhs) {
+    *this = _impl::operator_percent(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator&=(const T& other) noexcept {
-    *this = _impl::operator_amp(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator&=(const T& rhs) noexcept {
+    *this = _impl::operator_amp(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator|=(const T& other) noexcept {
-    *this = _impl::operator_pipe(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator|=(const T& rhs) noexcept {
+    *this = _impl::operator_pipe(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
-constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator^=(const T& other) noexcept {
-    *this = _impl::operator_circumflex(*this, wide_integer<MachineWords, Signed>(other));
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator^=(const T& rhs) noexcept {
+    *this = _impl::operator_circumflex(*this, wide_integer<MachineWords, Signed>(rhs));
     return *this;
 }
 
@@ -935,18 +939,18 @@ constexpr wide_integer<MachineWords, Signed>::operator float() const noexcept {
 
 // Unary operators
 template <size_t MachineWords, wide_integer_s Signed>
-constexpr wide_integer<MachineWords, Signed> operator~(const wide_integer<MachineWords, Signed>& num) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_unary_tilda(num);
+constexpr wide_integer<MachineWords, Signed> operator~(const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_unary_tilda(lhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
-constexpr wide_integer<MachineWords, Signed> operator-(const wide_integer<MachineWords, Signed>& num) noexcept(Signed == wide_integer_s::Unsigned) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_unary_minus(num);
+constexpr wide_integer<MachineWords, Signed> operator-(const wide_integer<MachineWords, Signed>& lhs) noexcept(Signed == wide_integer_s::Unsigned) {
+    return wide_integer<MachineWords, Signed>::_impl::operator_unary_minus(lhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
-constexpr wide_integer<MachineWords, Signed> operator+(const wide_integer<MachineWords, Signed>& num) noexcept(Signed == wide_integer_s::Unsigned) {
-    return num;
+constexpr wide_integer<MachineWords, Signed> operator+(const wide_integer<MachineWords, Signed>& lhs) noexcept(Signed == wide_integer_s::Unsigned) {
+    return lhs;
 }
 
 template <class T>
@@ -955,24 +959,26 @@ template <size_t MachineWords, wide_integer_s Signed>
 struct __is_wide_integer<wide_integer<MachineWords, Signed>> : std::true_type {};
 template <class T>
 using __arithm_not_wide_integer = typename std::enable_if<is_arithmetic___<T>() && !__is_wide_integer<T>::value, T&>::type;
+template <class T, class T2>
+using __only_integer = typename std::enable_if<std::numeric_limits<T>::is_integer && std::numeric_limits<T2>::is_integer, T&>::type;
 
 // Binary operators
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator*(const wide_integer<MachineWords, Signed>& num, const T& other) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_star(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator*(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_star(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr operator*(const Arithmetic& other, const wide_integer<MachineWords, Signed>& num) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_star(num, other);
+template <typename Arithmetic, typename Arithmetic2>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator*(const Arithmetic& lhs, const Arithmetic2& rhs) {
+    return CT(lhs) * CT(rhs);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator/(const wide_integer<MachineWords, Signed>& num, const T& other) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_slash(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator/(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_slash(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr operator/(const Arithmetic& other, const wide_integer<MachineWords, Signed>& num) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_slash(wide_integer<MachineWords, Signed>(other), num);
+template <typename Arithmetic, typename Arithmetic2>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic& lhs, const Arithmetic2& rhs) {
+    return CT(lhs) / CT(rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
@@ -984,136 +990,128 @@ std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr ope
     return wide_integer<MachineWords, Signed>::_impl::operator_plus(wide_integer<MachineWords, Signed>(other), num);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator-(const wide_integer<MachineWords, Signed>& num, const T& other) noexcept(Signed == wide_integer_s::Unsigned) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_minus(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator-(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_minus(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr operator-(const Arithmetic& other, const wide_integer<MachineWords, Signed>& num) noexcept(Signed == wide_integer_s::Unsigned) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_minus(wide_integer<MachineWords, Signed>(other), num);
-}
-
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator%(const wide_integer<MachineWords, Signed>& num, const T& other) {
-    static_assert(__is_wide_integer<T>::value || std::numeric_limits<T>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_percent(num, other);
-}
-template <size_t MachineWords, wide_integer_s Signed, typename Integral, class = __arithm_not_wide_integer<Integral>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Integral> constexpr operator%(const Integral& other, const wide_integer<MachineWords, Signed>& num) {
-    static_assert(std::numeric_limits<Integral>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_percent(wide_integer<MachineWords, Signed>(other), num);
+template <typename Arithmetic, typename Arithmetic2>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator-(const Arithmetic& lhs, const Arithmetic2& rhs) {
+    return CT(lhs) - CT(rhs);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator&(const wide_integer<MachineWords, Signed>& num, const T& other) noexcept {
-    static_assert(__is_wide_integer<T>::value || std::numeric_limits<T>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_amp(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator%(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_percent(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Integral, class = __arithm_not_wide_integer<Integral>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Integral> constexpr operator&(const Integral& other, const wide_integer<MachineWords, Signed>& num) noexcept {
-    static_assert(std::numeric_limits<Integral>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_amp(wide_integer<MachineWords, Signed>(other), num);
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator%(const Integral& lhs, const Integral2& rhs) {
+    return CT(lhs) % CT(rhs);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator|(const wide_integer<MachineWords, Signed>& num, const T& other) noexcept {
-    static_assert(__is_wide_integer<T>::value || std::numeric_limits<T>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_pipe(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator&(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_amp(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Integral, class = __arithm_not_wide_integer<Integral>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Integral> constexpr operator|(const Integral& other, const wide_integer<MachineWords, Signed>& num) noexcept {
-    static_assert(std::numeric_limits<Integral>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_pipe(wide_integer<MachineWords, Signed>(other), num);
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator&(const Integral& lhs, const Integral2& rhs) {
+    return CT(lhs) & CT(rhs);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator^(const wide_integer<MachineWords, Signed>& num, const T& other) noexcept {
-    //    static_assert(__is_wide_integer<T>::value || std::numeric_limits<T>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_circumflex(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator|(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_pipe(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Integral, class = __arithm_not_wide_integer<Integral>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Integral> constexpr operator^(const Integral& other, const wide_integer<MachineWords, Signed>& num) noexcept {
-    static_assert(std::numeric_limits<Integral>::is_integer, "");
-    return wide_integer<MachineWords, Signed>::_impl::operator_circumflex(wide_integer<MachineWords, Signed>(other), num);
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator|(const Integral& lhs, const Integral2& rhs) {
+    return CT(lhs) | CT(rhs);
+}
+
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator^(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_circumflex(lhs, rhs);
+}
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator^(const Integral& lhs, const Integral2& rhs) {
+    return CT(lhs) ^ CT(rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
-constexpr wide_integer<MachineWords, Signed> operator<<(const wide_integer<MachineWords, Signed>& num, int n) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::shift_left(num, n);
+constexpr wide_integer<MachineWords, Signed> operator<<(const wide_integer<MachineWords, Signed>& lhs, int n) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::shift_left(lhs, n);
 }
 template <size_t MachineWords, wide_integer_s Signed>
-constexpr wide_integer<MachineWords, Signed> operator>>(const wide_integer<MachineWords, Signed>& num, int n) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::shift_right(num, n);
+constexpr wide_integer<MachineWords, Signed> operator>>(const wide_integer<MachineWords, Signed>& lhs, int n) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::shift_right(lhs, n);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
-constexpr bool operator<(const wide_integer<MachineWords, Signed>& num,
-                         const T& other) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_less(num, other);
+constexpr bool operator<(const wide_integer<MachineWords, Signed>& lhs,
+                         const T& rhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_less(lhs, rhs);
 }
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator<(const Arithmetic& other,
-                         const wide_integer<MachineWords, Signed>& num) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_less(wide_integer<MachineWords, Signed>(other), num);
+constexpr bool operator<(const Arithmetic& rhs,
+                         const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_less(wide_integer<MachineWords, Signed>(rhs), lhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
-constexpr bool operator>(const wide_integer<MachineWords, Signed>& num,
-                         const T& other) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_more(num, other);
+constexpr bool operator>(const wide_integer<MachineWords, Signed>& lhs,
+                         const T& rhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_more(lhs, rhs);
 }
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator>(const Arithmetic& other,
-                         const wide_integer<MachineWords, Signed>& num) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_more(wide_integer<MachineWords, Signed>(other), num);
+constexpr bool operator>(const Arithmetic& rhs,
+                         const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_more(wide_integer<MachineWords, Signed>(rhs), lhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
-constexpr bool operator<=(const wide_integer<MachineWords, Signed>& num,
-                          const T& other) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_less(num, other) ||
-           wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator<=(const wide_integer<MachineWords, Signed>& lhs,
+                          const T& rhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_less(lhs, rhs) ||
+           wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator<=(const Arithmetic& other,
-                          const wide_integer<MachineWords, Signed>& num) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_less(wide_integer<MachineWords, Signed>(other), num) ||
-           wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator<=(const Arithmetic& rhs,
+                          const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_less(wide_integer<MachineWords, Signed>(rhs), lhs) ||
+           wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
-constexpr bool operator>=(const wide_integer<MachineWords, Signed>& num,
-                          const T& other) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_more(num, other) ||
-           wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator>=(const wide_integer<MachineWords, Signed>& lhs,
+                          const T& rhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_more(lhs, rhs) ||
+           wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator>=(const Arithmetic& other,
-                          const wide_integer<MachineWords, Signed>& num) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_more(wide_integer<MachineWords, Signed>(other), num) ||
-           wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator>=(const Arithmetic& rhs,
+                          const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_more(wide_integer<MachineWords, Signed>(rhs), lhs) ||
+           wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
-constexpr bool operator==(const wide_integer<MachineWords, Signed>& num,
-                          const T& other) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator==(const wide_integer<MachineWords, Signed>& lhs,
+                          const T& rhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator==(const Arithmetic& other,
-                          const wide_integer<MachineWords, Signed>& num) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator==(const Arithmetic& rhs,
+                          const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
-constexpr bool operator!=(const wide_integer<MachineWords, Signed>& num,
-                          const T& other) noexcept {
-    return !wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator!=(const wide_integer<MachineWords, Signed>& lhs,
+                          const T& rhs) noexcept {
+    return !wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator!=(const Arithmetic& other,
-                          const wide_integer<MachineWords, Signed>& num) noexcept {
-    return !wide_integer<MachineWords, Signed>::_impl::operator_eq(num, other);
+constexpr bool operator!=(const Arithmetic& rhs,
+                          const wide_integer<MachineWords, Signed>& lhs) noexcept {
+    return !wide_integer<MachineWords, Signed>::_impl::operator_eq(lhs, rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
@@ -1328,13 +1326,14 @@ constexpr uint512_t operator"" _uint512(const char* n) {
 
 template <size_t MachineWords, wide_integer_s Signed>
 struct hash<wide_integer<MachineWords, Signed>> {
-    std::size_t operator()(const wide_integer<MachineWords, Signed>& num) const {
+    std::size_t operator()(const wide_integer<MachineWords, Signed>& lhs) const {
         size_t res = 0;
-        for (auto n : num.m_arr) {
+        for (auto n : lhs.m_arr) {
             res += n;
         }
         return hash<size_t>()(res);
     }
 };
 
+#undef CT
 } // namespace std
