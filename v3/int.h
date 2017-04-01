@@ -142,12 +142,12 @@ constexpr wide_integer<MachineWords, Signed> operator+(const wide_integer<Machin
 // Binary operators
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator*(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-template <typename Arithmetic, typename Arithmetic2>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator*(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator/(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-template <typename Arithmetic, typename Arithmetic2>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 // TODO
@@ -158,7 +158,7 @@ std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr ope
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator-(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-template <typename Arithmetic, typename Arithmetic2>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator-(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
