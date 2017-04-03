@@ -89,9 +89,35 @@ public:
     }
 };
 
+namespace detail {
+    template <class T>
+    constexpr bool valid_specialized_numeric_limits(std::false_type /*is_array*/) {
+        return std::numeric_limits<T>::is_specialized;
+    }
+    template <class T> constexpr bool valid_specialized_numeric_limits(std::true_type /*is_array*/) {
+        return false;
+    }
+}
+
+
 template <typename T>
-static constexpr bool is_arithmetic___() noexcept {
-    return std::numeric_limits<T>::is_integer || std::numeric_limits<T>::is_specialized;
+static constexpr bool ArithmeticConcept() noexcept {
+    return std::detail::valid_specialized_numeric_limits<T>(std::is_array<T>());
+}
+
+namespace detail {
+    template <class T>
+    constexpr bool valid_specialized_numeric_limits_and_integral(std::false_type /*is_array*/) {
+        return std::numeric_limits<T>::is_specialized && std::numeric_limits<T>::is_integer;
+    }
+    template <class T> constexpr bool valid_specialized_numeric_limits_and_integral(std::true_type /*is_array*/) {
+        return false;
+    }
+}
+
+template <typename T>
+static constexpr bool IntegralConcept() noexcept {
+    return std::detail::valid_specialized_numeric_limits_and_integral<T>(std::is_array<T>());
 }
 
 // type traits
@@ -112,7 +138,7 @@ struct common_type<wide_integer<MachineWords, Signed>, wide_integer<MachineWords
 
 template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic>
 struct common_type<wide_integer<MachineWords, Signed>, Arithmetic> {
-    static_assert(is_arithmetic___<Arithmetic>(), "");
+    static_assert(ArithmeticConcept<Arithmetic>(), "");
 
     using type = std::conditional_t <
                  std::is_floating_point<Arithmetic>::value,
@@ -379,11 +405,6 @@ public:
     constexpr static wide_integer<MachineWords, Signed> operator_unary_minus(const wide_integer<MachineWords, Signed>& lhs) noexcept(Signed == wide_integer_s::Unsigned) {
         return operator_plus_T(operator_unary_tilda(lhs), 1);
     }
-
-    template <typename T>
-    using __keep_size = typename std::enable_if<sizeof(T) <= arr_size, wide_integer<MachineWords, Signed>>::type;
-    template <size_t MachineWords2, wide_integer_s Signed2>
-    using __need_increase_size = typename std::enable_if < MachineWords<MachineWords2, wide_integer<MachineWords2, Signed>>::type;
 
     template <typename T, class = __keep_size<T>>
     constexpr static wide_integer<MachineWords, Signed> operator_plus(const wide_integer<MachineWords, Signed>& lhs,
@@ -953,22 +974,30 @@ constexpr wide_integer<MachineWords, Signed> operator+(const wide_integer<Machin
     return lhs;
 }
 
+// TODO: __is_wide_integer and __arithm_not_wide_integer must be removed
+// TODO: Do we whant that behavior:
+//                               std::int512_t variable_1 = 1;
+//                               std::cout << variable_1 + "123" << '\n'; // "23"
 template <class T>
 struct __is_wide_integer : std::false_type {};
 template <size_t MachineWords, wide_integer_s Signed>
 struct __is_wide_integer<wide_integer<MachineWords, Signed>> : std::true_type {};
+
+
 template <class T>
-using __arithm_not_wide_integer = typename std::enable_if<is_arithmetic___<T>() && !__is_wide_integer<T>::value, T&>::type;
+using __arithm_not_wide_integer = typename std::enable_if<ArithmeticConcept<T>() && !__is_wide_integer<T>::value, T&>::type;
 template <class T, class T2>
-using __only_integer = typename std::enable_if<std::numeric_limits<T>::is_integer && std::numeric_limits<T2>::is_integer, T&>::type;
+using __only_integer = typename std::enable_if<IntegralConcept<T>() && IntegralConcept<T2>()>::type;
+
 template <class T1, class T2>
-using __only_arithmetic = typename std::enable_if<std::numeric_limits<T1>::is_specialized && std::numeric_limits<T2>::is_specialized>::type;
+using __only_arithmetic = typename std::enable_if<ArithmeticConcept<T1>() && ArithmeticConcept<T2>()>::type;
 
 // Binary operators
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator*(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_star(lhs, rhs);
 }
+
 template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator*(const Arithmetic& lhs, const Arithmetic2& rhs) {
     return CT(lhs) * CT(rhs);
