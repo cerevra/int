@@ -150,11 +150,10 @@ std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords
 template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic& rhs, const Arithmetic2& lhs);
 
-// TODO
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic>
-std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr operator+(const wide_integer<MachineWords, Signed>& lhs, const Arithmetic& rhs) noexcept(Signed == wide_integer_s::Unsigned);
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class>
-std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr operator+(const Arithmetic& rhs, const wide_integer<MachineWords, Signed>& lhs) noexcept(Signed == wide_integer_s::Unsigned);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator+(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
+template <typename Arithmetic, typename Arithmetic2, class>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator+(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator-(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);

@@ -983,13 +983,13 @@ std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic
     return CT(lhs) / CT(rhs);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
-std::common_type_t<wide_integer<MachineWords, Signed>, T> constexpr operator+(const wide_integer<MachineWords, Signed>& num, const T& other) noexcept(Signed == wide_integer_s::Unsigned) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_plus(num, other);
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
+std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator+(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_plus(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-std::common_type_t<wide_integer<MachineWords, Signed>, Arithmetic> constexpr operator+(const Arithmetic& other, const wide_integer<MachineWords, Signed>& num) noexcept(Signed == wide_integer_s::Unsigned) {
-    return wide_integer<MachineWords, Signed>::_impl::operator_plus(wide_integer<MachineWords, Signed>(other), num);
+template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator+(const Arithmetic& lhs, const Arithmetic2& rhs) {
+    return CT(lhs) + CT(rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
