@@ -1070,15 +1070,14 @@ constexpr wide_integer<MachineWords, Signed> operator>>(const wide_integer<Machi
     return wide_integer<MachineWords, Signed>::_impl::shift_right(lhs, n);
 }
 
-template <size_t MachineWords, wide_integer_s Signed, typename T>
+template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 constexpr bool operator<(const wide_integer<MachineWords, Signed>& lhs,
-                         const T& rhs) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_less(lhs, rhs);
+                         const wide_integer<MachineWords2, Signed2>& rhs) {
+    return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_less(lhs, rhs);
 }
-template <size_t MachineWords, wide_integer_s Signed, typename Arithmetic, class = __arithm_not_wide_integer<Arithmetic>>
-constexpr bool operator<(const Arithmetic& rhs,
-                         const wide_integer<MachineWords, Signed>& lhs) noexcept {
-    return wide_integer<MachineWords, Signed>::_impl::operator_less(wide_integer<MachineWords, Signed>(rhs), lhs);
+template <typename Arithmetic, typename Arithmetic2, class>
+constexpr bool operator<(const Arithmetic& lhs, const Arithmetic2& rhs) {
+    return CT(lhs) < CT(rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed, typename T>
