@@ -130,6 +130,16 @@ private:
     base_type m_arr[_impl::arr_size];
 };
 
+template <typename T>
+static constexpr bool ArithmeticConcept() noexcept;
+template <class T1, class T2>
+using __only_arithmetic = typename std::enable_if<ArithmeticConcept<T1>() && ArithmeticConcept<T2>()>::type;
+
+template <typename T>
+static constexpr bool IntegralConcept() noexcept;
+template <class T, class T2>
+using __only_integer = typename std::enable_if<IntegralConcept<T>() && IntegralConcept<T2>()>::type;
+
 // Unary operators
 template <size_t MachineWords, wide_integer_s Signed>
 constexpr wide_integer<MachineWords, Signed> operator~(const wide_integer<MachineWords, Signed>& lhs) noexcept;
@@ -143,43 +153,43 @@ constexpr wide_integer<MachineWords, Signed> operator+(const wide_integer<Machin
 // Binary operators
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator*(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Arithmetic, typename Arithmetic2, class>
-std::common_type_t<Arithmetic, Arithmetic2> constexpr operator*(const Arithmetic& rhs, const Arithmetic2& lhs);*/
+template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator*(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator/(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Arithmetic, typename Arithmetic2, class>
-std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic& rhs, const Arithmetic2& lhs);*/
+template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator+(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Arithmetic, typename Arithmetic2, class>
-std::common_type_t<Arithmetic, Arithmetic2> constexpr operator+(const Arithmetic& rhs, const Arithmetic2& lhs);*/
+template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator+(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator-(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Arithmetic, typename Arithmetic2, class>
-std::common_type_t<Arithmetic, Arithmetic2> constexpr operator-(const Arithmetic& rhs, const Arithmetic2& lhs);*/
+template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+std::common_type_t<Arithmetic, Arithmetic2> constexpr operator-(const Arithmetic& rhs, const Arithmetic2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator%(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Integral, typename Integral2, class>
-std::common_type_t<Integral, Integral2> constexpr operator%(const Integral& rhs, const Integral2& lhs);*/
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator%(const Integral& rhs, const Integral2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator&(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Integral, typename Integral2, class>
-std::common_type_t<Integral, Integral2> constexpr operator&(const Integral& rhs, const Integral2& lhs);*/
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator&(const Integral& rhs, const Integral2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator|(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Integral, typename Integral2, class>
-std::common_type_t<Integral, Integral2> constexpr operator|(const Integral& rhs, const Integral2& lhs);*/
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator|(const Integral& rhs, const Integral2& lhs);
 
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator^(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs);
-/*template <typename Integral, typename Integral2, class>
-std::common_type_t<Integral, Integral2> constexpr operator^(const Integral& rhs, const Integral2& lhs);*/
+template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+std::common_type_t<Integral, Integral2> constexpr operator^(const Integral& rhs, const Integral2& lhs);
 
 // TODO: Integral
 template <size_t MachineWords, wide_integer_s Signed>

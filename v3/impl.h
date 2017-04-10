@@ -986,11 +986,6 @@ struct __is_wide_integer<wide_integer<MachineWords, Signed>> : std::true_type {}
 
 template <class T>
 using __arithm_not_wide_integer = typename std::enable_if<ArithmeticConcept<T>() && !__is_wide_integer<T>::value, T&>::type;
-template <class T, class T2>
-using __only_integer = typename std::enable_if<IntegralConcept<T>() && IntegralConcept<T2>()>::type;
-
-template <class T1, class T2>
-using __only_arithmetic = typename std::enable_if<ArithmeticConcept<T1>() && ArithmeticConcept<T2>()>::type;
 
 // Binary operators
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
@@ -998,7 +993,7 @@ std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_star(lhs, rhs);
 }
 
-template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator*(const Arithmetic& lhs, const Arithmetic2& rhs) {
     return CT(lhs) * CT(rhs);
 }
@@ -1007,7 +1002,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator/(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_slash(lhs, rhs);
 }
-template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator/(const Arithmetic& lhs, const Arithmetic2& rhs) {
     return CT(lhs) / CT(rhs);
 }
@@ -1016,7 +1011,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator+(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_plus(lhs, rhs);
 }
-template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator+(const Arithmetic& lhs, const Arithmetic2& rhs) {
     return CT(lhs) + CT(rhs);
 }
@@ -1025,7 +1020,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator-(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_minus(lhs, rhs);
 }
-template <typename Arithmetic, typename Arithmetic2, class = __only_arithmetic<Arithmetic, Arithmetic2>>
+template <typename Arithmetic, typename Arithmetic2, class>
 std::common_type_t<Arithmetic, Arithmetic2> constexpr operator-(const Arithmetic& lhs, const Arithmetic2& rhs) {
     return CT(lhs) - CT(rhs);
 }
@@ -1034,7 +1029,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator%(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_percent(lhs, rhs);
 }
-template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+template <typename Integral, typename Integral2, class>
 std::common_type_t<Integral, Integral2> constexpr operator%(const Integral& lhs, const Integral2& rhs) {
     return CT(lhs) % CT(rhs);
 }
@@ -1043,7 +1038,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator&(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_amp(lhs, rhs);
 }
-template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+template <typename Integral, typename Integral2, class>
 std::common_type_t<Integral, Integral2> constexpr operator&(const Integral& lhs, const Integral2& rhs) {
     return CT(lhs) & CT(rhs);
 }
@@ -1052,7 +1047,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator|(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_pipe(lhs, rhs);
 }
-template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+template <typename Integral, typename Integral2, class>
 std::common_type_t<Integral, Integral2> constexpr operator|(const Integral& lhs, const Integral2& rhs) {
     return CT(lhs) | CT(rhs);
 }
@@ -1061,7 +1056,7 @@ template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator^(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
     return std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>>::_impl::operator_circumflex(lhs, rhs);
 }
-template <typename Integral, typename Integral2, class = __only_integer<Integral, Integral2>>
+template <typename Integral, typename Integral2, class>
 std::common_type_t<Integral, Integral2> constexpr operator^(const Integral& lhs, const Integral2& rhs) {
     return CT(lhs) ^ CT(rhs);
 }
