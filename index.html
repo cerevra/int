@@ -48,7 +48,7 @@
                 <li>Added an interoperability section [numeric.interop]</li>
                 <li><code>Arithmetic</code> and <code>Integral</code> concepts were moved to [numeric.requirements] as they seem widely useful</li>
                 <li>Binary non-member operations that accept <code>Arithmetic</code> or <code>Integral</code> parameter were changed to accept two <code>Arithmetic</code> or <code>Integral</code> parameters respectively and moved to [numeric.interop]</li>
-                <li><code>int128_t</code> and other aliases now depend on <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0102r0.html">P0102R0<a></li>
+                <li><code>int128_t</code> and other aliases now depend on <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0102r0.html">P0102R0</a></li>
             </ul>
             </li>
             <li>Renamed <code>wide_int</code> to <code>wide_integer</code> (this change is not highlighted <span class='changed-added'>with blue</span>)</li>
@@ -61,19 +61,19 @@
         <h2>III. Proposed wording</h2>
 
 
-<p class="notes"><i><b>[Note to SG6:</i></b> Following 4 paragraphs affect <b>all</b> the new numeric class proposals. <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to SG6:</i></b> Following 4 paragraphs affect <b>all</b> the new numeric class proposals. <i><b>- end note]</b></i></p>
 
 <h3 class="changed-added">18.3.4 Class template numeric_limits<span class="right">[numeric.limits]</span></h3>
-<p class="notes"><i><b>[Note to editor:</i></b> Add the following sentence after the sentence "Specializations shall be provided for each arithmetic type, both floating-point and integer, including bool." (first sentence in fourth paragraph in [numeric.limits]) <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to editor:</i></b> Add the following sentence after the sentence "Specializations shall be provided for each arithmetic type, both floating-point and integer, including bool." (first sentence in fourth paragraph in [numeric.limits]) <i><b>- end note]</b></i></p>
 <p class="changed-added">Specializations shall be also provided for <code>wide_integer</code> type. <i>[Note:</i> If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_integer&lt;MachineWords, S&gt;</code>, then <code>numeric_limits&lt;wide_integer&lt;MachineWords, S&gt;&gt;</code> specialized in the same way as <code>numeric_limits&lt;Integral&gt;</code><i>- end note]</i> </p>
 
 <h3 class="changed-added">26.2 Definitions<span class="right">[numerics.defns]</span></h3>
-<p class="notes"><i><b>[Note to editor:</i></b> Add the following paragraph to the end of [numerics.defns] <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to editor:</i></b> Add the following paragraph to the end of [numerics.defns] <i><b>- end note]</b></i></p>
 <p class="changed-added">Define <code>CT</code> as <code>common_type_t&lt;A, B&gt;</code>, where <code>A</code> and <code>B</code> are the types of the two function arguments.</p>
 
 
 <h3 class="changed-added">26.3 Numeric type requirements<span class="right">[numeric.requirements]</span></h3>
-<p class="notes"><i><b>[Note to editor:</i></b> Add the following paragraphs to the end of [numeric.requirements] <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to editor:</i></b> Add the following paragraphs to the end of [numeric.requirements] <i><b>- end note]</b></i></p>
 <p class="changed-added">Functions that accept template parameters starting with <code>Arithmetic</code> shall not participate in overload resolution unless <code>std::numeric_limits&lt;Arithmetic&gt;::is_specialized</code> is true.</p>
 <p class="changed-added">Functions that accept template parameters starting with <code>Integral</code> shall not participate in overload resolution unless <code>std::numeric_limits&lt;Integral&gt;::is_integer</code> is true.</p>
 
@@ -81,12 +81,12 @@
 <h3 class="changed-added">26.4 Numeric types interoperability<span class="right">[numeric.interop]</span></h3>
 <div class="changed-added">
 
-<p class="notes"><i><b>[Note to SG6:</i></b> This is an early attempt to make it possible for different numeric types to inter-operate. It works for <code>wide_integer<i>@</i>built-in</code>, but this approach requires additional study and <code>common_type</code> fixes for new <code>Arithmetic</code> types. <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to SG6:</i></b> This is an early attempt to make it possible for different numeric types to inter-operate. It works for <code>wide_integer<i>@</i>built-in</code>, but this approach requires additional study and <code>common_type</code> fixes for new <code>Arithmetic</code> types. <i><b>- end note]</b></i></p>
 
 
 <p>Following operators are defined for types <code>T</code> and <code>U</code> if <code>T</code> and <code>U</code> have a defined <code>common_type_t&lt;T, U&gt;</code> and satisfy the <code>Arithmetic</code> or <code>Integral</code> requirements from [numeric.requirements] <i>[Note:</i> Implementations are encouraged to provide optimized specializations of the following operators <i>- end note]</i>:</p>
 
-<p class="notes"><i><b>[Note to SG6:</i></b> We may add to <code>Arithmetic</code> and <code>Integral</code> concepts additional requirement that <code>std::numeric_limits&lt;<i>Integral-or-Arithmetic</i>&gt;::is_interoprable</code> shall be true. In that case no user code will be broken even if user already added following operators. However this seems to be an overkill. <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to SG6:</i></b> We may add to <code>Arithmetic</code> and <code>Integral</code> concepts additional requirement that <code>std::numeric_limits&lt;<i>Integral-or-Arithmetic</i>&gt;::is_interoprable</code> shall be true. In that case no user code will be broken even if user already added following operators. However this seems to be an overkill. <i><b>- end note]</b></i></p>
 
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
@@ -441,7 +441,7 @@
   template &lt;size_t MachineWords&gt;
   using wide_uint = wide_integer&lt;MachineWords, signedness::Unsigned&gt;
 </span></pre>
-<p class="notes"><i><b>[Note to SG6:</i></b> Following part requires updated <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0102r0.html">P0102R0<a> 
+<p class="notes"><b><i>[Note to SG6:</i></b> Following part requires updated <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0102r0.html">P0102R0</a> 
 proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int</code>,
 <code>exact_2uint</code>, <code>fast_2uint</code>, <code>least_2uint</code> specializations for <code>wide_integer</code>.
  <i><b>- end note]</b></i></p>
@@ -581,9 +581,9 @@ proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int<
     uint32_t data[MachineWords / sizeof(uint32_t) + 1]; // exposition only
   };
 }</pre>
-<p>The class template <code>wide_integer&lt;size_t MachineWords, signedness S&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code>MachineWords</code> specifies <span class='changed-deleted'>significant</span><span class='changed-added'>exact</span> <i>machine words</i> count to store the integer value. <span class="changed-deleted"><i>[Note:</i>/span> <code>sizeof(wide_integer&lt;MachineWords, true&gt;)</code> and <code>sizeof(wide_integer&lt;MachineWords, false&gt;)</code> are <span class="changed-deleted">not</span> required to be equal to <code>MachineWords * sizeof(<i>machine-word</i>)</code>. <span class="changed-deleted"><i>- end note]</i></span> Template parameter <code>S</code> specifies signedness of the stored integer value.</p>
+<p>The class template <code>wide_integer&lt;size_t MachineWords, signedness S&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code>MachineWords</code> specifies <span class='changed-deleted'>significant</span><span class='changed-added'>exact</span> <i>machine words</i> count to store the integer value. <span class="changed-deleted"><i>[Note:</i></span> <code>sizeof(wide_integer&lt;MachineWords, true&gt;)</code> and <code>sizeof(wide_integer&lt;MachineWords, false&gt;)</code> are <span class="changed-deleted">not</span> required to be equal to <code>MachineWords * sizeof(<i>machine-word</i>)</code>. <span class="changed-deleted"><i>- end note]</i></span> Template parameter <code>S</code> specifies signedness of the stored integer value.</p>
 
-<p class="notes"><i><b>[Note to SG6:</i></b> Definition for <i>machine words</i> must be provided somewhere and referenced from the above paragraph. <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to SG6:</i></b> Definition for <i>machine words</i> must be provided somewhere and referenced from the above paragraph. <i><b>- end note]</b></i></p>
 
 
 <h4>26.??.2.?? wide_integer constructors <span class="right">[<span class='changed-added'>numeric.</span>wide_integer.cons]</span></h4>
@@ -661,7 +661,7 @@ struct common_type&lt;wide_integer&lt;MachineWords, S&gt;, wide_integer&lt;Machi
 </ul>
 <p><i>[Note: </i> <code>common_type</code> follows the <i>usual arithmetic conversions</i> design. <i>- end note]</i></p>
 
-<p class="notes"><i><b>[Note to SG6:</i></b> <code>common_type</code> attempts to follow the <i>usual arithmetic conversions</i> design here for interoperability between different numeric types. Following two specializations must be moved to a more generic place and enriched with usual arithmetic conversion rules for <b>all the other</b> numeric classes that specialize <code>std::numeric_limits</code><i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to SG6:</i></b> <code>common_type</code> attempts to follow the <i>usual arithmetic conversions</i> design here for interoperability between different numeric types. Following two specializations must be moved to a more generic place and enriched with usual arithmetic conversion rules for <b>all the other</b> numeric classes that specialize <code>std::numeric_limits</code><i><b>- end note]</b></i></p>
 <pre>template&lt;size_t MachineWords, signedness S, typename Arithmetic&gt;
 struct common_type&lt;wide_integer&lt;MachineWords, S&gt;, Arithmetic&gt; {
   using type = <i>see below</i>;
@@ -698,7 +698,6 @@ struct common_type&lt;Arithmetic, wide_integer&lt;MachineWords, S&gt;&gt;
 <p class="changed-deleted">Functions that accept <code>Arithmetic</code> parameter shall not participate in overload resolution unless <code>is_arithmetic_v&lt;Arithmetic&gt;</code> is true.</p>
 <p class="changed-deleted"><i>[Note:</i> To reduce template instantiations count operators that accept <code>Integral</code> and <code>Arithmetic</code> parameter convert to common type first, as the common type may be a built-in type. <i>- end note]</i></p>
 
-</p>
 <pre>template&lt;size_t MachineWords, signedness S, size_t MachineWords2, signedness S2&gt;
   common_type_t&lt;wide_integer&lt;MachineWords, S&gt;, wide_integer&lt;MachineWords2, S2&gt;&gt;
   constexpr operator*(const wide_integer&lt;MachineWords, S&gt;&amp; lhs, const wide_integer&lt;MachineWords2, S2&gt;&amp; rhs);</pre>
