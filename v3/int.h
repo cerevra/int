@@ -124,8 +124,8 @@ private:
     template <size_t MachineWords2, wide_integer_s Signed2>
     friend class wide_integer;
 
-    friend class numeric_limits<wide_integer<MachineWords, wide_integer_s::Signed>>;
-    friend class numeric_limits<wide_integer<MachineWords, wide_integer_s::Unsigned>>;
+    friend struct numeric_limits<wide_integer<MachineWords, wide_integer_s::Signed>>;
+    friend struct numeric_limits<wide_integer<MachineWords, wide_integer_s::Unsigned>>;
 
     base_type m_arr[_impl::arr_size];
 };
@@ -297,7 +297,7 @@ constexpr uint512_t operator"" _uint512(const char* n);
 
 // numeric limits
 template <size_t MachineWords, wide_integer_s Signed>
-class numeric_limits<wide_integer<MachineWords, Signed>>;
+struct numeric_limits<wide_integer<MachineWords, Signed>>;
 
 template <size_t MachineWords, wide_integer_s Signed>
 struct hash<wide_integer<MachineWords, Signed>>;
