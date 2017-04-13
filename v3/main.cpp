@@ -15,7 +15,7 @@ using namespace std;
     }
 
 struct _test {
-    template <size_t MachineWords, bool Sgn>
+    template <size_t MachineWords, enum wide_integer_s Sgn>
     static void printNum(const wide_integer<MachineWords, Sgn>& n) {
         for (auto c : n.m_arr) {
             std::cerr << std::hex << std::setw(2) << std::setfill('0') << uint64_t(c); // << std::endl;
