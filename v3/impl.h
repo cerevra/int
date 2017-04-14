@@ -975,18 +975,6 @@ constexpr wide_integer<MachineWords, Signed> operator+(const wide_integer<Machin
     return lhs;
 }
 
-// TODO: __is_wide_integer and __arithm_not_wide_integer must be removed
-// TODO: Do we whant that behavior:
-//                               std::int512_t variable_1 = 1;
-//                               std::cout << variable_1 + "123" << '\n'; // "23"
-template <class T>
-struct __is_wide_integer : std::false_type {};
-template <size_t MachineWords, wide_integer_s Signed>
-struct __is_wide_integer<wide_integer<MachineWords, Signed>> : std::true_type {};
-
-template <class T>
-using __arithm_not_wide_integer = typename std::enable_if<ArithmeticConcept<T>() && !__is_wide_integer<T>::value, T&>::type;
-
 // Binary operators
 template <size_t MachineWords, wide_integer_s Signed, size_t MachineWords2, wide_integer_s Signed2>
 std::common_type_t<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> constexpr operator*(const wide_integer<MachineWords, Signed>& lhs, const wide_integer<MachineWords2, Signed2>& rhs) {
