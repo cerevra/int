@@ -1304,6 +1304,8 @@ struct _test {
         }
         assert(a41.m_arr[62] == 4, "");
         assert(a41.m_arr[63] == 0, "");
+
+        assert((int256_t(-6)/int256_t(-2)) == int256_t(3), "");
     }
 
     static void testOperatorPercent() {

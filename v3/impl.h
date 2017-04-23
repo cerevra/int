@@ -676,7 +676,7 @@ public:
                                                                        const T& rhs) {
         wide_integer<MachineWords, Signed> o = rhs;
         wide_integer<MachineWords, Signed> quotient{}, remainder{};
-        divide(make_positive(lhs), o, quotient, remainder);
+        divide(make_positive(lhs), make_positive(o), quotient, remainder);
 
         if (Signed == wide_integer_s::Signed &&
             is_negative(o) != is_negative(lhs)) {
