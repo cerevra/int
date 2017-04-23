@@ -1332,6 +1332,8 @@ struct _test {
             assert(a41.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a41.m_arr[63] == 1, "");
+
+        assert(int256_t(-14)%int256_t(10) == int256_t(-4), "");
     }
 
     static void testCircumflex() {

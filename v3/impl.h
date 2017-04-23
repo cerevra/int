@@ -695,8 +695,13 @@ public:
     template <typename T, class = __keep_size<T>>
     constexpr static wide_integer<MachineWords, Signed> operator_percent(const wide_integer<MachineWords, Signed>& lhs,
                                                                          const T& rhs) {
+        wide_integer<MachineWords, Signed> o = rhs;
         wide_integer<MachineWords, Signed> quotient{}, remainder{};
-        divide(make_positive(lhs), wide_integer<MachineWords, Signed>(rhs), quotient, remainder);
+        divide(make_positive(lhs), make_positive(o), quotient, remainder);
+        if (Signed == wide_integer_s::Signed &&
+            is_negative(lhs) != is_negative(o)) {
+            remainder = operator_unary_minus(remainder);
+        }
         return remainder;
     }
 
