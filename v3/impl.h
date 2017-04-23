@@ -28,8 +28,8 @@ public:
     static constexpr bool is_iec559 = false;
     static constexpr bool is_bounded = true;
     static constexpr bool is_modulo = true;
-    static constexpr int digits = CHAR_BIT * MachineWords - (Signed == wide_integer_s::Signed ? 1 : 0);
-    static constexpr int digits10 = digits * 38.2308 /*std::log10(2)*/;
+    static constexpr int digits = CHAR_BIT * sizeof(long) * MachineWords - (Signed == wide_integer_s::Signed ? 1 : 0);
+    static constexpr int digits10 = digits * 0.30103 /*std::log10(2)*/;
     static constexpr int max_digits10 = 0;
     static constexpr int radix = 2;
     static constexpr int min_exponent = 0;
