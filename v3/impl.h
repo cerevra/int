@@ -939,13 +939,23 @@ constexpr wide_integer<MachineWords, Signed>::operator long double() const noexc
         return 0;
     }
 
+    wide_integer<MachineWords, Signed> tmp = *this;
+    if (_impl::is_negative(*this)) {
+        tmp = -tmp;
+    }
+
     long double res = 0;
     for (size_t idx = 0; idx < _impl::arr_size; ++idx) {
         long double t = res;
         res *= std::numeric_limits<base_type>::max();
         res += t;
-        res += m_arr[idx];
+        res += tmp.m_arr[idx];
     }
+
+    if (_impl::is_negative(*this)) {
+        res = -res;
+    }
+
     return res;
 }
 

@@ -1366,6 +1366,11 @@ struct _test {
         assert(a2 == 1024, "");
         uint32_t a3 = a2;
         assert(a3 == 1024, "");
+
+        assert(int(int512_t(-1024)) == -1024, "");
+        assert(double(int512_t(-1024)) == -1024, "");
+        assert(double(-int512_t(1024)) == -1024, "");
+        assert(-double(int512_t(1024)) == -1024, "");
     }
 
     static void testFromString() {
