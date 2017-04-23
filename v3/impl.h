@@ -527,7 +527,7 @@ public:
 
         wide_integer<MachineWords, Signed> t = rhs;
 
-        if (std::is_signed<T>::value && (is_negative(lhs) != is_negative(t))) {
+        if (std::numeric_limits<T>::is_signed && (is_negative(lhs) != is_negative(t))) {
             return is_negative(t);
         }
 
@@ -554,7 +554,7 @@ public:
 
         wide_integer<MachineWords, Signed> t = rhs;
 
-        if (std::is_signed<T>::value && (is_negative(lhs) != is_negative(t))) {
+        if (std::numeric_limits<T>::is_signed && (is_negative(lhs) != is_negative(t))) {
             return is_negative(lhs);
         }
 
@@ -699,7 +699,7 @@ public:
         wide_integer<MachineWords, Signed> quotient{}, remainder{};
         divide(make_positive(lhs), make_positive(o), quotient, remainder);
         if (Signed == wide_integer_s::Signed &&
-            is_negative(lhs) != is_negative(o)) {
+            is_negative(lhs)) {
             remainder = operator_unary_minus(remainder);
         }
         return remainder;

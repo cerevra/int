@@ -1906,6 +1906,91 @@ struct _test {
         }
     }
 
+    static void testNegative() {
+        assert(int256_t(-3) * int256_t(-2) == (-3) * (-2), "");
+        assert(int256_t( 3) * int256_t(-2) == ( 3) * (-2), "");
+        assert(int256_t(-3) * int256_t( 2) == (-3) * ( 2), "");
+        assert(int256_t( 3) * int256_t( 2) == ( 3) * ( 2), "");
+
+        assert(int256_t(-3) / int256_t(-2) == (-3) / (-2), "");
+        assert(int256_t( 3) / int256_t(-2) == ( 3) / (-2), "");
+        assert(int256_t(-3) / int256_t( 2) == (-3) / ( 2), "");
+        assert(int256_t( 3) / int256_t( 2) == ( 3) / ( 2), "");
+
+        assert(int256_t(-3) % int256_t(-2) == (-3) % (-2), "");
+        assert(int256_t( 3) % int256_t(-2) == ( 3) % (-2), "");
+        assert(int256_t(-3) % int256_t( 2) == (-3) % ( 2), "");
+        assert(int256_t( 3) % int256_t( 2) == ( 3) % ( 2), "");
+
+        assert(int256_t(-3) + int256_t(-2) == (-3) + (-2), "");
+        assert(int256_t( 3) + int256_t(-2) == ( 3) + (-2), "");
+        assert(int256_t(-3) + int256_t( 2) == (-3) + ( 2), "");
+        assert(int256_t( 3) + int256_t( 2) == ( 3) + ( 2), "");
+
+        assert(int256_t(-3) - int256_t(-2) == (-3) - (-2), "");
+        assert(int256_t( 3) - int256_t(-2) == ( 3) - (-2), "");
+        assert(int256_t(-3) - int256_t( 2) == (-3) - ( 2), "");
+        assert(int256_t( 3) - int256_t( 2) == ( 3) - ( 2), "");
+
+        assert( (int256_t(-3) == int256_t(-2)) == ((-3) == (-2)), "");
+        assert( (int256_t( 3) == int256_t(-2)) == (( 3) == (-2)), "");
+        assert( (int256_t(-3) == int256_t( 2)) == ((-3) == ( 2)), "");
+        assert( (int256_t( 3) == int256_t( 2)) == (( 3) == ( 2)), "");
+
+        assert( (int256_t(-2) == int256_t(-2)) == ((-2) == (-2)), "");
+        assert( (int256_t( 2) == int256_t(-2)) == (( 2) == (-2)), "");
+        assert( (int256_t(-2) == int256_t( 2)) == ((-2) == ( 2)), "");
+        assert( (int256_t( 2) == int256_t( 2)) == (( 2) == ( 2)), "");
+
+        assert( (-int256_t(-2) == -int256_t(-2)) == (-(-2) == -(-2)), "");
+        assert( (-int256_t( 2) == -int256_t(-2)) == (-( 2) == -(-2)), "");
+        assert( (-int256_t(-2) == -int256_t( 2)) == (-(-2) == -( 2)), "");
+        assert( (-int256_t( 2) == -int256_t( 2)) == (-( 2) == -( 2)), "");
+
+        assert( (-int256_t(0) ==  int256_t(0)) == (-(0) ==  (0)), "");
+        assert( ( int256_t(0) == -int256_t(0)) == ( (0) == -(0)), "");
+
+        assert( (int256_t(-3) <= int256_t(-2)) == ((-3) <= (-2)), "");
+        assert( (int256_t( 3) <= int256_t(-2)) == (( 3) <= (-2)), "");
+        assert( (int256_t(-3) <= int256_t( 2)) == ((-3) <= ( 2)), "");
+        assert( (int256_t( 3) <= int256_t( 2)) == (( 3) <= ( 2)), "");
+
+        assert( (int256_t(-2) <= int256_t(-2)) == ((-2) <= (-2)), "");
+        assert( (int256_t( 2) <= int256_t(-2)) == (( 2) <= (-2)), "");
+        assert( (int256_t(-2) <= int256_t( 2)) == ((-2) <= ( 2)), "");
+        assert( (int256_t( 2) <= int256_t( 2)) == (( 2) <= ( 2)), "");
+
+        assert( (int256_t(-3) < int256_t(-2)) == ((-3) < (-2)), "");
+        assert( (int256_t( 3) < int256_t(-2)) == (( 3) < (-2)), "");
+        assert( (int256_t(-3) < int256_t( 2)) == ((-3) < ( 2)), "");
+        assert( (int256_t( 3) < int256_t( 2)) == (( 3) < ( 2)), "");
+
+        assert( (int256_t(-2) < int256_t(-2)) == ((-2) < (-2)), "");
+        assert( (int256_t( 2) < int256_t(-2)) == (( 2) < (-2)), "");
+        assert( (int256_t(-2) < int256_t( 2)) == ((-2) < ( 2)), "");
+        assert( (int256_t( 2) < int256_t( 2)) == (( 2) < ( 2)), "");
+
+        assert( (int256_t(-3) >= int256_t(-2)) == ((-3) >= (-2)), "");
+        assert( (int256_t( 3) >= int256_t(-2)) == (( 3) >= (-2)), "");
+        assert( (int256_t(-3) >= int256_t( 2)) == ((-3) >= ( 2)), "");
+        assert( (int256_t( 3) >= int256_t( 2)) == (( 3) >= ( 2)), "");
+
+        assert( (int256_t(-2) >= int256_t(-2)) == ((-2) >= (-2)), "");
+        assert( (int256_t( 2) >= int256_t(-2)) == (( 2) >= (-2)), "");
+        assert( (int256_t(-2) >= int256_t( 2)) == ((-2) >= ( 2)), "");
+        assert( (int256_t( 2) >= int256_t( 2)) == (( 2) >= ( 2)), "");
+
+        assert( (int256_t(-3) > int256_t(-2)) == ((-3) > (-2)), "");
+        assert( (int256_t( 3) > int256_t(-2)) == (( 3) > (-2)), "");
+        assert( (int256_t(-3) > int256_t( 2)) == ((-3) > ( 2)), "");
+        assert( (int256_t( 3) > int256_t( 2)) == (( 3) > ( 2)), "");
+
+        assert( (int256_t(-2) > int256_t(-2)) == ((-2) > (-2)), "");
+        assert( (int256_t( 2) > int256_t(-2)) == (( 2) > (-2)), "");
+        assert( (int256_t(-2) > int256_t( 2)) == ((-2) > ( 2)), "");
+        assert( (int256_t( 2) > int256_t( 2)) == (( 2) > ( 2)), "");
+    }
+
     static void tests() {
         static_assert(std::is_pod<int512_t>::value, "");
         static_assert(std::is_pod<uint512_t>::value, "");
@@ -1936,6 +2021,7 @@ struct _test {
         testEtc();
         testToChars();
         testFromChars();
+        testNegative();
         std::cout << wide_integer<19, wide_integer_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
