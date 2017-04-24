@@ -1656,8 +1656,8 @@ struct _test {
         static_assert(0xff_int128 == 255, "");
         static_assert(255_int128 == 255, "");
 
-        static_assert(a1 >> 1 == 3, "");
-        static_assert(a1 << 1 == 14, "");
+        static_assert((a1 >> 1) == 3, "");
+        static_assert((a1 << 1) == 14, "");
 
         constexpr uint256_t b = std::numeric_limits<uint256_t>::min();
         static_assert(b == 0, "");
@@ -1680,8 +1680,8 @@ struct _test {
         static_assert((34562625464547567_uint512 & 234623412124100_uint512) == 211114906400964_uint256, "");
         static_assert((34562625464547567_uint512 | 234623412124100_uint256) == 34586133970270703_uint256, "");
 
-        static_assert(34562625464547567_uint512 << 3 == 276501003716380536_uint512, "");
-        static_assert(34562625464547567_uint512 >> 3 == 4320328183068445_uint512, "");
+        static_assert((34562625464547567_uint512 << 3) == 276501003716380536_uint512, "");
+        static_assert((34562625464547567_uint512 >> 3) == 4320328183068445_uint512, "");
 
         static_assert(234623412124100_uint256 < 34562625464547567_uint512, "");
         static_assert(34562625464547567_uint512 > 234623412124100_uint256, "");
