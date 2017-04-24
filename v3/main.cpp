@@ -1649,8 +1649,8 @@ struct _test {
         static_assert(~a2 == -8, "");
         static_assert(-a2 == -7, "");
 
-        static_assert(a1 | 0xff == 7, "");
-        static_assert(a1 & 0xff == 0xff, "");
+        static_assert((a1 | 0xff) == 0xff, "");
+        static_assert((a1 & 0xff) == 7, "");
         static_assert((a2 ^ 0xff) == 0xf8, "");
 
         static_assert(0xff_int128 == 255, "");
