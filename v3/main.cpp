@@ -2019,6 +2019,16 @@ struct _test {
         assert(b1 == 0, "");
     }
 
+    static void testSwap() {
+        int256_t a = 0;
+        int256_t b = 256;
+
+        std::swap(a, b);
+
+        assert(a == 256, "");
+        assert(b == 0, "");
+    }
+
     static void tests() {
         static_assert(std::is_pod<int512_t>::value, "");
         static_assert(std::is_pod<uint512_t>::value, "");
@@ -2051,6 +2061,7 @@ struct _test {
         testFromChars();
         testNegative();
         testUnaryIncOrDecr();
+        testSwap();
         std::cout << wide_integer<19, wide_integer_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
