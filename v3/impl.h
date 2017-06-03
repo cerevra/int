@@ -923,6 +923,32 @@ constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator++() noexcept(Signed == wide_integer_s::Unsigned) {
+    *this = _impl::operator_plus(*this, 1);
+    return *this;
+}
+
+template <size_t MachineWords, wide_integer_s Signed>
+constexpr wide_integer<MachineWords, Signed> wide_integer<MachineWords, Signed>::operator++(int) noexcept(Signed == wide_integer_s::Unsigned) {
+    auto tmp = *this;
+    *this = _impl::operator_plus(*this, 1);
+    return tmp;
+}
+
+template <size_t MachineWords, wide_integer_s Signed>
+constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator--() noexcept(Signed == wide_integer_s::Unsigned) {
+    *this = _impl::operator_minus(*this, 1);
+    return *this;
+}
+
+template <size_t MachineWords, wide_integer_s Signed>
+constexpr wide_integer<MachineWords, Signed> wide_integer<MachineWords, Signed>::operator--(int) noexcept(Signed == wide_integer_s::Unsigned) {
+    auto tmp = *this;
+    *this = _impl::operator_minus(*this, 1);
+    return tmp;
+}
+
+template <size_t MachineWords, wide_integer_s Signed>
 constexpr wide_integer<MachineWords, Signed>::operator bool() const noexcept {
     return !_impl::operator_eq(*this, 0);
 }

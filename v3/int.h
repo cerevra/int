@@ -102,6 +102,11 @@ public:
     constexpr wide_integer<MachineWords, Signed>& operator<<=(int n);
     constexpr wide_integer<MachineWords, Signed>& operator>>=(int n) noexcept;
 
+    constexpr wide_integer<MachineWords, Signed>& operator++() noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer<MachineWords, Signed> operator++(int) noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer<MachineWords, Signed>& operator--() noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer<MachineWords, Signed> operator--(int) noexcept(Signed == wide_integer_s::Unsigned);
+
     // observers
 
     constexpr explicit operator bool() const noexcept;

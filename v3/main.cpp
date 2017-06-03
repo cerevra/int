@@ -1991,6 +1991,34 @@ struct _test {
         assert( (int256_t( 2) > int256_t( 2)) == (( 2) > ( 2)), "");
     }
 
+    static void testUnaryIncOrDecr() {
+        int512_t a1 = 0;
+        assert(++a1 == 1, "");
+        assert(a1 == 1, "");
+
+        assert(a1++ == 1, "");
+        assert(a1 == 2, "");
+
+        assert(--a1 == 1, "");
+        assert(a1 == 1, "");
+
+        assert(a1-- == 1, "");
+        assert(a1 == 0, "");
+
+        uint512_t b1 = 0;
+        assert(++b1 == 1, "");
+        assert(b1 == 1, "");
+
+        assert(b1++ == 1, "");
+        assert(b1 == 2, "");
+
+        assert(--b1 == 1, "");
+        assert(b1 == 1, "");
+
+        assert(b1-- == 1, "");
+        assert(b1 == 0, "");
+    }
+
     static void tests() {
         static_assert(std::is_pod<int512_t>::value, "");
         static_assert(std::is_pod<uint512_t>::value, "");
@@ -2022,6 +2050,7 @@ struct _test {
         testToChars();
         testFromChars();
         testNegative();
+        testUnaryIncOrDecr();
         std::cout << wide_integer<19, wide_integer_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
