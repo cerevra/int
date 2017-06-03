@@ -572,7 +572,12 @@ proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int<
     constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator&gt;&gt;=(const Integral&amp;) noexcept;
     template&lt;size_t MachineWords2, signedness S2&gt;
     constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator&gt;&gt;=(const wide_integer&lt;MachineWords2, S2&gt;&amp;) noexcept;
-
+<span class='changed-added'>
+    constexpr wide_integer&lt;MachineWords, Signed&gt;&amp; operator++() noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer&lt;MachineWords, Signed&gt; operator++(int) noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer&lt;MachineWords, Signed&gt;&amp; operator--() noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer&lt;MachineWords, Signed&gt; operator--(int) noexcept(Signed == wide_integer_s::Unsigned);
+</span>
     // 26.??.2.?? observers:
     template &lt;typename Arithmetic&gt; constexpr operator Arithmetic() const noexcept;
     constexpr explicit operator bool() const noexcept;
