@@ -29,7 +29,7 @@
         <address>Igor Klevanets &lt;<a href="mailto:cerevra@yandex.ru">cerevra@yandex.ru</a>&gt;, &lt;<a href="mailto:cerevra@yandex-team.ru">cerevra@yandex-team.ru</a>&gt;</address>
         <address>Antony Polukhin &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;</address>
         <address>&nbsp;</address>
-        <address>Date: 2017-04-11</address>
+        <address>Date: 2017-06-05</address>
         <h1>A Proposal to add wide_int Template Class</h1>
 
         <span class='changed-added'>Significant changes to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0539r0.html">P0539R0</a> are marked with blue.</span> <button onclick="show_hide_deleted()">Show/Hide deleted lines from P0275R0</button>
@@ -140,33 +140,27 @@
 <div class="desc"><i>Returns:</i> <code>common_type_t&lt;Integral1, size_t&gt;(lhs) &gt;&gt; static_cast&lt;size_t&gt;(rhs)</code>.</div>
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
-  common_type_t&lt;Arithmetic1, Arithmetic2&gt;
-  constexpr operator&lt;(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
+  constexpr bool operator&lt;(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt; CT(rhs)</code>.</div>
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
-  common_type_t&lt;Arithmetic1, Arithmetic2&gt;
-  constexpr operator&gt;(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
+  constexpr bool operator&gt;(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &gt; CT(rhs)</code>.</div>
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
-  common_type_t&lt;Arithmetic1, Arithmetic2&gt;
-  constexpr operator&lt;=(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
+  constexpr bool operator&lt;=(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &lt;= CT(rhs)</code>.</div>
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
-  common_type_t&lt;Arithmetic1, Arithmetic2&gt;
-  constexpr operator&gt;=(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
+  constexpr bool operator&gt;=(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) &gt;= CT(rhs)</code>.</div>
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
-  common_type_t&lt;Arithmetic1, Arithmetic2&gt;
-  constexpr operator==(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
+  constexpr bool operator==(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>CT(lhs) == CT(rhs)</code>.</div>
 
 <pre>template&lt;typename Arithmetic1, typename Arithmetic2&gt;
-  common_type_t&lt;Arithmetic1, Arithmetic2&gt;
-  constexpr operator!=(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
+  constexpr bool operator!=(const Arithmetic1&amp; lhs, const Arithmetic2&amp; rhs);</pre>
 <div class="desc"><i>Returns:</i> <code>!(lhs == rhs)</code>.</div>
 
 
@@ -573,10 +567,10 @@ proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int<
     template&lt;size_t MachineWords2, signedness S2&gt;
     constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator&gt;&gt;=(const wide_integer&lt;MachineWords2, S2&gt;&amp;) noexcept;
 <span class='changed-added'>
-    constexpr wide_integer&lt;MachineWords, Signed&gt;&amp; operator++() noexcept(Signed == wide_integer_s::Unsigned);
-    constexpr wide_integer&lt;MachineWords, Signed&gt; operator++(int) noexcept(Signed == wide_integer_s::Unsigned);
-    constexpr wide_integer&lt;MachineWords, Signed&gt;&amp; operator--() noexcept(Signed == wide_integer_s::Unsigned);
-    constexpr wide_integer&lt;MachineWords, Signed&gt; operator--(int) noexcept(Signed == wide_integer_s::Unsigned);
+    constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator++() noexcept(S == signedness::Unsigned);
+    constexpr wide_integer&lt;MachineWords, S&gt; operator++(int) noexcept(S == signedness::Unsigned);
+    constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator--() noexcept(S == signedness::Unsigned);
+    constexpr wide_integer&lt;MachineWords, S&gt; operator--(int) noexcept(S == signedness::Unsigned);
 </span>
     // 26.??.2.?? observers:
     template &lt;typename Arithmetic&gt; constexpr operator Arithmetic() const noexcept;
@@ -586,7 +580,7 @@ proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int<
     uint32_t data[MachineWords / sizeof(uint32_t) + 1]; // exposition only
   };
 }</pre>
-<p>The class template <code>wide_integer&lt;size_t MachineWords, signedness S&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code>MachineWords</code> specifies <span class='changed-deleted'>significant</span><span class='changed-added'>exact</span> <i>machine words</i> count to store the integer value. <span class="changed-deleted"><i>[Note:</i></span> <code>sizeof(wide_integer&lt;MachineWords, true&gt;)</code> and <code>sizeof(wide_integer&lt;MachineWords, false&gt;)</code> are <span class="changed-deleted">not</span> required to be equal to <code>MachineWords * sizeof(<i>machine-word</i>)</code>. <span class="changed-deleted"><i>- end note]</i></span> Template parameter <code>S</code> specifies signedness of the stored integer value.</p>
+<p>The class template <code>wide_integer&lt;size_t MachineWords, signedness S&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code>MachineWords</code> specifies <span class='changed-deleted'>significant</span><span class='changed-added'>exact</span> <i>machine words</i> count to store the integer value. <span class="changed-deleted"><i>[Note:</i></span> <code>sizeof(wide_integer&lt;MachineWords, signedness::Unsigned&gt;)</code> and <code>sizeof(wide_integer&lt;MachineWords, signedness::Signed&gt;)</code> are <span class="changed-deleted">not</span> required to be equal to <code>MachineWords * sizeof(<i>machine-word</i>)</code>. <span class="changed-deleted"><i>- end note]</i></span> Template parameter <code>S</code> specifies signedness of the stored integer value.</p>
 
 <p class="notes"><b><i>[Note to SG6:</i></b> Definition for <i>machine words</i> must be provided somewhere and referenced from the above paragraph. <i><b>- end note]</b></i></p>
 
@@ -622,8 +616,12 @@ template&lt;size_t MachineWords2, signedness S2&gt; constexpr wide_integer&lt;Ma
 template&lt;size_t MachineWords2, signedness S2&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator|=(const wide_integer&lt;MachineWords2, S2&gt;&amp;) noexcept;
 template&lt;size_t MachineWords2, signedness S2&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator^=(const wide_integer&lt;MachineWords2, S2&gt;&amp;) noexcept;
 template&lt;size_t MachineWords2, signedness S2&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator&lt;&lt;=(const wide_integer&lt;MachineWords2, S2&gt;&amp;);
-template&lt;size_t MachineWords2, signedness S2&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator&gt;&gt;=(const wide_integer&lt;MachineWords2, S2&gt;&amp;) noexcept;</pre>
-<div class="desc"><i>Effects:</i> Behavior of these operators is similar to operators for built-in integral types.</div>
+template&lt;size_t MachineWords2, signedness S2&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator&gt;&gt;=(const wide_integer&lt;MachineWords2, S2&gt;&amp;) noexcept;
+constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator++() noexcept(S == signedness::Unsigned);
+constexpr wide_integer&lt;MachineWords, S&gt; operator++(int) noexcept(S == signedness::Unsigned);
+constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator--() noexcept(S == signedness::Unsigned);
+constexpr wide_integer&lt;MachineWords, S&gt; operator--(int) noexcept(S == signedness::Unsigned);</pre>
+<div class="desc"><i>Effects:</i> Behavior of the above operators is similar to operators for built-in integral types.</div>
 
 <pre>template&lt;typename Arithmetic&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator*=(const Arithmetic&amp;);
 template&lt;typename Arithmetic&gt; constexpr wide_integer&lt;MachineWords, S&gt;&amp; operator/=(const Arithmetic&amp;);
