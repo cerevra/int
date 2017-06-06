@@ -850,63 +850,63 @@ constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator=(T rhs) noexcept {
-    _impl::wide_integer_from_Integral(*this, rhs);
+    _impl::wide_integer_from_Integral(*this, _impl::to_Integral(rhs));
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator*=(const T& rhs) {
-    *this = _impl::operator_star(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this * rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator/=(const T& rhs) {
-    *this = _impl::operator_slash(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this / rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator+=(const T& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
-    *this = _impl::operator_plus(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this + rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator-=(const T& rhs) noexcept(Signed == wide_integer_s::Unsigned) {
-    *this = _impl::operator_minus(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this - rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator%=(const T& rhs) {
-    *this = _impl::operator_percent(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this % rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator&=(const T& rhs) noexcept {
-    *this = _impl::operator_amp(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this & rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator|=(const T& rhs) noexcept {
-    *this = _impl::operator_pipe(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this | rhs;
     return *this;
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator^=(const T& rhs) noexcept {
-    *this = _impl::operator_circumflex(*this, wide_integer<MachineWords, Signed>(rhs));
+    *this = *this ^ rhs;
     return *this;
 }
 

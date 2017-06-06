@@ -1622,6 +1622,22 @@ struct _test {
         assert(a1 == 0x0ffffffffffffff0, "");
     }
 
+    static void testNativeOperatorsAssignFloat() {
+        uint512_t a1 = 18;
+
+        a1 *= 2.5;
+        assert(a1 == 45, "");
+
+        a1 /= 2.5;
+        assert(a1 == 18U, "");
+
+        a1 += 2.9;
+        assert(a1 == 20, "");
+
+        a1 -= 1.9;
+        assert(a1 == 18, "");
+    }
+
     static void testConstexpr() {
         constexpr uint256_t a0{};
         static_assert(a0 == 0, "");
@@ -2055,6 +2071,7 @@ struct _test {
         testFromString();
         testNativeOperators();
         testNativeOperatorsAssign();
+        testNativeOperatorsAssignFloat();
         testConstexpr();
         testEtc();
         testToChars();
