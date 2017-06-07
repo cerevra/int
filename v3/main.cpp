@@ -1408,76 +1408,76 @@ struct _test {
         assert(a1.m_arr[63] == 0x00, "");
 
         auto a2 = -uint512_t(0x1);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a2), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a2.m_arr[idx] == 0xff, std::to_string(idx));
         }
 
         auto a3 = 2 * uint512_t(0x1);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a3), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a3.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a3.m_arr[63] == 2, "");
 
         auto a4 = uint512_t(0x1) * 2;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a4), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a4.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a4.m_arr[63] == 2, "");
 
         auto a5 = 4 / uint512_t(0x2);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a5), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a5.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a5.m_arr[63] == 2, "");
 
         auto a6 = uint512_t(0x4) / 2;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a6), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a6.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a6.m_arr[63] == 2, "");
 
         auto a7 = 8 % uint512_t(0x5);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a7), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a7.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a7.m_arr[63] == 3, "");
 
         auto a8 = uint512_t(0x8) % 5;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a8), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a8.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a8.m_arr[63] == 3, "");
 
         auto a9 = 8 + uint512_t(0x5);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a9), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a9.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a9.m_arr[63] == 13, "");
 
         auto a10 = uint512_t(0x8) + 5;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a10), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a10.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a10.m_arr[63] == 13, "");
 
         auto a11 = 8 - uint512_t(0x5);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a11), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a11.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a11.m_arr[63] == 3, "");
 
         auto a12 = uint512_t(0x8) - 5;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a12), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a12.m_arr[idx] == 0, std::to_string(idx));
         }
@@ -1516,56 +1516,56 @@ struct _test {
         assert(uint128_t(20) == uint512_t(20), "");
 
         auto a13 = 9 & uint512_t(5);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a13), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a13.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a13.m_arr[63] == 1, "");
 
         auto a14 = uint512_t(9) & 5;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a14), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a14.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a14.m_arr[63] == 1, "");
 
         auto a15 = 9 | uint512_t(5);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a15), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a15.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a15.m_arr[63] == 13, "");
 
         auto a16 = uint512_t(9) | 5;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a16), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a16.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a16.m_arr[63] == 13, "");
 
         auto a17 = 4 ^ uint512_t(5);
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a17), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a17.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a17.m_arr[63] == 1, "");
 
         auto a18 = uint512_t(4) ^ 5;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a18), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a18.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a18.m_arr[63] == 1, "");
 
         auto a19 = uint512_t(8) << 1;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a19), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a19.m_arr[idx] == 0, std::to_string(idx));
         }
         assert(a19.m_arr[63] == 16, "");
 
         auto a20 = uint512_t(8) >> 1;
-        assert(typeid(uint512_t) == typeid(a1), "");
+        assert(typeid(uint512_t) == typeid(a20), "");
         for (int idx = 0; idx < 63; ++idx) {
             assert(a20.m_arr[idx] == 0, std::to_string(idx));
         }
