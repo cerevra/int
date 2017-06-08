@@ -58,7 +58,7 @@ public:
         res.m_arr[0] = Signed == wide_integer_s::Signed
                            ? std::numeric_limits<typename wide_integer<MachineWords, Signed>::signed_base_type>::max()
                            : std::numeric_limits<typename wide_integer<MachineWords, Signed>::base_type>::max();
-        for (int i = 1; i < res.arr_size; ++i) {
+        for (int i = 1; i < wide_integer<MachineWords, Signed>::_impl::arr_size; ++i) {
             res.m_arr[i] = std::numeric_limits<typename wide_integer<MachineWords, Signed>::base_type>::max();
         }
         return res;
@@ -492,14 +492,14 @@ public:
     template <typename T, class = __keep_size<T>>
     constexpr static wide_integer<MachineWords, Signed> operator_star(const wide_integer<MachineWords, Signed>& lhs,
                                                                       const T& rhs) {
-        wide_integer<MachineWords, Signed> a = make_positive(lhs);
-        wide_integer<MachineWords, Signed> t = make_positive(wide_integer<MachineWords, Signed>(rhs));
+        const wide_integer<MachineWords, wide_integer_s::Unsigned> a = make_positive(lhs);
+        wide_integer<MachineWords, wide_integer_s::Unsigned> t = make_positive(wide_integer<MachineWords, Signed>(rhs));
 
         wide_integer<MachineWords, Signed> res = 0;
 
-        for (size_t i = 0; i < arr_size; ++i) {
-            if ((t.m_arr[arr_size - 1] & 1) != 0) {
-                res = operator_plus(res, (shift_left(a, i)));
+        for (size_t i = 0; i < arr_size * base_bits; ++i) {
+            if (t.m_arr[arr_size - 1] & 1) {
+                res = operator_plus(res, shift_left(a, i));
             }
 
             t = shift_right(t, 1);

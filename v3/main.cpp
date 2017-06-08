@@ -1586,6 +1586,11 @@ struct _test {
 
         int128_t b = -123;
         assert(b < 0, "");
+
+        uint256_t c1 = 100000000000000000000_uint256;
+        uint256_t c2 = 100000000000000000000_uint256;
+        uint256_t c3 = c1 * c2;
+        assert(c3 == 10000000000000000000000000000000000000000_uint256, "");
     }
 
     static void testNativeOperatorsAssign() {
@@ -2045,6 +2050,13 @@ struct _test {
         assert(b == 0, "");
     }
 
+    static void testNumericLimits() {
+        assert(
+          std::numeric_limits<uint128_t>::max() ==
+              340282366920938463463374607431768211455_uint512,
+          "");
+    }
+
     static void tests() {
         static_assert(std::is_pod<int512_t>::value, "");
         static_assert(std::is_pod<uint512_t>::value, "");
@@ -2079,6 +2091,7 @@ struct _test {
         testNegative();
         testUnaryIncOrDecr();
         testSwap();
+        testNumericLimits();
         std::cout << wide_integer<19, wide_integer_s::Unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
