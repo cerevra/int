@@ -203,6 +203,31 @@ struct wide_integer<MachineWords, Signed>::_impl {
         }
     }
 
+    constexpr static void wide_integer_from_bultin(wide_integer<MachineWords, Signed>& self, double rhs) noexcept {
+        if ((rhs > 0 && rhs < std::numeric_limits<uint64_t>::max()) ||
+            (rhs < 0 && rhs > std::numeric_limits<int64_t>::min())) {
+            self = to_Integral(rhs);
+            return;
+        }
+
+        long double r = rhs;
+        if (r < 0) {
+            r = -r;
+        }
+
+        size_t count = r/std::numeric_limits<uint64_t>::max();
+        self = count;
+        self *= std::numeric_limits<uint64_t>::max();
+        long double to_diff = count;
+        to_diff *= std::numeric_limits<uint64_t>::max();
+
+        self += to_Integral(r - to_diff);
+
+        if (rhs < 0) {
+            self = -self;
+        }
+    }
+
     template <size_t MachineWords2, wide_integer_s Signed2>
     constexpr static void wide_integer_from_wide_integer(wide_integer<MachineWords, Signed>& self, const wide_integer<MachineWords2, Signed2>& rhs) noexcept {
         //        int MachineWords_to_copy = std::min(arr_size, rhs.arr_size);
