@@ -2053,7 +2053,7 @@ struct _test {
     static void testNumericLimits() {
         assert(
           std::numeric_limits<uint128_t>::max() ==
-              340282366920938463463374607431768211455_uint512,
+              340282366920938463463374607431768211455_uint128,
           "");
     }
 

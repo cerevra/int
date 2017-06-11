@@ -145,13 +145,13 @@ struct common_type<wide_integer<MachineWords, Signed>, Arithmetic> {
                  std::is_floating_point<Arithmetic>::value,
           Arithmetic,
           std::conditional_t<
-              sizeof(Arithmetic) < MachineWords,
+              sizeof(Arithmetic) < MachineWords*sizeof(long),
               wide_integer<MachineWords, Signed>,
               std::conditional_t<
-                  MachineWords<sizeof(Arithmetic),
+                  MachineWords*sizeof(long)<sizeof(Arithmetic),
                                Arithmetic,
                                std::conditional_t<
-                                   MachineWords == sizeof(Arithmetic) && (Signed == wide_integer_s::Signed || std::is_signed<Arithmetic>::value),
+                                   MachineWords*sizeof(long) == sizeof(Arithmetic) && (Signed == wide_integer_s::Signed || std::is_signed<Arithmetic>::value),
                                    Arithmetic,
                                    wide_integer<MachineWords, Signed>>>>>;
 };
@@ -186,18 +186,20 @@ struct wide_integer<MachineWords, Signed>::_impl {
     }
 
     template <typename Integral>
-    constexpr static void wide_integer_from_Integral(wide_integer<MachineWords, Signed>& self, Integral rhs) noexcept {
+    constexpr static void wide_integer_from_bultin(wide_integer<MachineWords, Signed>& self, Integral rhs) noexcept {
+        auto r = _impl::to_Integral(rhs);
+
         int r_idx = 0;
 
         for (; static_cast<size_t>(r_idx) < sizeof(Integral) && r_idx < arr_size; ++r_idx) {
             base_type& curr = self.m_arr[arr_size - 1 - r_idx];
-            base_type curr_rhs = (rhs >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
+            base_type curr_rhs = (r >> (r_idx * CHAR_BIT)) & std::numeric_limits<base_type>::max();
             curr = curr_rhs;
         }
 
         for (; r_idx < arr_size; ++r_idx) {
             base_type& curr = self.m_arr[arr_size - 1 - r_idx];
-            curr = rhs < 0 ? std::numeric_limits<base_type>::max() : 0;
+            curr = r < 0 ? std::numeric_limits<base_type>::max() : 0;
         }
     }
 
@@ -830,7 +832,7 @@ template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>::wide_integer(T rhs) noexcept
     : m_arr{} {
-    _impl::wide_integer_from_Integral(*this, _impl::to_Integral(rhs));
+    _impl::wide_integer_from_bultin(*this, rhs);
 }
 
 template <size_t MachineWords, wide_integer_s Signed>
@@ -850,7 +852,7 @@ constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>
 template <size_t MachineWords, wide_integer_s Signed>
 template <typename T>
 constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>::operator=(T rhs) noexcept {
-    _impl::wide_integer_from_Integral(*this, _impl::to_Integral(rhs));
+    _impl::wide_integer_from_bultin(*this, rhs);
     return *this;
 }
 
