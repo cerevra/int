@@ -22,7 +22,7 @@
         </style>
     </head>
     <body bgcolor="#ffffff">
-        <address>Document number: D0539R1</address>
+        <address>Document number: P0539R1</address>
         <address>Project: Programming Language C++</address>
         <address>Audience: SG6 Numerics</address>
         <address>&nbsp;</address>
@@ -165,44 +165,6 @@
 
 
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -951,9 +913,9 @@ basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, T
             function colorize_texts(texts) {
                 for (var i = 0; i < texts.length; ++i) {
                     var text = texts[i].innerHTML;
-                    text = text.replace(/namespace|enum|void|constexpr|extern|noexcept|bool|template|class |struct|auto|const|typename|explicit|public|private|operator|#include|inline| char|typedef|static_assert|static_cast|static/g,"<span class='cppkeyword'>$&</span>");
-                    text = text.replace(/\/\/[\s\S]+?\n/g,"<span class='cppcomment'>$&</span>");
-                    //text = text.replace(/\"[\s\S]+?\"/g,"<span class='cpptext'>$&</span>");
+                    text = text.replace(/namespace|enum|void|constexpr|extern|noexcept|bool|template|class |struct|auto|const|typename|explicit|public|private|operator|#include|inline| char|typedef|static_assert|static_cast|static/g,"<span class='cppkeyword'>$&<\/span>");
+                    text = text.replace(/\/\/[\s\S]+?\n/g,"<span class='cppcomment'>$&<\/span>");
+                    //text = text.replace(/\"[\s\S]+?\"/g,"<span class='cpptext'>$&<\/span>");
                     texts[i].innerHTML = text;
                 }
             }
