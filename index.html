@@ -29,10 +29,11 @@
         <address>Igor Klevanets &lt;<a href="mailto:cerevra@yandex.ru">cerevra@yandex.ru</a>&gt;, &lt;<a href="mailto:cerevra@yandex-team.ru">cerevra@yandex-team.ru</a>&gt;</address>
         <address>Antony Polukhin &lt;<a href="mailto:antoshkka@gmail.com">antoshkka@gmail.com</a>&gt;, &lt;<a href="mailto:antoshkka@yandex-team.ru">antoshkka@yandex-team.ru</a>&gt;</address>
         <address>&nbsp;</address>
-        <address>Date: 2017-09-13</address>
+        <address>Date: 2017-10-10</address>
         <h1>A Proposal to add wide_int Template Class</h1>
 
-        <span class='changed-added'>Significant changes to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0539r1.html">P0539R1</a> are marked with blue.</span> <button onclick="show_hide_deleted()">Show/Hide deleted lines from P0275R0</button>
+        <p class='changed-added'>Significant changes to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0539r1.html">P0539R1</a> are marked with blue.<p>
+        <!--p><input type="checkbox" id="show_deletions" onchange="show_hide_deleted()"/> Show deleted lines from P0275R0.</p-->
         <p class='notes'>Green lines are notes for the <b>editor</b> or for the <b>SG6</b> that must not be treated as part of the wording.</p>
         <h2>I. Introduction and Motivation</h2>
         <p>Current standard provides signed and unsigned int8_t, int16_t, int32_t, int64_t. It is usually enough for every day tasks, but sometimes appears a need in big numbers: for cryptography, IPv6, very big counters etc. Non-standard type __int128 which is provided by gcc and clang illuminates this need. But there is no cross-platform solution and no way to satisfy future needs in even more big numbers.</p>
@@ -41,6 +42,10 @@
         </p>
 
         <h2>II. Changelog</h2>
+        <p class='changed-added'>Differences with P0539R1:</p>
+        <ul class='changed-added'>
+            <li>Added a discussion on "Words vs Bytes vs Bits"</li>
+        </ul>
         <p>Differences with P0539R0:</p>
         <ul>
             <li>Reworked the proposal for simpler integration with other Numerics proposals:
@@ -58,7 +63,49 @@
         </ul>
 
 
-        <h2>III. Proposed wording</h2>
+        <h2 class='changed-added'>III. Discussion about the way to set the wide_integer size</h2>
+        <div class='changed-added'>
+        <p>In this proposal we would like to concentrate on the <code>wide_integer</code> class that uses machine words under the cover. Such implementations allow you to get best performance
+        and leave behind some design questions, like "Is <code>(sizeof(wide_integer&lt;X&gt;)&nbsp;==&nbsp;X&nbsp;/&nbsp;CHAR_BITS)</code> or not?".</p>
+        <p>However, we do not wish to shut the door close for extending the abilities of the <code>wide_integer</code> class. Some users may wish to see unit40_t, or unit48_t.</p>
+        <p>We insist on <b>interface that allows specifying integers not representable by machine words count</b>. Such extensions of functionality may be discussed in separate papers.</p>
+
+        <p class="notes"><b><i>[Note to SG6:</i></b> The "Words vs Bytes vs Bits" interface problem seems to rise very often. It may be worth discussing it in a bigger group
+        or at least discuss it after the remaining parts of the paper are tentatively accepted. <i><b>- end note]</b></i></p>
+
+        <p>There are several possible meanings of the first template argument of wide_integer:</p>
+        <ul>
+          <li>Number of machine words</li>
+          <li>Number of bytes</li>
+          <li>Number of bits</li>
+        </ul>
+        <p>Where number must be:</p>
+        <ul>
+          <li>Power of 2</li>
+          <li>Or such as <code>sizeof(wide_integer)</code> is multiply of <code>sizeof(<i>machine word</i>)</code></li>
+        </ul>
+
+        <p>As was noted above, we would like to use <i>machine words</i> under the hood, but we would like to avoid any mention of <i>machine words</i> in the interface.
+        Machine word is a strong restriction for interface, which does not allow to extend functionality in the future.</p>
+
+        <p>"Power of 2" restriction seems over restrictive. If <i>machine word</i> is 32 bits users may wish to have <code>uint96_t</code>.
+        Supporting such type is quite easy.</p>
+
+        <p>So the actual choice can be <b>Bytes</b> or <b>Bits</b> where <code>sizeof(wide_integer)</code> is multiply of <code>sizeof(<i>machine word</i>)</code>.</p>
+        <p>Pros and cons for Bits vs Bytes:</p>
+        <ul>
+          <li>x86 users are used to <b>Bits</b> due to wide usage of <code>&lt;cmath&gt;</code> aliases like <code>uint32_t</code>.</li>
+          <li>Bytes hide the actual bits count. When x86 user specifies 16 bytes he probably wishes to get 128 <b>Bits</b>, not <code>CHAR_BITS * 16</code> bits.</li>
+          <li><b>Bytes</b> are preferable for platforms that have <code>CHAR_BITS % 8 != 0</code>, because code with specified bits may not compile for such platform:
+          <pre>void foo(wide_uint&lt;128&gt; ); // OK on x86, does not compile if CHAR_BITS == 9</pre>
+          </li>
+        </ul>
+        <p>There was also an idea to provide a way for a user to replace the underlying type that represents machine word (allow to specify <code>unsigned int</code> or <code>long</code> or
+        <code>long long</code>). Such idea seems to unnecessary complicate the interface and expose the internals of the <code>wide_integer</code> type. We assume that the decision must be done by
+        the library implementor rather than by user.</p>
+        </div>
+
+        <h2>IV. Proposed wording</h2>
 
 
 <p class="notes"><b><i>[Note to SG6:</i></b> Following 4 paragraphs affect <b>all</b> the new numeric class proposals. <i><b>- end note]</b></i></p>
@@ -81,7 +128,7 @@
 <h3>26.4 Numeric types interoperability<span class="right">[numeric.interop]</span></h3>
 <div>
 
-<p class="notes"><b><i>[Note to SG6:</i></b> This is an early attempt to make it possible for different numeric types to inter-operate. It works for <code>wide_integer<i>@</i>built-in</code>, but this approach requires additional study and <code>common_type</code> fixes for new <code>Arithmetic</code> types. <i><b>- end note]</b></i></p>
+<p class="notes"><b><i>[Note to SG6:</i></b> This is an early attempt to make it possible for different numeric types to inter-operate. It works for <code>wide_integer<i> and </i>built-in types</code>, but this approach requires additional study and <code>common_type</code> fixes for new <code>Arithmetic</code> types. <i><b>- end note]</b></i></p>
 
 
 <p>Following operators are defined for types <code>T</code> and <code>U</code> if <code>T</code> and <code>U</code> have a defined <code>common_type_t&lt;T, U&gt;</code> and satisfy the <code>Arithmetic</code> or <code>Integral</code> requirements from [numeric.requirements] <i>[Note:</i> Implementations are encouraged to provide optimized specializations of the following operators <i>- end note]</i>:</p>
@@ -179,6 +226,7 @@
       Signed
   };
 
+  <span class="notes"><b><i>[Note to SG6:</i></b> We leave <code>MachineWords</code> in the interface until the "Words vs Bytes vs Bits" interface problem is not solved. <i><b>- end note]</b></i></span>
   // 26.??.2 class template wide_integer
   template&lt;size_t MachineWords, signedness S&gt; class wide_integer;
 
@@ -310,24 +358,24 @@ proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int<
 
 
   // non optional aliases
-  using int_fast128_t  = fast_2int&lt;128&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;
-  using uint_fast128_t = fast_2uint&lt;128&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;
+  using int_fast128_t  = fast_2int&lt;128&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
+  using uint_fast128_t = fast_2uint&lt;128&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
 
-  using int_fast256_t  = fast_2int&lt;256&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;
-  using uint_fast256_t = fast_2uint&lt;256&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;
+  using int_fast256_t  = fast_2int&lt;256&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
+  using uint_fast256_t = fast_2uint&lt;256&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
 
-  using int_fast512_t  = fast_2int&lt;512&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;
-  using uint_fast512_t = fast_2uint&lt;512&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;
+  using int_fast512_t  = fast_2int&lt;512&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
+  using uint_fast512_t = fast_2uint&lt;512&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
 
 
-  using int_least128_t  = least_2int&lt;128&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;
-  using uint_least128_t = least_2uint&lt;128&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;
+  using int_least128_t  = least_2int&lt;128&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
+  using uint_least128_t = least_2uint&lt;128&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
 
-  using int_least256_t  = least_2int&lt;256&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;
-  using uint_least256_t = least_2uint&lt;256&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;
+  using int_least256_t  = least_2int&lt;256&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
+  using uint_least256_t = least_2uint&lt;256&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
 
-  using int_least512_t  = least_2int&lt;512&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;
-  using uint_least512_t = least_2uint&lt;512&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;
+  using int_least512_t  = least_2int&lt;512&gt;;   // wide_int&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
+  using uint_least512_t = least_2uint&lt;512&gt;;  // wide_uint&lt;<i>platform-specific</i>&gt;<span class="changed-added"> or <i>platform-specific build in type</i></span>
 
 
   // optional literals
@@ -437,7 +485,10 @@ proposal with <code>exact_2int</code>, <code>fast_2int</code>, <code>least_2int<
     uint32_t data[MachineWords / sizeof(uint32_t) + 1]; // exposition only
   };
 }</pre>
-<p>The class template <code>wide_integer&lt;size_t MachineWords, signedness S&gt;</code> is a POD class that behaves as an integer type of a compile time specified width. Template parameter <code>MachineWords</code> specifies exact <i>machine words</i> count to store the integer value. <code>sizeof(wide_integer&lt;MachineWords, signedness::Unsigned&gt;)</code> and <code>sizeof(wide_integer&lt;MachineWords, signedness::Signed&gt;)</code> are required to be equal to <code>MachineWords * sizeof(<i>machine-word</i>)</code>. Template parameter <code>S</code> specifies signedness of the stored integer value.</p>
+<p>The class template <code>wide_integer&lt;size_t MachineWords, signedness S&gt;</code> is a POD class that behaves as an integer type
+of a compile time specified width. Template parameter <code>MachineWords</code> specifies exact <i>machine words</i> count to store the integer value.
+<code>sizeof(wide_integer&lt;MachineWords, signedness::Unsigned&gt;)</code> and <code>sizeof(wide_integer&lt;MachineWords, signedness::Signed&gt;)</code> are required to
+be equal to <code>MachineWords * sizeof(<i>machine-word</i>)</code>. Template parameter <code>S</code> specifies signedness of the stored integer value.</p>
 
 <p class="notes"><b><i>[Note to SG6:</i></b> Definition for <i>machine words</i> must be provided somewhere and referenced from the above paragraph. <i><b>- end note]</b></i></p>
 
@@ -680,36 +731,9 @@ basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, T
 <p>The specialization is enabled (20.14.14). If there is a built-in integral type <code>Integral</code> that has the same signedness and width as <code>wide_integer&lt;MachineWords, S&gt;</code>, and <code>wi</code> is an object of type <code>wide_integer&lt;MachineWords, S&gt;</code>, then <code>hash&lt;wide_integer&lt;MachineWords, S&gt;&gt;()(wi) == hash&lt;Integral&gt;()(Integral(wi))</code>.</p>
 
 
-        <h2>IV. Feature-testing macro</h2>
+        <h2>V. Feature-testing macro</h2>
         <p>For the purposes of SG10we recommend the feature-testing macro name <code>__cpp_lib_wide_integer</code>.</p>
 
-
-        <h2>V. Discussion about the way to set the size in interface</h2>
-        <p>In this proposal we would like to pay attention implementation which uses machine words under the cover (this allowes to get best performance), but allowes to extend functionality with another proposals.</p>
-        <p>There are several solutions to specify first template argument which will satisfy the conditions above.</p>
-        <p>Specified value:</p>
-        <ul>
-          <li>Set number of machine words</li>
-          <li>Set number of bytes</li>
-          <li>Set number of bits</li>
-        </ul>
-        <p>Restrictions for number:</p>
-        <ul>
-          <li>Power of 2</li>
-          <li>Number when <code>sizeof(wide_int)</code> is multipy of <code>sizeof(long long)</code></li>
-        </ul>
-
-        <h3>Shortly</h3>
-        <ul>
-          <li>Machine word is strong restriction for interface, which not allowes to extend flexibility in future.</li>
-          <li>Power of 2 is not flexible enough now. It disallowes to set <code>sizeof(wide_int) * CHAR_BITS == 88</code>, for example.</li>
-        </ul>
-        <p>So the real discussion can be for bytes or bits where <code>sizeof(wide_int)</code> is multipy of <code>sizeof(long long)</code>. It will be easy to get used to each of this interfaces.</p>
-        <p>Probably we should choose the least bad solution.</p>
-        <ul>
-          <li>Bits potentially could be too complex for mental calculations.</li>
-          <li>Bytes wiil be the first interface in standard library, which specifies size in such way for numbers: uniformity gotten from built-in types will be broken.</li>
-        </ul>
 
         <script type="text/javascript">
             function colorize_texts(texts) {
@@ -725,14 +749,11 @@ basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(basic_istream&lt;Char, T
             colorize_texts(document.getElementsByTagName("pre"));
             colorize_texts(document.getElementsByTagName("code"));
 
-            var show = false;
             function show_hide_deleted() {
                 var to_change = document.getElementsByClassName('changed-deleted');
                 for (var i = 0; i < to_change.length; ++i) {
-                    to_change[i].style.display = (show ? 'block' : 'none');
+                    to_change[i].style.display = (document.getElementById("show_deletions").checked ? 'block' : 'none');
                 }
-
-                show = !show;
             }
             show_hide_deleted()
         </script>
