@@ -124,34 +124,34 @@ static constexpr bool IntegralConcept() noexcept {
 // type traits
 template <size_t MachineWords, typename Signed, size_t MachineWords2, typename Signed2>
 struct common_type<wide_integer<MachineWords, Signed>, wide_integer<MachineWords2, Signed2>> {
-    using type = std::conditional_t<MachineWords == MachineWords2,
-                                    wide_integer<MachineWords,
-                                                 std::conditional_t<(std::is_same<Signed, Signed2>::value &&
-                                                                        std::is_same<Signed2, signed>::value),
-                                                                    signed,
-                                                                    unsigned>>,
-                                    std::conditional_t<MachineWords2 < MachineWords,
-                                                       wide_integer<MachineWords, Signed>,
-                                                       wide_integer<MachineWords2, Signed2>>>;
+    using type = std::conditional_t < MachineWords == MachineWords2,
+          wide_integer<MachineWords,
+                       std::conditional_t<(std::is_same<Signed, Signed2>::value &&
+                                           std::is_same<Signed2, signed>::value),
+                                          signed,
+                                          unsigned>>,
+          std::conditional_t<MachineWords2<MachineWords,
+                                           wide_integer<MachineWords, Signed>,
+                                           wide_integer<MachineWords2, Signed2>>>;
 };
 
 template <size_t MachineWords, typename Signed, typename Arithmetic>
 struct common_type<wide_integer<MachineWords, Signed>, Arithmetic> {
     static_assert(ArithmeticConcept<Arithmetic>(), "");
 
-    using type = std::conditional_t <
-                 std::is_floating_point<Arithmetic>::value,
-          Arithmetic,
-          std::conditional_t<
-              sizeof(Arithmetic) < MachineWords*sizeof(long),
-              wide_integer<MachineWords, Signed>,
-              std::conditional_t<
-                  MachineWords*sizeof(long)<sizeof(Arithmetic),
-                               Arithmetic,
-                               std::conditional_t<
-                                   MachineWords*sizeof(long) == sizeof(Arithmetic) && (is_same<Signed, signed>::value || std::is_signed<Arithmetic>::value),
-                                   Arithmetic,
-                                   wide_integer<MachineWords, Signed>>>>>;
+    using type = std::conditional_t<
+        std::is_floating_point<Arithmetic>::value,
+        Arithmetic,
+        std::conditional_t<
+            sizeof(Arithmetic) < MachineWords * sizeof(long),
+            wide_integer<MachineWords, Signed>,
+            std::conditional_t<
+                MachineWords * sizeof(long) < sizeof(Arithmetic),
+                Arithmetic,
+                std::conditional_t<
+                    MachineWords * sizeof(long) == sizeof(Arithmetic) && (is_same<Signed, signed>::value || std::is_signed<Arithmetic>::value),
+                    Arithmetic,
+                    wide_integer<MachineWords, Signed>>>>>;
 };
 
 template <typename Arithmetic, size_t MachineWords, typename Signed>
@@ -218,7 +218,7 @@ struct wide_integer<MachineWords, Signed>::_impl {
             r = -r;
         }
 
-        size_t count = r/std::numeric_limits<uint64_t>::max();
+        size_t count = r / std::numeric_limits<uint64_t>::max();
         self = count;
         self *= std::numeric_limits<uint64_t>::max();
         long double to_diff = count;
@@ -959,7 +959,7 @@ constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>
 }
 
 template <size_t MachineWords, typename Signed>
-constexpr wide_integer<MachineWords, Signed> wide_integer<MachineWords, Signed>::operator++(int) noexcept(is_same<Signed, unsigned>::value) {
+constexpr wide_integer<MachineWords, Signed> wide_integer<MachineWords, Signed>::operator++(int)noexcept(is_same<Signed, unsigned>::value) {
     auto tmp = *this;
     *this = _impl::operator_plus(*this, 1);
     return tmp;
@@ -972,7 +972,7 @@ constexpr wide_integer<MachineWords, Signed>& wide_integer<MachineWords, Signed>
 }
 
 template <size_t MachineWords, typename Signed>
-constexpr wide_integer<MachineWords, Signed> wide_integer<MachineWords, Signed>::operator--(int) noexcept(is_same<Signed, unsigned>::value) {
+constexpr wide_integer<MachineWords, Signed> wide_integer<MachineWords, Signed>::operator--(int)noexcept(is_same<Signed, unsigned>::value) {
     auto tmp = *this;
     *this = _impl::operator_minus(*this, 1);
     return tmp;

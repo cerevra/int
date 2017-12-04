@@ -22,6 +22,7 @@
  * without express or implied warranty.
  */
 
+#include <climits> // CHAR_BIT
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
@@ -32,7 +33,6 @@
 #include <stdint.h>
 #include <system_error>
 #include <type_traits>
-#include <climits> // CHAR_BIT
 
 struct _test;
 
@@ -98,9 +98,9 @@ public:
     constexpr wide_integer<MachineWords, Signed>& operator>>=(int n) noexcept;
 
     constexpr wide_integer<MachineWords, Signed>& operator++() noexcept(is_same<Signed, unsigned>::value);
-    constexpr wide_integer<MachineWords, Signed> operator++(int) noexcept(is_same<Signed, unsigned>::value);
+    constexpr wide_integer<MachineWords, Signed> operator++(int)noexcept(is_same<Signed, unsigned>::value);
     constexpr wide_integer<MachineWords, Signed>& operator--() noexcept(is_same<Signed, unsigned>::value);
-    constexpr wide_integer<MachineWords, Signed> operator--(int) noexcept(is_same<Signed, unsigned>::value);
+    constexpr wide_integer<MachineWords, Signed> operator--(int)noexcept(is_same<Signed, unsigned>::value);
 
     // observers
 
