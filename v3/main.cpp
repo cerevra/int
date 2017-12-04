@@ -15,8 +15,8 @@ using namespace std;
     }
 
 struct _test {
-    template <size_t MachineWords, typename Sgn>
-    static void printNum(const wide_integer<MachineWords, Sgn>& n) {
+    template <size_t Bits, typename Sgn>
+    static void printNum(const wide_integer<Bits, Sgn>& n) {
         for (auto c : n.m_arr) {
             std::cerr << std::hex << std::setw(2) << std::setfill('0') << uint64_t(c); // << std::endl;
         }
@@ -2092,7 +2092,7 @@ struct _test {
         testUnaryIncOrDecr();
         testSwap();
         testNumericLimits();
-        std::cout << wide_integer<19, unsigned>(18) << std::endl;
+        std::cout << wide_integer<64, unsigned>(18) << std::endl;
 
         std::cout << "OK" << std::endl;
     }
