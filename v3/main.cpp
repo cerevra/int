@@ -8,10 +8,10 @@
 
 using namespace std;
 
-#define assert(a, info)                                                                           \
-    {                                                                                             \
-        if (!(a))                                                                                 \
-            throw std::runtime_error(#a ", line:" + std::to_string(__LINE__) + ", info:" + info); \
+#define assert(a, info)                                                                            \
+    {                                                                                              \
+        if (!(a))                                                                                  \
+            throw std::runtime_error(#a ", line:" + std::to_string(__LINE__) + ", info: " + info); \
     }
 
 struct _test {
@@ -25,6 +25,84 @@ struct _test {
 
     static void printNum(uint64_t n) {
         std::cerr << std::hex << std::setw(16) << std::setfill('0') << n << std::endl;
+    }
+
+    template <typename T>
+    static auto _getStdNum(T n) {
+        using Num = decltype(n);
+        static_assert(std::numeric_limits<Num>::is_integer, "");
+        static_assert(sizeof(n) == 4 || sizeof(n) == 8 || sizeof(n) == 16 || sizeof(n) == 64, "");
+        using StdNum = std::conditional_t <std::numeric_limits<Num>::is_signed,
+                  std::conditional_t<std::is_same_v<Num, int128_t> || sizeof(n) <= 4, int32_t, int64_t>,
+                  std::conditional_t<std::is_same_v<Num, uint128_t> || sizeof(n) <= 4, uint32_t, uint64_t>>;
+        return StdNum(n);
+    };
+
+    template <typename T>
+    static std::string _typeInfo(T val) {
+        std::stringstream s;
+        s << typeid(decltype(val)).name() << "(" << (sizeof(val)*8) << " bits;" << (std::numeric_limits<decltype(val)>::is_signed ? "signed" : "unsigned") << ")";
+        return s.str();
+    };
+
+    template <typename T1, typename T2>
+    static void _compare2Nums(T1 commonRes, T2 stdRes, int lineNo, const char* details_) {
+        std::string details;
+        if (details_) {
+            details.assign(details_);
+        }
+        assert(typeid(_getStdNum(commonRes)) == typeid(stdRes),
+               "should be: " + _typeInfo(stdRes) + ". mapped type: " + _typeInfo(_getStdNum(commonRes)) + ". actual type: " + _typeInfo(commonRes) + ". line=" + std::to_string(lineNo) + ": " + details);
+
+        auto fail = [&](const std::string& msg) {
+            std::cerr << "Common number:" << std::endl;
+            printNum(commonRes);
+            std::cerr << "Std number:" << std::endl;
+            printNum(stdRes);
+            throw std::runtime_error("check failed: " + msg + ". line=" + std::to_string(lineNo) + ": " + details);
+        };
+
+        if ((commonRes & 0xFF) != (stdRes & 0xFF)) {
+            fail("first byte mismatch");
+        }
+
+        auto getLastByte = [](const auto& num) -> unsigned char {
+            const int bits = (sizeof(num) - 1) * 8;
+            return (num >> bits) & 0xFF;
+        };
+        if (getLastByte(commonRes) != getLastByte(stdRes)) {
+            fail("last byte mismatch");
+        }
+
+        unsigned char middleByte = (stdRes >> 8) & 0xFF;
+        for (size_t idx = 1; idx < sizeof(commonRes)/8 - 1; ++idx) {
+            if (commonRes.m_arr[idx] != middleByte) {
+                fail("middle byte mismatch");
+            }
+        }
+    };
+
+    template <typename ExpectedNum, typename Func, typename Num>
+    static void _testUnaryOperator(Func func, Num num, int lineNo = 0, const char* details = nullptr) {
+        auto commonRes = func(num);
+        static_assert(std::is_same_v<ExpectedNum, decltype(commonRes)>, "");
+
+        auto stdNum = _getStdNum(num);
+        auto stdRes = func(stdNum);
+
+        _compare2Nums(commonRes, stdRes, lineNo, details);
+    }
+
+    template <typename ExpectedNum, typename Func, typename Num1, typename Num2>
+    static void _testBinaryOperator(Func func, Num1 num1, Num2 num2, int lineNo = 0, const char* details = nullptr) {
+        auto commonRes = func(num1, num2);
+        static_assert(std::is_same_v<ExpectedNum, decltype(commonRes)>, "");
+
+        auto stdNum1 = _getStdNum(num1);
+        auto stdNum2 = _getStdNum(num2);
+        auto stdRes = func(stdNum1, stdNum2);
+
+        _compare2Nums(commonRes, stdRes, lineNo, details);
     }
 
     static void testCtors() {
@@ -1399,187 +1477,138 @@ struct _test {
         assert(a1 == 7000000000000000000_int256, "");
     }
 
+    template <typename Type1, typename Type2>
+    static void _testComparationPositive() {
+        assert(Type1(1500) < Type2(2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(2000) > Type2(1500), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(1500) <= Type2(2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(2000) <= Type2(2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(2000) >= Type2(1500), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(2000) >= Type2(2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(2000) == Type2(2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(2000) != Type2(2001), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+    }
+
+    template <typename Type1, typename Type2>
+    static void _testComparationNegative() {
+        assert(Type1(-1500) > Type2(-2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-2000) < Type2(-1500), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-2000) <= Type2(-2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-2000) <= Type2(-1500), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-2000) >= Type2(-2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-1500) >= Type2(-2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-2000) == Type2(-2000), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+        assert(Type1(-2000) != Type2(-2001), _typeInfo<Type1>(0) + " vs " + _typeInfo<Type2>(0));
+    }
+
     static void testNativeOperators() {
-        auto a1 = ~uint512_t(0xff);
-        assert(typeid(uint512_t) == typeid(a1), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a1.m_arr[idx] == 0xff, std::to_string(idx));
-        }
-        assert(a1.m_arr[63] == 0x00, "");
+#define test_unary_operator(Operator, num, ExpType)                                  \
+    {                                                                                \
+        _testUnaryOperator<ExpType>([](auto v){ return Operator v;}, num, __LINE__); \
+    }
 
-        auto a2 = -uint512_t(0x1);
-        assert(typeid(uint512_t) == typeid(a2), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a2.m_arr[idx] == 0xff, std::to_string(idx));
-        }
+#define test_binary_operators(num1, Operator, num2, ExpType)                                                                 \
+    {                                                                                                                        \
+        _testBinaryOperator<ExpType>([](auto l, auto r){ return l Operator r;}, num1, num2, __LINE__, "operator" #Operator); \
+    }
 
-        auto a3 = 2 * uint512_t(0x1);
-        assert(typeid(uint512_t) == typeid(a3), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a3.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a3.m_arr[63] == 2, "");
+#define test_case(num1, num2, ExpType)                 \
+    {                                                  \
+        test_binary_operators(num1, *, num2, ExpType); \
+        test_binary_operators(num1, /, num2, ExpType); \
+        test_binary_operators(num1, %, num2, ExpType); \
+        test_binary_operators(num1, +, num2, ExpType); \
+        test_binary_operators(num1, -, num2, ExpType); \
+        test_binary_operators(num1, &, num2, ExpType); \
+        test_binary_operators(num1, |, num2, ExpType); \
+        test_binary_operators(num1, ^, num2, ExpType); \
+    }
 
-        auto a4 = uint512_t(0x1) * 2;
-        assert(typeid(uint512_t) == typeid(a4), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a4.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a4.m_arr[63] == 2, "");
+        test_unary_operator(~, uint512_t(0xff), uint512_t);
+        test_unary_operator(-, uint512_t(0xff), uint512_t);
+        test_unary_operator(+, uint512_t(0xff), uint512_t);
 
-        auto a5 = 4 / uint512_t(0x2);
-        assert(typeid(uint512_t) == typeid(a5), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a5.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a5.m_arr[63] == 2, "");
+        test_case(8, uint512_t(5), uint512_t);
+        test_case(-8, uint512_t(5), uint512_t);
+        test_case(uint512_t(5), 5, uint512_t);
+        test_case(uint512_t(5), -5, uint512_t);
 
-        auto a6 = uint512_t(0x4) / 2;
-        assert(typeid(uint512_t) == typeid(a6), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a6.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a6.m_arr[63] == 2, "");
+        test_case(8, int128_t(5), int128_t);
+        test_case(8, int128_t(-5), int128_t);
+        test_case(-8, int128_t(5), int128_t);
+        test_case(-8, int128_t(-5), int128_t);
+        test_case(int128_t(8), 5, int128_t);
+        test_case(int128_t(-8), 5, int128_t);
+        test_case(int128_t(8), -5, int128_t);
+        test_case(int128_t(-8), -5, int128_t);
 
-        auto a7 = 8 % uint512_t(0x5);
-        assert(typeid(uint512_t) == typeid(a7), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a7.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a7.m_arr[63] == 3, "");
+        test_case(uint512_t(8), uint128_t(5), uint512_t);
+        test_case(uint128_t(8), uint512_t(5), uint512_t);
 
-        auto a8 = uint512_t(0x8) % 5;
-        assert(typeid(uint512_t) == typeid(a8), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a8.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a8.m_arr[63] == 3, "");
+        test_case(uint128_t(8), int512_t(-5), int512_t);
+        test_case(uint128_t(8), int512_t(5), int512_t);
+        test_case(uint512_t(8), int128_t(-5), uint512_t);
+        test_case(uint512_t(8), int128_t(5), uint512_t);
 
-        auto a9 = 8 + uint512_t(0x5);
-        assert(typeid(uint512_t) == typeid(a9), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a9.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a9.m_arr[63] == 13, "");
+        test_case(int512_t(-8), uint128_t(5), int512_t);
+        test_case(int512_t(8), uint128_t(5), int512_t);
+        test_case(int128_t(-8), uint512_t(5), uint512_t);
+        test_case(int128_t(8), uint512_t(5), uint512_t);
 
-        auto a10 = uint512_t(0x8) + 5;
-        assert(typeid(uint512_t) == typeid(a10), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a10.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a10.m_arr[63] == 13, "");
+        test_case(int512_t(8), int128_t(5), int512_t);
+        test_case(int512_t(-8), int128_t(5), int512_t);
+        test_case(int512_t(8), int128_t(-5), int512_t);
+        test_case(int512_t(-8), int128_t(-5), int512_t);
+        test_case(int128_t(8), int512_t(5), int512_t);
+        test_case(int128_t(-8), int512_t(5), int512_t);
+        test_case(int128_t(8), int512_t(-5), int512_t);
+        test_case(int128_t(-8), int512_t(-5), int512_t);
 
-        auto a11 = 8 - uint512_t(0x5);
-        assert(typeid(uint512_t) == typeid(a11), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a11.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a11.m_arr[63] == 3, "");
+        test_case(uint512_t(8), uint512_t(5), uint512_t);
+        test_case(uint512_t(8), int512_t(5), uint512_t);
+        test_case(uint512_t(8), int512_t(-5), uint512_t);
+        test_case(int512_t(8), uint512_t(5), uint512_t);
+        test_case(int512_t(-8), uint512_t(5), uint512_t);
+        test_case(int512_t(8), int512_t(5), int512_t);
+        test_case(int512_t(8), int512_t(-5), int512_t);
+        test_case(int512_t(-8), int512_t(5), int512_t);
+        test_case(int512_t(-8), int512_t(-5), int512_t);
 
-        auto a12 = uint512_t(0x8) - 5;
-        assert(typeid(uint512_t) == typeid(a12), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a12.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a12.m_arr[63] == 3, "");
+        _testComparationPositive<uint512_t, uint32_t>();
+        _testComparationPositive<uint32_t, uint512_t>();
+        _testComparationPositive<uint512_t, uint128_t>();
+        _testComparationPositive<uint128_t, uint512_t>();
+        _testComparationPositive<uint512_t, uint512_t>();
 
-        assert(uint512_t(15) < 20U, "");
-        assert(uint512_t(20) > 15U, "");
-        assert(uint512_t(15) <= 20U, "");
-        assert(uint512_t(20) >= 15U, "");
-        assert(uint512_t(20) <= 20U, "");
-        assert(uint512_t(20) >= 20U, "");
-        assert(uint512_t(20) == 20U, "");
+        _testComparationPositive<int512_t, int32_t>();
+        _testComparationPositive<int32_t, int512_t>();
+        _testComparationPositive<int512_t, int128_t>();
+        _testComparationPositive<int128_t, int512_t>();
+        _testComparationPositive<int512_t, int512_t>();
 
-        assert(15U < uint512_t(20), "");
-        assert(20U > uint512_t(15), "");
-        assert(15U <= uint512_t(20), "");
-        assert(20U >= uint512_t(15), "");
-        assert(20U <= uint512_t(20), "");
-        assert(20U >= uint512_t(20), "");
-        assert(20U == uint512_t(20), "");
+        _testComparationPositive<int512_t, uint32_t>();
+        _testComparationPositive<int32_t, uint512_t>();
+        _testComparationPositive<int512_t, uint128_t>();
+        _testComparationPositive<int128_t, uint512_t>();
+        _testComparationPositive<int512_t, uint512_t>();
 
-        assert(uint512_t(15) < uint128_t(20), "");
-        assert(uint512_t(20) > uint128_t(15), "");
-        assert(uint512_t(15) <= uint128_t(20), "");
-        assert(uint512_t(20) >= uint128_t(15), "");
-        assert(uint512_t(20) <= uint128_t(20), "");
-        assert(uint512_t(20) >= uint128_t(20), "");
-        assert(uint512_t(20) == uint128_t(20), "");
+        _testComparationPositive<uint512_t, int32_t>();
+        _testComparationPositive<uint32_t, int512_t>();
+        _testComparationPositive<uint512_t, int128_t>();
+        _testComparationPositive<uint128_t, int512_t>();
+        _testComparationPositive<uint512_t, int512_t>();
 
-        assert(uint128_t(15) < uint512_t(20), "");
-        assert(uint128_t(20) > uint512_t(15), "");
-        assert(uint128_t(15) <= uint512_t(20), "");
-        assert(uint128_t(20) >= uint512_t(15), "");
-        assert(uint128_t(20) <= uint512_t(20), "");
-        assert(uint128_t(20) >= uint512_t(20), "");
-        assert(uint128_t(20) == uint512_t(20), "");
+        _testComparationNegative<int512_t, int32_t>();
+        _testComparationNegative<int32_t, int512_t>();
+        _testComparationNegative<int512_t, int128_t>();
+        _testComparationNegative<int128_t, int512_t>();
+        _testComparationNegative<int512_t, int512_t>();
 
-        auto a13 = 9 & uint512_t(5);
-        assert(typeid(uint512_t) == typeid(a13), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a13.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a13.m_arr[63] == 1, "");
-
-        auto a14 = uint512_t(9) & 5;
-        assert(typeid(uint512_t) == typeid(a14), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a14.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a14.m_arr[63] == 1, "");
-
-        auto a15 = 9 | uint512_t(5);
-        assert(typeid(uint512_t) == typeid(a15), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a15.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a15.m_arr[63] == 13, "");
-
-        auto a16 = uint512_t(9) | 5;
-        assert(typeid(uint512_t) == typeid(a16), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a16.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a16.m_arr[63] == 13, "");
-
-        auto a17 = 4 ^ uint512_t(5);
-        assert(typeid(uint512_t) == typeid(a17), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a17.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a17.m_arr[63] == 1, "");
-
-        auto a18 = uint512_t(4) ^ 5;
-        assert(typeid(uint512_t) == typeid(a18), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a18.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a18.m_arr[63] == 1, "");
-
-        auto a19 = uint512_t(8) << 1;
-        assert(typeid(uint512_t) == typeid(a19), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a19.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a19.m_arr[63] == 16, "");
-
-        auto a20 = uint512_t(8) >> 1;
-        assert(typeid(uint512_t) == typeid(a20), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a20.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a20.m_arr[63] == 4, "");
+        test_binary_operators(uint512_t(8), <<, 1, uint512_t);
+        test_binary_operators(uint512_t(8), >>, 1, uint512_t);
 
         assert(!uint256_t(0), "");
         assert(uint256_t(1), "");
-
-        auto a21 = +uint512_t(0x1);
-        assert(typeid(uint512_t) == typeid(a21), "");
-        for (int idx = 0; idx < 63; ++idx) {
-            assert(a21.m_arr[idx] == 0, std::to_string(idx));
-        }
-        assert(a21.m_arr[63] == 1, "");
 
         assert(1024_int128 * 2.0 == 2048, "");
         assert(2.0 * 1024_int128 == 2048, "");
@@ -1591,6 +1620,10 @@ struct _test {
         uint256_t c2 = 100000000000000000000_uint256;
         uint256_t c3 = c1 * c2;
         assert(c3 == 10000000000000000000000000000000000000000_uint256, "");
+
+#undef test_case
+#undef test_binary_operators
+#undef test_unary_operator
     }
 
     static void testNativeOperatorsAssign() {
