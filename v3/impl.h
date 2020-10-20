@@ -282,10 +282,6 @@ struct wide_integer<Bits, Signed>::_impl {
     }
 
     constexpr static wide_integer<Bits, signed> shift_left(const wide_integer<Bits, signed>& rhs, int n) {
-        // static_assert(is_negative(rhs), "shift left for negative lhsbers is underfined!");
-        if (is_negative(rhs)) {
-            throw std::runtime_error("shift left for negative lhsbers is underfined!");
-        }
         return wide_integer<Bits, signed>(shift_left(wide_integer<Bits, unsigned>(rhs), n));
     }
 
