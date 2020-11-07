@@ -183,7 +183,8 @@ struct wide_integer<Bits, Signed>::_impl {
     }
 
     template <typename T>
-    constexpr static auto to_Integral(T f) noexcept {
+    /// No UB here, see wide_integer_from_bultin
+    __attribute__((no_sanitize("undefined"))) constexpr static auto to_Integral(T f) noexcept {
         if constexpr (std::is_signed<T>::value) {
             return static_cast<int64_t>(f);
         } else {
@@ -210,7 +211,10 @@ struct wide_integer<Bits, Signed>::_impl {
     }
 
     constexpr static void wide_integer_from_bultin(wide_integer<Bits, Signed>& self, double rhs) noexcept {
-        if ((rhs > 0 && rhs < std::numeric_limits<uint64_t>::max()) ||
+        constexpr uint64_t max_uint = std::numeric_limits<uint64_t>::max();
+        constexpr int64_t max_int = std::numeric_limits<int64_t>::max();
+
+        if ((rhs > 0 && rhs < max_uint) ||
             (rhs < 0 && rhs > std::numeric_limits<int64_t>::min())) {
             self = to_Integral(rhs);
             return;
@@ -221,13 +225,24 @@ struct wide_integer<Bits, Signed>::_impl {
             r = -r;
         }
 
-        size_t count = r / std::numeric_limits<uint64_t>::max();
+        size_t count = r / max_uint;
         self = count;
-        self *= std::numeric_limits<uint64_t>::max();
+        self *= max_uint;
         long double to_diff = count;
-        to_diff *= std::numeric_limits<uint64_t>::max();
+        to_diff *= max_uint;
 
-        self += to_Integral(r - to_diff);
+        /// There are values in int64 that have more than 52 significant bits (in terms of double
+        /// representation). Such values, being promoted to double, are rounded up or down. If they are rounded up,
+        /// the result may not fit in 64 bits.
+        /// The example of such a number is 9.22337e+18.
+        /// As to_Integral does a static_cast to int64_t, it may result in UB.
+        if (static_cast<__int128_t>(r - to_diff) > static_cast<__int128_t>(max_int))
+        {
+            self += max_int;
+            self += static_cast<int64_t>(r - to_diff - max_int);
+        }
+        else
+            self += to_Integral(r - to_diff);
 
         if (rhs < 0) {
             self = -self;
