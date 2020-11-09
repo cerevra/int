@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cstring>
+#include <cfloat>
 
 namespace std {
 #define CT(x)                                                                      \
@@ -231,12 +232,18 @@ struct wide_integer<Bits, Signed>::_impl {
         long double to_diff = count;
         to_diff *= max_uint;
 
-        /// There are values in int64 that have more than 52 significant bits (in terms of double
+        /// There are values in int64 that have more than 53 significant bits (in terms of double
         /// representation). Such values, being promoted to double, are rounded up or down. If they are rounded up,
         /// the result may not fit in 64 bits.
         /// The example of such a number is 9.22337e+18.
         /// As to_Integral does a static_cast to int64_t, it may result in UB.
-        if (static_cast<__int128_t>(r - to_diff) > static_cast<__int128_t>(max_int))
+        /// The necessary check here is that long double has enough significant (mantissa) bits to store the
+        /// int64_t max value precisely.
+        static_assert(LDBL_MANT_DIG >= 64,
+            "On your system long double has less than 64 precision bits,"
+            "which may result in UB when initializing double from int64_t");
+
+        if (r - to_diff > static_cast<long double>(max_int))
         {
             self += max_int;
             self += static_cast<int64_t>(r - to_diff - max_int);
