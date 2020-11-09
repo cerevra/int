@@ -5,6 +5,7 @@
 #include <array>
 #include <cstring>
 #include <cfloat>
+#include <limits>
 
 namespace std {
 #define CT(x)                                                                      \
@@ -214,6 +215,7 @@ struct wide_integer<Bits, Signed>::_impl {
     constexpr static void wide_integer_from_bultin(wide_integer<Bits, Signed>& self, double rhs) noexcept {
         constexpr uint64_t max_uint = std::numeric_limits<uint64_t>::max();
         constexpr int64_t max_int = std::numeric_limits<int64_t>::max();
+        constexpr size_t max_sizet = std::numeric_limits<size_t>::max();
 
         if ((rhs > 0 && rhs < max_uint) ||
             (rhs < 0 && rhs > std::numeric_limits<int64_t>::min())) {
@@ -226,7 +228,13 @@ struct wide_integer<Bits, Signed>::_impl {
             r = -r;
         }
 
-        size_t count = r / max_uint;
+        const long double div = r / max_int;
+        size_t count = max_sizet;
+
+        /// r / max_uint may not fit in size_t
+        if (div <= static_cast<long double>(max_sizet))
+            count = div;
+
         self = count;
         self *= max_uint;
         long double to_diff = count;
