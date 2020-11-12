@@ -216,6 +216,10 @@ struct wide_integer<Bits, Signed>::_impl {
     /**
      * N.B. t is constructed from double, so max(t) = max(double) ~ 2^310
      * the recursive call happens when t / 2^64 > 2^64, so there won't be more than 5 of them.
+     *
+     * t = a1 * max_int + b1,   a1 > max_int, b1 < max_int
+     * a1 = a2 * max_int + b2,  a2 > max_int, b2 < max_int
+     * a_(n - 1) = a_n * max_int + b2, a_n <= max_int <- base case.
      */
     template <class T>
     constexpr static void set_multiplier(wide_integer<Bits, Signed> & self, T t) noexcept {
@@ -225,10 +229,13 @@ struct wide_integer<Bits, Signed>::_impl {
         if (alpha <= max_int)
             for (uint64_t i = 0; i < static_cast<uint64_t>(alpha); ++i)
                 self *= max_int;
-        else // max(double) / 2^64 will surely contain less than 52 precision bits, so speed up computations.
-            set_multiplier(self, static_cast<double>(alpha));
+        else
+        {   // max(double) / 2^64 will surely contain less than 52 precision bits, so speed up computations.
+            set_multiplier<double>(self, alpha);
+            self *= max_int;
+        };
 
-        self += static_cast<uint64_t>(t - alpha * max_int);
+        self += static_cast<uint64_t>(t - alpha * max_int); // += b_i
     }
 
     constexpr static void wide_integer_from_bultin(wide_integer<Bits, Signed>& self, double rhs) noexcept {
@@ -255,7 +262,7 @@ struct wide_integer<Bits, Signed>::_impl {
             ? -static_cast<long double>(rhs)
             : rhs;
 
-        self = 0;
+        self = (rhs_long_double / max_int > 0) ? 1 : 0;
         set_multiplier(self, rhs_long_double);
 
         if (rhs < 0)
